@@ -1,7 +1,7 @@
 import { loadEnvConfig } from "@next/env";
 loadEnvConfig(process.cwd());
 
-import { getGoogleSheetsInstance, SPREADSHEET_ID } from "../lib/google-sheets";
+import { getGoogleSheetsInstance } from "../lib/google-sheets";
 import bcrypt from "bcryptjs";
 
 async function main() {
@@ -25,7 +25,7 @@ async function main() {
     console.log("Menghubungkan ke Google Sheets...");
 
     await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: "Admin_Auth!A1:B2",
       valueInputOption: "USER_ENTERED",
       requestBody: {

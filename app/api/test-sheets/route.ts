@@ -5,7 +5,6 @@ export async function GET() {
   try {
     const sheets = await getGoogleSheetsInstance();
     
-    // Test fetching the first few rows of Admin_Auth sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: "Admin_Auth!A1:B10",
@@ -18,13 +17,13 @@ export async function GET() {
       message: "Berhasil terhubung ke Google Sheets API!",
       data: rows || [],
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error connecting to Google Sheets:", error);
     return NextResponse.json(
       {
         status: "error",
         message: "Gagal terhubung ke Google Sheets API.",
-        error: error.message,
+        error: error instanceof Error ? error.message : "Terjadi kesalahan yang tidak diketahui",
       },
       { status: 500 }
     );

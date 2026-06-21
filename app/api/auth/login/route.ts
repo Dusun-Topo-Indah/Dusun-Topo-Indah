@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getGoogleSheetsInstance, SPREADSHEET_ID } from "@/lib/google-sheets";
 import { SignJWT } from "jose";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "default_secret_key_for_dev_only"
@@ -20,10 +21,9 @@ export async function POST(request: Request) {
 
     const sheets = await getGoogleSheetsInstance();
     
-    // Ambil data dari sheet Admin_Auth
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Admin_Auth!A:B", // Kolom A: Username, Kolom B: Password
+      range: "Admin_Auth!A:B",
     });
 
     const rows = response.data.values;
@@ -35,12 +35,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Cek apakah username dan password cocok (mengabaikan baris pertama jika itu header, tapi aman menggunakan .some)
-    const isValidUser = rows.some(
-      (row) => row[0] === username && row[1] === password
-    );
+    const adminRow = rows.find((row) => row[0] === username);
 
-    if (!isValidUser) {
+    if (!adminRow) {
+      return NextResponse.json(
+        { message: "Username atau password salah" },
+        { status: 401 }
+      );
+    }
+
+    const storedHashedPassword = adminRow[1];
+    const isPasswordValid = await bcrypt.compare(password, storedHashedPassword);
+
+    if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Username atau password salah" },
         { status: 401 }
@@ -51,7 +58,7 @@ export async function POST(request: Request) {
     const token = await new SignJWT({ username })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("24h") // Token berlaku 24 jam
+      .setExpirationTime("24h")
       .sign(JWT_SECRET);
 
     // Set cookie
@@ -60,7 +67,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24, // 24 jam
+      maxAge: 60 * 60 * 24,
       path: "/",
     });
 

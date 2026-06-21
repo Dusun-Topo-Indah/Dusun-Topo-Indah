@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import type { sheets_v4 } from "googleapis";
-import type { BeritaRow } from "@/types";
+import type { BeritaRow, GaleriRow } from "@/types";
 
 let sheetsInstance: sheets_v4.Sheets | null = null;
 
@@ -141,6 +141,87 @@ export async function updateBeritaById(id: string, updatedData: Partial<BeritaRo
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [newRow],
+    },
+  });
+
+  return true;
+}
+
+export async function getGaleriList(): Promise<GaleriRow[]> {
+  "use cache";
+  cacheTag("galeri");
+  cacheLife("hours");
+  
+  const sheets = await getGoogleSheetsInstance();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Galeri_Dusun!A:E",
+  });
+
+  const rows = res.data.values;
+  if (!rows || rows.length === 0) return [];
+  const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "kategori";
+  const dataRows = isHeader ? rows.slice(1) : rows;
+
+  if (dataRows.length === 0) return [];
+
+  return dataRows.map((row) => ({
+    id: row[0] || "",
+    kategori: row[1] || "",
+    caption: row[2] || "",
+    tanggal_upload: row[3] || "",
+    url_foto: row[4] || "",
+  })).reverse(); 
+}
+
+export async function appendGaleri(data: GaleriRow): Promise<void> {
+  const sheets = await getGoogleSheetsInstance();
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Galeri_Dusun!A:E",
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[data.id, data.kategori, data.caption, data.tanggal_upload, data.url_foto]],
+    },
+  });
+}
+
+export async function deleteGaleriById(id: string): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+  
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Galeri_Dusun!A:A",
+  });
+  const rows = res.data.values;
+  if (!rows) return false;
+
+  const rowIndex = rows.findIndex((row) => row[0] === id);
+  if (rowIndex === -1) return false;
+
+  const spreadsheet = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+  });
+  const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title === "Galeri_Dusun");
+  const sheetId = sheet?.properties?.sheetId;
+
+  if (sheetId === undefined) return false;
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: sheetId,
+              dimension: "ROWS",
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1,
+            },
+          },
+        },
+      ],
     },
   });
 

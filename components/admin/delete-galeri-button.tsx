@@ -16,12 +16,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteBeritaButtonProps {
+interface DeleteGaleriButtonProps {
   id: string;
-  judul: string;
 }
 
-export function DeleteBeritaButton({ id, judul }: DeleteBeritaButtonProps) {
+export function DeleteGaleriButton({ id }: DeleteGaleriButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
@@ -29,7 +28,7 @@ export function DeleteBeritaButton({ id, judul }: DeleteBeritaButtonProps) {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/berita/${id}`, {
+      const res = await fetch(`/api/galeri/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -37,11 +36,11 @@ export function DeleteBeritaButton({ id, judul }: DeleteBeritaButtonProps) {
         router.refresh();
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || "Gagal menghapus berita");
+        alert(err.message || "Gagal menghapus foto");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan sistem");
+      alert("Terjadi kesalahan sistem.");
     } finally {
       setIsDeleting(false);
     }
@@ -49,15 +48,14 @@ export function DeleteBeritaButton({ id, judul }: DeleteBeritaButtonProps) {
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger render={<Button variant="destructive" size="sm" className="h-8 px-2" disabled={isDeleting} />}>
-        <Trash2 className="h-4 w-4 mr-1" />
-        Hapus
+      <AlertDialogTrigger render={<Button size="icon" className="bg-red-500 hover:bg-red-600 text-white" disabled={isDeleting} />}>
+        <Trash2 className="h-4 w-4" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Hapus Berita Ini?</AlertDialogTitle>
+          <AlertDialogTitle>Hapus Foto?</AlertDialogTitle>
           <AlertDialogDescription>
-            Tindakan ini tidak dapat dibatalkan. Berita berjudul <strong>&quot;{judul}&quot;</strong> akan dihapus secara permanen dari sistem dan Google Sheets.
+            Tindakan ini tidak dapat dibatalkan. Foto akan dihapus secara permanen dari server dan galeri.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { getBeritaList } from "@/lib/google-sheets";
 import { DeleteBeritaButton } from "@/components/admin/delete-berita-button";
 import { DataTable, type ColumnDef } from "@/components/admin/data-table";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { EmptyState } from "@/components/admin/empty-state";
 import type { BeritaRow } from "@/types";
 
 export const metadata = {
@@ -58,6 +60,7 @@ const columns: ColumnDef<BeritaRow>[] = [
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" size="sm" render={<Link href={`/admin/berita/edit/${berita.id}`} />} nativeButton={false} title="Edit Berita">
           <Pencil className="h-4 w-4" />
+          Edit
         </Button>
         <DeleteBeritaButton id={berita.id} judul={berita.judul} />
       </div>
@@ -69,28 +72,24 @@ export default async function BeritaPage() {
   const beritaList = await getBeritaList();
 
   const emptyState = (
-    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
-      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-        <Inbox className="h-6 w-6 text-muted-foreground/70" />
-      </div>
-      <p>Belum ada berita yang diterbitkan.</p>
-    </div>
+    <EmptyState 
+      icon={Inbox}
+      title="Belum ada berita"
+      description="Belum ada berita yang diterbitkan."
+    />
   );
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Kabar Dusun (Berita)</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Kelola publikasi artikel berita dan pengumuman untuk warga.
-          </p>
-        </div>
+      <DashboardHeader 
+        title="Kabar Dusun (Berita)" 
+        description="Kelola publikasi artikel berita dan pengumuman untuk warga."
+      >
         <Button render={<Link href="/admin/berita/create" />} nativeButton={false}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Tulis Berita
         </Button>
-      </div>
+      </DashboardHeader>
 
       <DataTable 
         data={beritaList} 

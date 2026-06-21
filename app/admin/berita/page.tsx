@@ -1,25 +1,102 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hammer } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { PlusCircle, ImageIcon, CalendarDays, Inbox, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getBeritaList } from "@/lib/google-sheets";
+import { DeleteBeritaButton } from "@/components/admin/delete-berita-button";
+import { DataTable, type ColumnDef } from "@/components/admin/data-table";
+import type { BeritaRow } from "@/types";
 
-export default function BeritaComingSoon() {
+export const metadata = {
+  title: "Manajemen Berita — SIG-Dusun Topo Indah",
+};
+
+const columns: ColumnDef<BeritaRow>[] = [
+  {
+    header: "Informasi Berita",
+    cell: (berita) => (
+      <div className="flex items-start gap-4 py-2">
+        {berita.url_foto ? (
+          <div className="relative h-18 w-28 rounded-md overflow-hidden shrink-0 border bg-muted">
+            <Image 
+              src={berita.url_foto} 
+              alt={berita.judul} 
+              fill 
+              className="object-cover" 
+              sizes="112px" 
+            />
+          </div>
+        ) : (
+          <div className="flex h-18 w-28 items-center justify-center rounded-md bg-muted/50 text-muted-foreground shrink-0 border">
+            <ImageIcon className="h-6 w-6 opacity-40" />
+          </div>
+        )}
+        <div className="flex flex-col gap-1.5 max-w-[600px]">
+          <span className="font-semibold text-base line-clamp-1 leading-tight text-foreground">
+            {berita.judul}
+          </span>
+          <span className="text-sm text-muted-foreground line-clamp-1 leading-snug">
+            {berita.ringkasan || "Tidak ada ringkasan yang ditulis."}
+          </span>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 font-medium">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {new Date(berita.tanggal).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    header: "Aksi",
+    headerClassName: "w-[150px] text-right",
+    className: "text-right align-middle",
+    cell: (berita) => (
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" size="sm" render={<Link href={`/admin/berita/edit/${berita.id}`} />} nativeButton={false} title="Edit Berita">
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <DeleteBeritaButton id={berita.id} judul={berita.judul} />
+      </div>
+    ),
+  },
+];
+
+export default async function BeritaPage() {
+  const beritaList = await getBeritaList();
+
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+        <Inbox className="h-6 w-6 text-muted-foreground/70" />
+      </div>
+      <p>Belum ada berita yang diterbitkan.</p>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Berita</h1>
-        <p className="text-gray-500 mt-2">Sistem Manajemen Konten Berita.</p>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Kabar Dusun (Berita)</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Kelola publikasi artikel berita dan pengumuman untuk warga.
+          </p>
+        </div>
+        <Button render={<Link href="/admin/berita/create" />} nativeButton={false}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Tulis Berita
+        </Button>
       </div>
 
-      <Card className="shadow-sm max-w-xl">
-        <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
-          <Hammer className="h-6 w-6 text-blue-600" />
-          <CardTitle className="text-xl">Coming Soon</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500 mt-2">
-            Halaman untuk mengelola berita menggunakan Tiptap Editor sedang dalam tahap pengembangan.
-          </p>
-        </CardContent>
-      </Card>
+      <DataTable 
+        data={beritaList} 
+        columns={columns} 
+        emptyState={emptyState} 
+      />
     </div>
   );
 }

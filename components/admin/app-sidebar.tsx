@@ -9,7 +9,8 @@ import {
   MessageSquareWarning, 
   Settings,
   LogOut,
-  MapPin
+  MapPin,
+  ChevronsUpDown
 } from "lucide-react";
 import Link from "next/link";
 
@@ -27,6 +28,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -40,7 +42,6 @@ const menuItems = [
   { title: "Galeri", icon: ImageIcon, href: "/admin/galeri" },
   { title: "Peta", icon: Map, href: "/admin/peta" },
   { title: "Pengaduan", icon: MessageSquareWarning, href: "/admin/pengaduan" },
-  { title: "Pengaturan", icon: Settings, href: "/admin/pengaturan" },
 ];
 
 export function AppSidebar() {
@@ -113,19 +114,29 @@ export function AppSidebar() {
                   <span className="truncate font-semibold">Admin Dusun</span>
                   <span className="truncate text-xs text-muted-foreground">Perangkat</span>
                 </div>
+                <ChevronsUpDown className="ml-auto size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg" side="top" align="end" sideOffset={4}>
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg bg-blue-100 text-blue-700">AD</AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">Admin Dusun</span>
-                      <span className="truncate text-xs text-muted-foreground">Perangkat Desa</span>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                      <Avatar className="h-8 w-8 rounded-lg">
+                        <AvatarFallback className="rounded-lg bg-blue-100 text-blue-700">AD</AvatarFallback>
+                      </Avatar>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">Admin Dusun</span>
+                        <span className="truncate text-xs text-muted-foreground">Perangkat Desa</span>
+                      </div>
                     </div>
-                  </div>
-                </DropdownMenuLabel>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="cursor-pointer" render={<Link href="/admin/pengaturan" />}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Pengaturan</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />

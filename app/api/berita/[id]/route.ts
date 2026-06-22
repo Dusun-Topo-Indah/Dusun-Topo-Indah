@@ -3,12 +3,20 @@ import { deleteBeritaById, getBeritaList, updateBeritaById } from "@/lib/google-
 import { revalidateTag } from "next/cache";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { verifyAdminSession } from "@/lib/auth";
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await verifyAdminSession())) {
+      return NextResponse.json(
+        { success: false, message: "Sesi admin tidak valid." },
+        { status: 401 }
+      );
+    }
+
     const id = (await params).id;
     if (!id) {
       return NextResponse.json(
@@ -44,41 +52,6 @@ export async function PUT(
       );
     }
 
-    // Auto-Delete Algorithm for Orphaned Images
-    const oldUrls = new Set<string>();
-    if (oldBerita.url_foto && oldBerita.url_foto.includes("cloudinary.com")) {
-      oldUrls.add(oldBerita.url_foto);
-    }
-    const oldImgRegex = /<img[^>]+src="([^">]+)"/g;
-    let match;
-    while ((match = oldImgRegex.exec(oldBerita.isi_berita)) !== null) {
-      if (match[1].includes("cloudinary.com")) {
-        oldUrls.add(match[1]);
-      }
-    }
-
-    const newUrls = new Set<string>();
-    if (url_foto && url_foto.includes("cloudinary.com")) {
-      newUrls.add(url_foto);
-    }
-    const newImgRegex = /<img[^>]+src="([^">]+)"/g;
-    while ((match = newImgRegex.exec(isi_berita)) !== null) {
-      if (match[1].includes("cloudinary.com")) {
-        newUrls.add(match[1]);
-      }
-    }
-
-    const urlsToDelete: string[] = [];
-    for (const oldUrl of oldUrls) {
-      if (!newUrls.has(oldUrl)) {
-        urlsToDelete.push(oldUrl);
-      }
-    }
-
-    if (urlsToDelete.length > 0) {
-      await Promise.allSettled(urlsToDelete.map((url) => deleteFromCloudinary(url)));
-    }
-
     const cleanHtml = sanitizeHtml(isi_berita);
 
     const success = await updateBeritaById(id, {
@@ -97,6 +70,34 @@ export async function PUT(
 
     revalidateTag("berita", "max");
 
+    const oldUrls = new Set<string>();
+    if (oldBerita.url_foto && oldBerita.url_foto.includes("cloudinary.com")) {
+      oldUrls.add(oldBerita.url_foto);
+    }
+    const oldImgRegex = /<img[^>]+src="([^">]+)"/g;
+    let match;
+    while ((match = oldImgRegex.exec(oldBerita.isi_berita)) !== null) {
+      if (match[1].includes("cloudinary.com")) {
+        oldUrls.add(match[1]);
+      }
+    }
+
+    const newUrls = new Set<string>();
+    if (url_foto && url_foto.includes("cloudinary.com")) {
+      newUrls.add(url_foto);
+    }
+    const newImgRegex = /<img[^>]+src="([^">]+)"/g;
+    while ((match = newImgRegex.exec(cleanHtml)) !== null) {
+      if (match[1].includes("cloudinary.com")) {
+        newUrls.add(match[1]);
+      }
+    }
+
+    const urlsToDelete = Array.from(oldUrls).filter((oldUrl) => !newUrls.has(oldUrl));
+    if (urlsToDelete.length > 0) {
+      await Promise.allSettled(urlsToDelete.map((url) => deleteFromCloudinary(url)));
+    }
+
     return NextResponse.json({ success: true, message: "Berita berhasil diperbarui." });
   } catch (error) {
     console.error("Failed to update berita:", error);
@@ -108,10 +109,17 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await verifyAdminSession())) {
+      return NextResponse.json(
+        { success: false, message: "Sesi admin tidak valid." },
+        { status: 401 }
+      );
+    }
+
     const id = (await params).id;
     if (!id) {
       return NextResponse.json(

@@ -1,21 +1,44 @@
-import { getGaleriList } from "@/lib/google-sheets";
-import { GaleriForm } from "@/components/admin/galeri-form";
+import { getGaleriListing } from "@/lib/google-sheets";
 import { DeleteGaleriButton } from "@/components/admin/delete-galeri-button";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { EmptyState } from "@/components/admin/empty-state";
-import { ImageIcon } from "lucide-react";
+import { Edit, ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ListingToolbar } from "@/components/admin/listing-toolbar";
+import { ListingPagination } from "@/components/admin/listing-pagination";
+import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
 
 export const metadata = {
   title: "Galeri — Dusun Topo Indah",
 };
 
-export default async function AdminGaleriPage() {
-  const galeriList = await getGaleriList();
-  
-  const existingCategories = Array.from(new Set(galeriList.map(g => g.kategori).filter(Boolean)));
+interface GaleriPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function AdminGaleriPage({ searchParams }: GaleriPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
+  const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+  const page = toPositiveInteger(
+    typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : undefined,
+    1
+  );
+  const limit = toPositiveInteger(
+    typeof resolvedSearchParams.limit === "string" ? resolvedSearchParams.limit : undefined,
+    DEFAULT_PAGE_LIMITS.galeri
+  );
+
+  const galeriResult = await getGaleriListing({
+    q,
+    filter,
+    page,
+    limit,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -23,10 +46,24 @@ export default async function AdminGaleriPage() {
         title="Manajemen Galeri" 
         description="Kelola foto kegiatan, fasilitas, dan momen penting di dusun."
       >
-        <GaleriForm existingCategories={existingCategories} />
+        <Button render={<Link href="/admin/galeri/create" />} nativeButton={false}>
+          Unggah Foto
+        </Button>
       </DashboardHeader>
 
-      {galeriList.length === 0 ? (
+      <ListingToolbar
+        searchPlaceholder="Cari kategori atau caption foto..."
+        searchValue={q}
+        activeFilter={filter}
+        filterOptions={[
+          { label: "Semua", value: "all" },
+          ...galeriResult.categories.map((category) => ({ label: category, value: category })),
+        ]}
+        currentLimit={limit}
+        currentPage={galeriResult.page}
+      />
+
+      {galeriResult.items.length === 0 ? (
         <EmptyState 
           icon={ImageIcon}
           title="Galeri Masih Kosong"
@@ -35,7 +72,7 @@ export default async function AdminGaleriPage() {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {galeriList.map((item) => (
+          {galeriResult.items.map((item) => (
             <Card key={item.id} className="overflow-hidden group relative border-0 shadow-sm aspect-square w-full">
               <Image 
                 src={item.url_foto} 
@@ -54,7 +91,10 @@ export default async function AdminGaleriPage() {
                   })}
                 </p>
               </div>
-              <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute top-2 right-2 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <Button variant="secondary" size="icon" render={<Link href={`/admin/galeri/edit/${item.id}`} aria-label="Edit foto galeri" />} nativeButton={false}>
+                  <Edit className="h-4 w-4" />
+                </Button>
                 <DeleteGaleriButton id={item.id} />
               </div>
               <Badge className="absolute top-2 left-2 z-20 pointer-events-none bg-background/80 text-foreground hover:bg-background/90 backdrop-blur-sm border-0">
@@ -64,6 +104,16 @@ export default async function AdminGaleriPage() {
           ))}
         </div>
       )}
+
+      <ListingPagination
+        pathname="/admin/galeri"
+        query={{ q, filter, page: galeriResult.page, limit }}
+        page={galeriResult.page}
+        totalPages={galeriResult.totalPages}
+        totalItems={galeriResult.totalItems}
+        limitOptions={[12, 24, 48]}
+        currentLimit={limit}
+      />
     </div>
   );
 }

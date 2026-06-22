@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import dynamic from "next/dynamic";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
 import { ImagePlus, Loader2, FileText, Send, Save } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BeritaRow } from "@/types";
@@ -30,8 +30,32 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
   const [ringkasan, setRingkasan] = useState(initialData?.ringkasan || "");
   const [isiBerita, setIsiBerita] = useState(initialData?.isi_berita || "");
   const [foto, setFoto] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const isEdit = !!initialData;
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const f = e.dataTransfer.files[0];
+      if (f.type.startsWith("image/")) {
+        setFoto(f);
+      } else {
+        alert("Harap unggah file gambar.");
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +65,12 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
     }
 
     setIsSubmitting(true);
+    let uploadedCoverUrl = "";
     try {
       let urlFoto = initialData?.url_foto || "";
       if (foto) {
         urlFoto = await uploadToCloudinary(foto);
+        uploadedCoverUrl = urlFoto;
       }
 
       const method = isEdit ? "PUT" : "POST";
@@ -70,6 +96,11 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
       router.refresh();
     } catch (error: unknown) {
       console.error(error);
+      if (uploadedCoverUrl) {
+        await deleteUploadedCloudinaryImage(uploadedCoverUrl).catch((rollbackError: unknown) => {
+          console.error(rollbackError);
+        });
+      }
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan sistem saat menyimpan berita.";
       alert(msg);
     } finally {
@@ -129,7 +160,17 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
             <div className="space-y-2 pt-2 border-t">
               <Label>Foto Kover</Label>
               <div className="relative group">
-                <label htmlFor="foto" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/20 hover:bg-muted/50 overflow-hidden transition-colors">
+                <label 
+                  htmlFor="foto" 
+                  className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer overflow-hidden transition-colors ${
+                    isDragging 
+                      ? "border-primary bg-primary/10" 
+                      : "border-muted-foreground/25 bg-muted/20 hover:bg-muted/50"
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
                   {foto ? (
                     <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center z-10 relative">
                       <FileText className="w-8 h-8 text-primary mx-auto mb-2" />

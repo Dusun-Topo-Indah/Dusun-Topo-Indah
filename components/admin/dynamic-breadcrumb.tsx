@@ -39,7 +39,7 @@ export function DynamicBreadcrumb() {
   return (
     <Breadcrumb className="hidden md:flex">
       <BreadcrumbList>
-        {breadcrumbItems.map((item, index) => {
+        {breadcrumbItems.map((item) => {
           let label = item.segment.charAt(0).toUpperCase() + item.segment.slice(1).replace(/-/g, " ");
 
           if (item.isLast && overrideLabel) {

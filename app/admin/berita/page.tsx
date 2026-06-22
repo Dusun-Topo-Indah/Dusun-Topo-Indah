@@ -2,12 +2,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { PlusCircle, ImageIcon, CalendarDays, Inbox, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBeritaList } from "@/lib/google-sheets";
+import { getBeritaListing } from "@/lib/google-sheets";
 import { DeleteBeritaButton } from "@/components/admin/delete-berita-button";
 import { DataTable, type ColumnDef } from "@/components/admin/data-table";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { EmptyState } from "@/components/admin/empty-state";
 import type { BeritaRow } from "@/types";
+import { ListingToolbar } from "@/components/admin/listing-toolbar";
+import { ListingPagination } from "@/components/admin/listing-pagination";
+import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
 
 export const metadata = {
   title: "Manajemen Berita — SIG-Dusun Topo Indah",
@@ -68,8 +71,29 @@ const columns: ColumnDef<BeritaRow>[] = [
   },
 ];
 
-export default async function BeritaPage() {
-  const beritaList = await getBeritaList();
+interface BeritaPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function BeritaPage({ searchParams }: BeritaPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
+  const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+  const page = toPositiveInteger(
+    typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : undefined,
+    1
+  );
+  const limit = toPositiveInteger(
+    typeof resolvedSearchParams.limit === "string" ? resolvedSearchParams.limit : undefined,
+    DEFAULT_PAGE_LIMITS.berita
+  );
+
+  const beritaResult = await getBeritaListing({
+    q,
+    filter,
+    page,
+    limit,
+  });
 
   const emptyState = (
     <EmptyState 
@@ -91,10 +115,33 @@ export default async function BeritaPage() {
         </Button>
       </DashboardHeader>
 
+      <ListingToolbar
+        searchPlaceholder="Cari judul atau ringkasan berita..."
+        searchValue={q}
+        activeFilter={filter}
+        filterOptions={[
+          { label: "Semua", value: "all" },
+          { label: "Dengan Cover", value: "with-cover" },
+          { label: "Tanpa Cover", value: "without-cover" },
+        ]}
+        currentLimit={limit}
+        currentPage={beritaResult.page}
+      />
+
       <DataTable 
-        data={beritaList} 
+        data={beritaResult.items} 
         columns={columns} 
         emptyState={emptyState} 
+      />
+
+      <ListingPagination
+        pathname="/admin/berita"
+        query={{ q, filter, page: beritaResult.page, limit }}
+        page={beritaResult.page}
+        totalPages={beritaResult.totalPages}
+        totalItems={beritaResult.totalItems}
+        limitOptions={[10, 20, 50]}
+        currentLimit={limit}
       />
     </div>
   );

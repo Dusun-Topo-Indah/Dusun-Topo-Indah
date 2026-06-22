@@ -2,9 +2,17 @@ import { NextResponse } from "next/server";
 import { appendBerita } from "@/lib/google-sheets";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { revalidateTag } from "next/cache";
+import { verifyAdminSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
+    if (!(await verifyAdminSession())) {
+      return NextResponse.json(
+        { success: false, message: "Sesi admin tidak valid." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { judul, ringkasan, isi_berita, url_foto } = body;
 

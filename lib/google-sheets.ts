@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 import type { sheets_v4 } from "googleapis";
 import type { BeritaRow, GaleriRow } from "@/types";
+import { normalizeText, paginateItems, stripHtml } from "@/lib/listing";
 
 let sheetsInstance: sheets_v4.Sheets | null = null;
 
@@ -184,6 +185,94 @@ export async function appendGaleri(data: GaleriRow): Promise<void> {
       values: [[data.id, data.kategori, data.caption, data.tanggal_upload, data.url_foto]],
     },
   });
+}
+
+export async function updateGaleriById(id: string, updatedData: Partial<GaleriRow>): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Galeri_Dusun!A:E",
+  });
+
+  const rows = res.data.values;
+  if (!rows) return false;
+
+  const rowIndex = rows.findIndex((row) => row[0] === id);
+  if (rowIndex === -1) return false;
+
+  const existingRow = rows[rowIndex];
+  const newRow = [
+    existingRow[0] || "",
+    updatedData.kategori !== undefined ? updatedData.kategori : (existingRow[1] || ""),
+    updatedData.caption !== undefined ? updatedData.caption : (existingRow[2] || ""),
+    updatedData.tanggal_upload !== undefined ? updatedData.tanggal_upload : (existingRow[3] || ""),
+    updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[4] || ""),
+  ];
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `Galeri_Dusun!A${rowIndex + 1}:E${rowIndex + 1}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [newRow],
+    },
+  });
+
+  return true;
+}
+
+interface BeritaListingArgs {
+  q: string;
+  filter: string;
+  page: number;
+  limit: number;
+}
+
+interface GaleriListingArgs {
+  q: string;
+  filter: string;
+  page: number;
+  limit: number;
+}
+
+export async function getBeritaListing(args: BeritaListingArgs) {
+  const beritaList = await getBeritaList();
+  const query = normalizeText(args.q);
+  const filtered = beritaList.filter((item) => {
+    const searchable = normalizeText(`${item.judul} ${item.ringkasan} ${stripHtml(item.isi_berita)}`);
+    const matchesSearch = query === "" || searchable.includes(query);
+    const hasCover = Boolean(item.url_foto);
+    const matchesFilter =
+      args.filter === "all" ||
+      (args.filter === "with-cover" && hasCover) ||
+      (args.filter === "without-cover" && !hasCover);
+    return matchesSearch && matchesFilter;
+  });
+
+  return paginateItems(filtered, args.page, args.limit);
+}
+
+export async function getGaleriListing(args: GaleriListingArgs) {
+  const galeriList = await getGaleriList();
+  const query = normalizeText(args.q);
+  const categoryFilter = normalizeText(args.filter);
+  const categories = Array.from(new Set(galeriList.map((item) => item.kategori).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+
+  const filtered = galeriList.filter((item) => {
+    const searchable = normalizeText(`${item.kategori} ${item.caption}`);
+    const matchesSearch = query === "" || searchable.includes(query);
+    const matchesFilter = categoryFilter === "all" || normalizeText(item.kategori) === categoryFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const paginated = paginateItems(filtered, args.page, args.limit);
+  return {
+    ...paginated,
+    categories,
+  };
 }
 
 export async function deleteGaleriById(id: string): Promise<boolean> {

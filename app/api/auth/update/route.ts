@@ -12,9 +12,9 @@ export async function POST(request: Request) {
   try {
     const { newUsername, oldPassword, newPassword } = await request.json();
 
-    if (!newUsername || !oldPassword || !newPassword) {
+    if (!newUsername || !oldPassword) {
       return NextResponse.json(
-        { message: "Semua field harus diisi" },
+        { message: "Username dan Password Lama harus diisi" },
         { status: 400 }
       );
     }
@@ -71,14 +71,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const finalPassword = newPassword 
+      ? await bcrypt.hash(newPassword, 10) 
+      : storedHashedPassword;
+
     const sheetRowNumber = rowIndex + 1;
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: `Admin_Auth!A${sheetRowNumber}:B${sheetRowNumber}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [[newUsername, hashedNewPassword]],
+        values: [[newUsername, finalPassword]],
       },
     });
     cookieStore.delete("admin_session");

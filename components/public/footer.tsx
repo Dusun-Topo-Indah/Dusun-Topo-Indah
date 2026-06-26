@@ -1,7 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { CopyrightYear } from "./copyright-year";
 
 export function Footer() {
   return (
@@ -70,7 +69,7 @@ export function Footer() {
 
         {/* Bottom: Copyright & Legal */}
         <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px] text-slate-500 font-medium">
-          <p>© {new Date().getFullYear()} Dusun Topo Indah. Seluruh hak cipta dilindungi.</p>
+          <p>© <CopyrightYear /> Dusun Topo Indah. Seluruh hak cipta dilindungi.</p>
           <div className="flex items-center gap-6">
             <Link href="#" className="hover:text-primary transition-colors">Syarat & Ketentuan</Link>
             <Link href="#" className="hover:text-primary transition-colors">Kebijakan Privasi</Link>

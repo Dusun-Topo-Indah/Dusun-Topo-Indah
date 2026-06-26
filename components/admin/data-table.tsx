@@ -1,4 +1,18 @@
-import { ReactNode } from "react";
+"use client"
+
+import * as React from "react"
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
+} from "@tanstack/react-table"
+
 import {
   Table,
   TableBody,
@@ -6,64 +20,111 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
-export interface ColumnDef<T> {
-  header: ReactNode;
-  cell: (item: T) => ReactNode;
-  className?: string;
-  headerClassName?: string;
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
 }
 
-interface DataTableProps<T> {
-  data: T[];
-  columns: ColumnDef<T>[];
-  emptyMessage?: string;
-  emptyState?: ReactNode;
-}
-
-export function DataTable<T extends { id: string | number }>({
-  data,
+export function DataTable<TData, TValue>({
   columns,
-  emptyMessage = "Belum ada data.",
-  emptyState,
-}: DataTableProps<T>) {
+  data,
+}: DataTableProps<TData, TValue>) {
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+  })
+
   return (
-    <div className="rounded-md border bg-white shadow-sm overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/50 hover:bg-muted/50">
-            {columns.map((col, i) => (
-              <TableHead key={i} className={col.headerClassName}>
-                {col.header}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-64 text-center">
-                {emptyState || (
-                  <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <p>{emptyMessage}</p>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ) : (
-            data.map((item) => (
-              <TableRow key={item.id}>
-                {columns.map((col, i) => (
-                  <TableCell key={i} className={col.className}>
-                    {col.cell(item)}
-                  </TableCell>
-                ))}
+    <div className="flex flex-col w-full bg-white">
+      <div className="overflow-auto">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="hover:bg-transparent border-b-2">
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} className="font-semibold text-slate-800">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="border-b transition-colors hover:bg-slate-50/50"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Tidak ada data.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      
+      {/* Pagination */}
+      <div className="flex items-center justify-between py-4 text-sm text-muted-foreground">
+        <div>
+          Menampilkan {table.getRowModel().rows.length} baris.
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="h-8 w-8 p-0 rounded-md"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="h-8 w-8 p-0 rounded-md"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

@@ -12,7 +12,7 @@ export default function BerandaPage() {
   return (
     <div className="flex flex-col w-full">
       <HeroBanner />
-      {/* About Sectiown */}
+      {/* About Section */}
       <AboutSection />
       {/* Galeri Section */}
       <GaleriSection />

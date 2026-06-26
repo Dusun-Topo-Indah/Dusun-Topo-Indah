@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Hammer } from "lucide-react";
 
 export default function PetaComingSoon() {
@@ -9,17 +9,15 @@ export default function PetaComingSoon() {
         <p className="text-gray-500 mt-2">Sistem Informasi Geografis Dusun.</p>
       </div>
 
-      <Card className="shadow-sm max-w-xl">
-        <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
-          <Hammer className="h-6 w-6 text-blue-600" />
-          <CardTitle className="text-xl">Coming Soon</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500 mt-2">
-            Halaman untuk memanajemen poligon dan marker peta spasial sedang dalam tahap pengembangan.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 max-w-xl">
+        <div className="flex flex-row items-center gap-3 pb-2">
+          <Hammer className="h-6 w-6 text-primary/60" />
+          <h3 className="text-xl font-bold text-primary">Coming Soon</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+          Halaman untuk memanajemen poligon dan marker peta spasial sedang dalam tahap pengembangan.
+        </p>
+      </div>
     </div>
   );
 }

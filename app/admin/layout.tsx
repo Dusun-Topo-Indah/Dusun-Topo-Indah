@@ -5,6 +5,8 @@ import { DynamicBreadcrumb } from "@/components/admin/dynamic-breadcrumb";
 import { BreadcrumbProvider } from "@/components/admin/breadcrumb-context";
 import { Suspense } from "react";
 
+import { UserNav } from "@/components/admin/user-nav";
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <BreadcrumbProvider>
@@ -12,12 +14,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white sticky top-0 z-10 shadow-sm">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <DynamicBreadcrumb />
+            <header className="flex h-16 shrink-0 items-center justify-between px-4 bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <DynamicBreadcrumb />
+              </div>
+              <div className="flex items-center gap-4">
+                <UserNav />
+              </div>
             </header>
-            <main className="flex-1 p-4 tablet:p-6 desktop:p-8 bg-gray-50/50">
+            <main className="flex-1 p-4 tablet:p-6 desktop:p-8 bg-white">
               {children}
             </main>
           </SidebarInset>

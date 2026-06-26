@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { FadeIn } from "@/components/ui/fade-in";
 
 const baseSlides = [
   {
@@ -138,7 +139,7 @@ export function GaleriSection() {
       ))}
 
       {/* Section Indicator Badge */}
-      <div className="absolute top-28 md:top-36 left-0 w-full z-20 pointer-events-none">
+      <FadeIn direction="down" className="absolute top-28 md:top-36 left-0 w-full z-20 pointer-events-none">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end">
             <div className="inline-flex flex-col gap-3">
@@ -152,14 +153,14 @@ export function GaleriSection() {
             </Link>
           </div>
         </div>
-      </div>
+      </FadeIn>
 
       {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 h-full flex flex-col justify-center">
         <div className="grid md:grid-cols-2 gap-8 items-center h-full pt-20 md:pt-0">
           
           {/* Left Side: Title & Description */}
-          <div className="flex flex-col text-white relative min-h-[300px] justify-center mt-32 md:mt-0">
+          <FadeIn direction="left" delay={0.2} className="flex flex-col text-white relative min-h-[300px] justify-center mt-32 md:mt-0">
             {slides.map((slide, index) => (
               <div
                 key={`text-${slide.id}`}
@@ -182,10 +183,10 @@ export function GaleriSection() {
                 </p>
               </div>
             ))}
-          </div>
+          </FadeIn>
 
           {/* Right Side: Cards Carousel & Controls */}
-          <div className="flex flex-col justify-end items-end h-full pb-8 md:pb-16 w-full overflow-hidden pointer-events-none md:pointer-events-auto">
+          <FadeIn direction="right" delay={0.4} className="flex flex-col justify-end items-end h-full pb-8 md:pb-16 w-full overflow-hidden pointer-events-none md:pointer-events-auto">
             
             {/* Cards Carousel (Hidden on mobile) */}
             <div className="hidden md:block w-full pointer-events-auto">
@@ -265,7 +266,7 @@ export function GaleriSection() {
               </div>
             </div>
 
-          </div>
+          </FadeIn>
 
         </div>
       </div>

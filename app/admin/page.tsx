@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { LayoutDashboard } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -10,18 +10,18 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-6 mobile:grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3">
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Selamat Datang</CardTitle>
-            <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Admin Dashboard</div>
-            <p className="text-xs text-muted-foreground mt-1">
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <h3 className="text-sm font-medium text-primary">Selamat Datang</h3>
+            <LayoutDashboard className="h-4 w-4 text-primary/60" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-foreground">Admin Dashboard</div>
+            <p className="text-xs text-muted-foreground mt-2">
               Gunakan menu di sebelah kiri untuk mengelola konten website.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

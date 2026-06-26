@@ -85,12 +85,12 @@ export function ListingToolbar({
     <div className="flex flex-row items-center gap-3 rounded-lg w-full">
       <div className="flex flex-1 items-center gap-2">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             value={draftSearch}
             onChange={(e) => setDraftSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pl-9 h-9 bg-background shadow-sm border-muted-foreground/20"
+            className="w-full pl-11 h-14 bg-background shadow-sm border-muted-foreground/20 text-base"
           />
         </div>
         {(searchValue || (activeFilter && activeFilter !== "all")) && (
@@ -99,10 +99,10 @@ export function ListingToolbar({
             variant="ghost" 
             size="sm" 
             onClick={resetFilters} 
-            className="h-9 px-2 tablet:px-3 text-muted-foreground shrink-0 hover:bg-background/80 hidden tablet:flex"
+            className="h-14 px-4 text-muted-foreground shrink-0 hover:bg-background/80 hidden tablet:flex text-base"
           >
             Reset
-            <X className="ml-2 h-4 w-4" />
+            <X className="ml-2 h-5 w-5" />
           </Button>
         )}
       </div>
@@ -114,13 +114,15 @@ export function ListingToolbar({
             if (value !== null) navigate({ filter: value, page: 1 });
           }}
         >
-          <SelectTrigger className="h-9 w-full tablet:w-[200px] bg-background shadow-sm border-muted-foreground/20">
+          <SelectTrigger className="h-14 w-full tablet:w-[220px] bg-background shadow-sm border-muted-foreground/20 text-base">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-              <SelectValue placeholder="Filter..." />
+              <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
+              <span className="flex flex-1 text-left truncate">
+                {filterOptions.find((opt) => opt.value === activeFilter)?.label || "Filter..."}
+              </span>
             </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="end">
             {filterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}

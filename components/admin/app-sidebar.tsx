@@ -23,6 +23,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar
 } from "@/components/ui/sidebar";
 import {
@@ -65,12 +66,15 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/admin" onClick={() => setOpenMobile(false)} />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <MapPin className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center bg-transparent">
+                <div className="grid grid-cols-2 gap-0.5">
+                  <span className="w-2.5 h-2.5 bg-primary rounded-full"></span>
+                  <span className="w-2.5 h-2.5 bg-primary/70 rounded-full"></span>
+                  <span className="w-2.5 h-2.5 bg-primary/50 rounded-full col-span-2 mx-auto"></span>
+                </div>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold text-gray-900">Dusun</span>
-                <span className="text-xs text-gray-500">Topo Indah</span>
+                <span className="font-bold text-slate-900 tracking-tight text-lg">TOPO INDAH</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -80,18 +84,56 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {menuItems.map((item) => {
+            {/* Beranda */}
+            {menuItems.slice(0, 1).map((item) => {
               const isActive = item.href === "/admin" 
                 ? pathname === "/admin" 
                 : pathname === item.href || pathname.startsWith(`${item.href}/`);
-
               return (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton 
-                    isActive={isActive} 
-                    tooltip={item.title}
-                    render={<Link href={item.href} onClick={() => setOpenMobile(false)} />}
-                  >
+                  <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} onClick={() => setOpenMobile(false)} />}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarSeparator className="mx-4" />
+
+        <SidebarGroup>
+          <SidebarMenu>
+            {/* Konten */}
+            {menuItems.slice(1, 3).map((item) => {
+              const isActive = item.href === "/admin" 
+                ? pathname === "/admin" 
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} onClick={() => setOpenMobile(false)} />}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarSeparator className="mx-4" />
+
+        <SidebarGroup>
+          <SidebarMenu>
+            {/* Pelayanan/Informasi */}
+            {menuItems.slice(3, 5).map((item) => {
+              const isActive = item.href === "/admin" 
+                ? pathname === "/admin" 
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton isActive={isActive} tooltip={item.title} render={<Link href={item.href} onClick={() => setOpenMobile(false)} />}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -101,52 +143,6 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" />}>
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg bg-blue-100 text-blue-700">AD</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Admin Dusun</span>
-                  <span className="truncate text-xs text-muted-foreground">Perangkat</span>
-                </div>
-                <ChevronsUpDown className="ml-auto size-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg" side="top" align="end" sideOffset={4}>
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="p-0 font-normal">
-                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                      <Avatar className="h-8 w-8 rounded-lg">
-                        <AvatarFallback className="rounded-lg bg-blue-100 text-blue-700">AD</AvatarFallback>
-                      </Avatar>
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">Admin Dusun</span>
-                        <span className="truncate text-xs text-muted-foreground">Perangkat Desa</span>
-                      </div>
-                    </div>
-                  </DropdownMenuLabel>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem className="cursor-pointer" render={<Link href="/admin/pengaturan" />}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Pengaturan</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Keluar</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 }

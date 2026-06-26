@@ -48,8 +48,9 @@ export function DeleteGaleriButton({ id }: DeleteGaleriButtonProps) {
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger render={<Button size="icon" className="bg-red-500 hover:bg-red-600 text-white" disabled={isDeleting} />}>
-        <Trash2 className="h-4 w-4" />
+      <AlertDialogTrigger render={<Button variant="destructive" size="sm" className="h-8 px-2" disabled={isDeleting} />}>
+        <Trash2 className="h-4 w-4 mr-1" />
+        Hapus
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

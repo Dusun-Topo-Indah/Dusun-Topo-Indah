@@ -4,6 +4,7 @@ import { motion, useInView, animate } from "framer-motion";
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { FadeIn } from "@/components/ui/fade-in";
 
 function Counter({ from = 0, to, duration = 2 }: { from?: number; to: number; duration?: number }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
@@ -64,7 +65,7 @@ export function AboutSection() {
       />
       <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
         
-        <div className="mb-10 md:mb-14 flex flex-col md:flex-row justify-between items-start md:items-end">
+        <FadeIn direction="up" className="mb-10 md:mb-14 flex flex-col md:flex-row justify-between items-start md:items-end">
           <div className="inline-flex flex-col gap-3">
             <h2 className="text-slate-800 text-sm md:text-base font-bold tracking-[0.3em] uppercase">
               Tentang Dusun
@@ -74,7 +75,7 @@ export function AboutSection() {
           <Link href="/profil" className="group hidden md:inline-flex mt-6 md:mt-0 items-center text-primary font-bold hover:text-primary/80 transition-colors">
             Baca Selengkapnya <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
-        </div>
+        </FadeIn>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20" ref={ref}>
 
@@ -94,7 +95,7 @@ export function AboutSection() {
             </p>
           </div>
 
-          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-10 lg:border-l lg:border-slate-200 lg:pl-16">
+          <FadeIn direction="left" delay={0.4} className="lg:col-span-4 flex flex-col gap-6 lg:gap-10 lg:border-l lg:border-slate-200 lg:pl-16">
             <div className="flex flex-col border-y border-slate-200 py-6 lg:border-none lg:py-0">
               <div className="text-4xl md:text-6xl font-bold text-primary mb-2">
                 <Counter to={1250} />+
@@ -119,7 +120,7 @@ export function AboutSection() {
               </div>
               <div className="text-sm md:text-base font-medium text-slate-500 uppercase tracking-wide">Rukun Tetangga (RT)</div>
             </div>
-          </div>
+          </FadeIn>
 
         </div>
 

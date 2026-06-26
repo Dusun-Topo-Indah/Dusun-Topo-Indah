@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { FadeIn } from "@/components/ui/fade-in";
 
 const slides = [
   {
@@ -65,7 +66,7 @@ export function HeroBanner() {
         <div className="w-full max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:items-end justify-between gap-8 pointer-events-auto">
           
           {/* Teks Konten */}
-          <div className="w-full max-w-4xl relative min-h-[200px] md:min-h-[280px] flex items-end">
+          <FadeIn direction="up" className="w-full max-w-4xl relative min-h-[200px] md:min-h-[280px] flex items-end">
             {slides.map((slide, index) => (
               <div
                 key={`text-${slide.id}`}
@@ -87,10 +88,10 @@ export function HeroBanner() {
                 </a>
               </div>
             ))}
-          </div>
+          </FadeIn>
 
           {/* Pagination Indicators */}
-          <div className="flex items-center gap-3 shrink-0 mb-2">
+          <FadeIn direction="left" delay={0.4} className="flex items-center gap-3 shrink-0 mb-2">
             {slides.map((_, index) => (
               <button
                 key={index}
@@ -101,7 +102,7 @@ export function HeroBanner() {
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
-          </div>
+          </FadeIn>
 
         </div>
       </div>

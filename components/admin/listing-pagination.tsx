@@ -58,7 +58,9 @@ export function ListingPagination({
               onValueChange={onLimitChange}
             >
               <SelectTrigger className="h-9 w-[110px] bg-background">
-                <SelectValue placeholder="Limit" />
+                <span className="flex flex-1 text-left truncate">
+                  {currentLimit ? `${currentLimit} / hal` : "Limit"}
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {limitOptions.map((limit) => (

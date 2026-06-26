@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { FadeIn } from "@/components/ui/fade-in";
 import { Calendar, ChevronRight, ChevronLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 // Dummy data using local images to prevent next/image domain errors
 const DUMMY_NEWS = [
@@ -82,7 +83,7 @@ export function NewsSection() {
       <div className="w-full max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Header - Mengikuti style About Section */}
-        <div className="mb-10 md:mb-14 flex flex-col md:flex-row justify-between items-start md:items-end">
+        <FadeIn direction="up" className="mb-10 md:mb-14 flex flex-col md:flex-row justify-between items-start md:items-end">
           <div className="inline-flex flex-col gap-3">
             <h2 className="text-slate-800 text-sm md:text-base font-bold tracking-[0.3em] uppercase">
               Berita & Informasi
@@ -92,13 +93,13 @@ export function NewsSection() {
           <Link href="/berita" className="group hidden md:inline-flex mt-6 md:mt-0 items-center text-primary font-bold hover:text-primary/80 transition-colors">
             Lihat Semua Berita <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
-        </div>
+        </FadeIn>
 
         {/* Layout Grid Asimetris sesuai referensi */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           
           {/* KIRI: Featured News (Kotak, gambar full, overlay hitam di bawah) */}
-          <div className="lg:col-span-7 relative min-h-[400px] lg:h-auto w-full overflow-hidden group">
+          <FadeIn direction="up" delay={0.2} className="lg:col-span-7 relative min-h-[400px] lg:h-auto w-full overflow-hidden group">
             <AnimatePresence initial={false} mode="wait">
               <motion.div
                 key={activeIndex}
@@ -161,10 +162,10 @@ export function NewsSection() {
             >
               <ChevronRight className="w-6 h-6" />
             </button>
-          </div>
+          </FadeIn>
 
           {/* KANAN: List Berita (Tanpa border/shadow, clean list) */}
-          <div className="lg:col-span-5 flex flex-col gap-6 lg:pl-4">
+          <FadeIn direction="right" delay={0.4} className="lg:col-span-5 flex flex-col gap-6 lg:pl-4">
             {DUMMY_NEWS.map((news, idx) => {
               return (
                 <div 
@@ -206,7 +207,7 @@ export function NewsSection() {
                 </div>
               );
             })}
-          </div>
+          </FadeIn>
 
         </div>
 

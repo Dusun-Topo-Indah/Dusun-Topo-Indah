@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Beranda", href: "/" },
-  { label: "Profil", href: "#profil" },
+  { label: "Profil", href: "/profil" },
   { label: "Berita", href: "#berita" },
   { label: "Galeri", href: "#galeri" },
   { label: "Peta", href: "#peta" },
@@ -55,11 +55,14 @@ export function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
+  const isHomePage = pathname === "/";
+  const useDarkTheme = !isHomePage || isScrolled;
+
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b-[0.5px] ${
-          isScrolled
+          useDarkTheme
             ? "bg-white/90 backdrop-blur-md shadow-sm border-black/10"
             : "bg-transparent border-white/20"
         }`}
@@ -68,7 +71,7 @@ export function Navbar() {
           <Link
             href="/"
             className={`font-bold text-xl transition-colors duration-300 ${
-              isScrolled ? "text-[#0D0D0D]" : "text-white"
+              useDarkTheme ? "text-[#0D0D0D]" : "text-white"
             }`}
           >
             Dusun Topo Indah
@@ -83,7 +86,7 @@ export function Navbar() {
                   key={item.label}
                   href={item.href}
                   className={`relative text-sm font-medium transition-colors ${
-                    isScrolled ? "text-slate-700" : "text-white/90"
+                    useDarkTheme ? "text-slate-700" : "text-white/90"
                   } after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-full after:bg-current after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100 ${
                     isActive ? "after:origin-bottom-left after:scale-x-100" : "after:origin-bottom-right after:scale-x-0"
                   }`}
@@ -101,7 +104,7 @@ export function Navbar() {
               size="icon"
               onClick={() => setIsMobileMenuOpen(true)}
               className={`transition-colors ${
-                isScrolled ? "text-slate-900 hover:bg-slate-100" : "text-white hover:bg-white/20"
+                useDarkTheme ? "text-slate-900 hover:bg-slate-100" : "text-white hover:bg-white/20"
               }`}
             >
               <Menu className="h-6 w-6" />

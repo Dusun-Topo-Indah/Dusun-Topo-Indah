@@ -8,12 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Save, Loader2 } from "lucide-react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface PengaturanGaleriFormProps {
   globalConfig: Record<string, string>;
@@ -57,47 +56,51 @@ export function PengaturanGaleriForm({ globalConfig }: PengaturanGaleriFormProps
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl pb-20 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Header Galeri</CardTitle>
-          <CardDescription>
-            Teks yang akan muncul di bagian paling atas halaman Galeri publik.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="headerTitle">Judul Header</Label>
-            <Input
-              id="headerTitle"
-              value={headerTitle}
-              onChange={(e) => setHeaderTitle(e.target.value)}
-              placeholder="Contoh: Galeri & Dokumentasi"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="headerDesc">Deskripsi Header</Label>
-            <Textarea
-              id="headerDesc"
-              value={headerDesc}
-              onChange={(e) => setHeaderDesc(e.target.value)}
-              placeholder="Contoh: Koleksi foto dan dokumentasi visual..."
-              rows={3}
-              required
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <Accordion multiple defaultValue={["header"]} className="w-full space-y-4">
+        <AccordionItem value="header" className="border-b pb-4">
+          <AccordionTrigger className="text-xl font-bold hover:no-underline">
+            Header Galeri
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 pb-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="headerTitle" className="text-sm font-semibold">Judul Header</Label>
+              <Input
+                id="headerTitle"
+                value={headerTitle}
+                onChange={(e) => setHeaderTitle(e.target.value)}
+                placeholder="Contoh: Galeri & Dokumentasi"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="headerDesc" className="text-sm font-semibold">Deskripsi Header</Label>
+              <Textarea
+                id="headerDesc"
+                value={headerDesc}
+                onChange={(e) => setHeaderDesc(e.target.value)}
+                placeholder="Contoh: Koleksi foto dan dokumentasi visual..."
+                rows={3}
+                required
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
-      <div className="flex justify-end pt-4">
-        <Button type="submit" disabled={isSubmitting} className="min-w-32">
+      <div className="pt-8">
+        <Button type="submit" disabled={isSubmitting} className="w-full px-8 text-base h-14">
           {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Menyimpan Perubahan...
+            </>
           ) : (
-            <Save className="mr-2 h-4 w-4" />
+            <>
+              <Save className="mr-2 h-5 w-5" />
+              Simpan Pengaturan
+            </>
           )}
-          Simpan Perubahan
         </Button>
       </div>
     </form>

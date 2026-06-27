@@ -5,6 +5,7 @@ export interface BeritaRow {
   ringkasan: string;
   isi_berita: string;
   url_foto: string;
+  kategori: string;
 }
 
 export interface GaleriRow {

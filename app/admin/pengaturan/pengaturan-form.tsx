@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, ShieldCheck, User, KeyRound } from "lucide-react";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { toast } from "sonner";
 
 interface PengaturanFormProps {
@@ -113,129 +118,135 @@ export function PengaturanForm({ initialUsername }: PengaturanFormProps) {
   };
 
   return (
-    <div className="max-w-3xl space-y-12 pb-20">
-      {/* SECTION 1: UPDATE USERNAME */}
-      <form onSubmit={handleUsernameSubmit} className="space-y-6">
-        <div className="border-b pb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
-            <User className="h-5 w-5 text-primary" />
+    <div className="max-w-3xl pb-20">
+      <Accordion multiple defaultValue={["username", "password"]} className="w-full space-y-4">
+        
+        {/* SECTION 1: UPDATE USERNAME */}
+        <AccordionItem value="username" className="border-b pb-4">
+          <AccordionTrigger className="text-xl font-bold hover:no-underline">
             Perbarui Username
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            Ganti username yang digunakan untuk login. Anda tetap perlu mengkonfirmasi menggunakan password saat ini.
-          </p>
-        </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 pb-6">
+            <form onSubmit={handleUsernameSubmit} className="space-y-6">
+              <p className="text-sm text-muted-foreground mb-2">
+                Ganti username yang digunakan untuk login. Anda tetap perlu mengkonfirmasi menggunakan password saat ini.
+              </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-          <div className="space-y-2 md:col-span-2">
-            <label htmlFor="newUsername" className="text-sm font-semibold flex items-center gap-2">
-              Username Baru <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="newUsername"
-              name="newUsername"
-              placeholder="Masukkan username baru"
-              value={usernameData.newUsername}
-              onChange={handleUsernameChange}
-              required
-              disabled={isUsernameLoading}
-            />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="newUsername" className="text-sm font-semibold flex items-center gap-2">
+                    Username Baru <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="newUsername"
+                    name="newUsername"
+                    placeholder="Masukkan username baru"
+                    value={usernameData.newUsername}
+                    onChange={handleUsernameChange}
+                    required
+                    disabled={isUsernameLoading}
+                  />
+                </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <label htmlFor="oldPasswordUsername" className="text-sm font-semibold">
-              Password Saat Ini <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="oldPasswordUsername"
-              name="oldPassword"
-              type="password"
-              placeholder="Masukkan password untuk konfirmasi"
-              value={usernameData.oldPassword}
-              onChange={handleUsernameChange}
-              required
-              disabled={isUsernameLoading}
-            />
-          </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="oldPasswordUsername" className="text-sm font-semibold">
+                    Password Saat Ini <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="oldPasswordUsername"
+                    name="oldPassword"
+                    type="password"
+                    placeholder="Masukkan password untuk konfirmasi"
+                    value={usernameData.oldPassword}
+                    onChange={handleUsernameChange}
+                    required
+                    disabled={isUsernameLoading}
+                  />
+                </div>
 
-          <div className="pt-4 flex md:col-span-2">
-            <Button type="submit" disabled={isUsernameLoading} className="w-full text-base h-14">
-              <Save className="mr-2 h-5 w-5" />
-              {isUsernameLoading ? "Menyimpan..." : "Simpan Username"}
-            </Button>
-          </div>
-        </div>
-      </form>
+                <div className="pt-4 flex md:col-span-2">
+                  <Button type="submit" disabled={isUsernameLoading} className="w-full px-8 text-base h-14">
+                    <Save className="mr-2 h-5 w-5" />
+                    {isUsernameLoading ? "Menyimpan..." : "Simpan Username"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* SECTION 2: UPDATE PASSWORD */}
-      <form onSubmit={handlePasswordSubmit} className="space-y-6 pt-6">
-        <div className="border-b pb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
-            <KeyRound className="h-5 w-5 text-primary" />
+        {/* SECTION 2: UPDATE PASSWORD */}
+        <AccordionItem value="password" className="border-b pb-4">
+          <AccordionTrigger className="text-xl font-bold hover:no-underline">
             Perbarui Password
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            Ganti password akun Anda untuk menjaga keamanan sistem.
-          </p>
-        </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 pb-6">
+            <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <p className="text-sm text-muted-foreground mb-2">
+                Ganti password akun Anda untuk menjaga keamanan sistem.
+              </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-          <div className="space-y-2 md:col-span-2">
-            <label htmlFor="oldPasswordPass" className="text-sm font-semibold">
-              Password Lama <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="oldPasswordPass"
-              name="oldPassword"
-              type="password"
-              placeholder="Masukkan password saat ini"
-              value={passwordData.oldPassword}
-              onChange={handlePasswordChange}
-              required
-              disabled={isPasswordLoading}
-            />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="oldPasswordPass" className="text-sm font-semibold">
+                    Password Lama <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="oldPasswordPass"
+                    name="oldPassword"
+                    type="password"
+                    placeholder="Masukkan password saat ini"
+                    value={passwordData.oldPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    disabled={isPasswordLoading}
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <label htmlFor="newPassword" className="text-sm font-semibold">
-              Password Baru <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="newPassword"
-              name="newPassword"
-              type="password"
-              placeholder="Minimal 6 karakter"
-              value={passwordData.newPassword}
-              onChange={handlePasswordChange}
-              required
-              disabled={isPasswordLoading}
-            />
-          </div>
+                <div className="space-y-2">
+                  <label htmlFor="newPassword" className="text-sm font-semibold">
+                    Password Baru <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    placeholder="Minimal 6 karakter"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    disabled={isPasswordLoading}
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="text-sm font-semibold">
-              Konfirmasi Password <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="Ulangi password baru"
-              value={passwordData.confirmPassword}
-              onChange={handlePasswordChange}
-              required
-              disabled={isPasswordLoading}
-            />
-          </div>
+                <div className="space-y-2">
+                  <label htmlFor="confirmPassword" className="text-sm font-semibold">
+                    Konfirmasi Password <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Ulangi password baru"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    disabled={isPasswordLoading}
+                  />
+                </div>
 
-          <div className="pt-4 flex md:col-span-2">
-            <Button type="submit" disabled={isPasswordLoading} className="w-full text-base h-14">
-              <Save className="mr-2 h-5 w-5" />
-              {isPasswordLoading ? "Menyimpan..." : "Simpan Password"}
-            </Button>
-          </div>
-        </div>
-      </form>
+                <div className="pt-4 flex md:col-span-2">
+                  <Button type="submit" disabled={isPasswordLoading} className="w-full px-8 text-base h-14">
+                    <Save className="mr-2 h-5 w-5" />
+                    {isPasswordLoading ? "Menyimpan..." : "Simpan Password"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </AccordionContent>
+        </AccordionItem>
+
+      </Accordion>
     </div>
   );
 }

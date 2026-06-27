@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import dynamic from "next/dynamic";
 import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
-import { ImagePlus, Loader2, FileText, Send, Save } from "lucide-react";
+import { FileText, ImagePlus, Loader2, Save, Send, Check, ChevronsUpDown, Plus } from "lucide-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 import type { BeritaRow } from "@/types";
 
@@ -20,11 +23,17 @@ const RichTextEditor = dynamic(
 
 interface BeritaFormProps {
   initialData?: BeritaRow;
+  existingCategories: string[];
 }
 
-export function BeritaForm({ initialData }: BeritaFormProps) {
+export function BeritaForm({ initialData, existingCategories }: BeritaFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [comboboxOpen, setComboboxOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [kategori, setKategori] = useState(initialData?.kategori || "");
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const allCategories = Array.from(new Set([...existingCategories, ...customCategories]));
 
   const [judul, setJudul] = useState(initialData?.judul || "");
   const [ringkasan, setRingkasan] = useState(initialData?.ringkasan || "");
@@ -59,8 +68,8 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!judul || !isiBerita) {
-      alert("Judul dan isi berita wajib diisi.");
+    if (!judul || !isiBerita || !kategori) {
+      alert("Judul, isi berita, dan kategori wajib diisi.");
       return;
     }
 
@@ -84,6 +93,7 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
           ringkasan,
           isi_berita: isiBerita,
           url_foto: urlFoto,
+          kategori: kategori.trim(),
         }),
       });
 
@@ -126,6 +136,71 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
           />
         </div>
 
+        {/* Kategori */}
+        <div className="space-y-2 md:col-span-2">
+          <Label className="text-sm font-semibold">
+            Kategori <span className="text-red-500 ml-0.5">*</span>
+          </Label>
+          <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+            <PopoverTrigger
+              render={
+                <Button type="button" variant="outline" role="combobox" aria-expanded={comboboxOpen} className="w-full justify-between h-11 font-normal bg-background" />
+              }
+            >
+              {kategori ? kategori : "Pilih atau ketik kategori..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </PopoverTrigger>
+            <PopoverContent className="w-(--anchor-width) p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Cari kategori..." value={search} onValueChange={(val) => setSearch(val.toUpperCase())} />
+                <CommandList>
+                  <CommandEmpty>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start text-sm"
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        const newCat = search.trim().toUpperCase();
+                        if (!customCategories.includes(newCat) && !existingCategories.includes(newCat)) {
+                          setCustomCategories([...customCategories, newCat]);
+                        }
+                        setKategori(newCat);
+                        setComboboxOpen(false);
+                        setSearch("");
+                      }}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Buat &quot;{search.trim().toUpperCase()}&quot;
+                    </Button>
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {allCategories.map((cat) => (
+                      <CommandItem
+                        key={cat}
+                        value={cat}
+                        onSelect={() => {
+                          setKategori(kategori === cat ? "" : cat);
+                          setComboboxOpen(false);
+                          setSearch("");
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            kategori.toLowerCase() === cat.toLowerCase() ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {cat}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+
         {/* Ringkasan Singkat */}
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="ringkasan" className="text-sm font-semibold">Ringkasan Singkat</Label>
@@ -140,15 +215,6 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
           <p className="text-[11px] text-muted-foreground mt-1">Maksimal 150 karakter direkomendasikan.</p>
         </div>
 
-        {/* Naskah Berita */}
-        <div className="space-y-2 md:col-span-2">
-          <Label className="text-sm font-semibold">
-            Naskah Berita <span className="text-red-500 ml-0.5">*</span>
-          </Label>
-          <div className="border border-input rounded-md overflow-hidden hover:border-slate-400/80 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
-            <RichTextEditor value={isiBerita} onChange={setIsiBerita} />
-          </div>
-        </div>
 
         {/* Foto Kover */}
         <div className="space-y-2 md:col-span-2">
@@ -204,6 +270,16 @@ export function BeritaForm({ initialData }: BeritaFormProps) {
           </div>
         </div>
 
+
+        {/* Naskah Berita */}
+        <div className="space-y-2 md:col-span-2">
+          <Label className="text-sm font-semibold">
+            Naskah Berita <span className="text-red-500 ml-0.5">*</span>
+          </Label>
+          <div className="border border-input rounded-md overflow-hidden hover:border-slate-400/80 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
+            <RichTextEditor value={isiBerita} onChange={setIsiBerita} />
+          </div>
+        </div>
       </div>
 
       <div className="pt-4 flex md:col-span-2">

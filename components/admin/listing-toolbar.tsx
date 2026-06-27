@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, X, Filter } from "lucide-react";
+import { Search, X, Filter, LayoutGrid, List as ListIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +10,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import type { ListingQueryParams } from "@/lib/listing";
 import { buildListingQueryParams, createListingSearchParams } from "@/lib/listing";
@@ -27,6 +26,7 @@ interface ListingToolbarProps {
   filterOptions: ListingFilterOption[];
   currentLimit: number;
   currentPage: number;
+  currentView?: "list" | "grid";
 }
 
 export function ListingToolbar({
@@ -36,6 +36,7 @@ export function ListingToolbar({
   filterOptions,
   currentLimit,
   currentPage,
+  currentView = "list",
 }: ListingToolbarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,8 +48,9 @@ export function ListingToolbar({
       filter: activeFilter,
       page: currentPage,
       limit: currentLimit,
+      view: currentView,
     }),
-    [activeFilter, currentLimit, currentPage, searchValue]
+    [activeFilter, currentLimit, currentPage, searchValue, currentView]
   );
 
   useEffect(() => {
@@ -82,9 +84,9 @@ export function ListingToolbar({
   };
 
   return (
-    <div className="flex flex-row items-center gap-3 rounded-lg w-full">
-      <div className="flex flex-1 items-center gap-2">
-        <div className="relative w-full max-w-md">
+    <div className="flex flex-col md:flex-row items-center gap-3 rounded-lg w-full">
+      <div className="flex w-full md:flex-1 items-center gap-2">
+        <div className="relative w-full md:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             value={draftSearch}
@@ -107,14 +109,14 @@ export function ListingToolbar({
         )}
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex w-full md:w-auto items-center gap-2 shrink-0">
         <Select 
           value={activeFilter} 
           onValueChange={(value) => {
             if (value !== null) navigate({ filter: value, page: 1 });
           }}
         >
-          <SelectTrigger className="h-14 w-full tablet:w-[220px] bg-background shadow-sm border-muted-foreground/20 text-base">
+          <SelectTrigger className="h-14 w-full md:w-[220px] bg-background shadow-sm border-muted-foreground/20 text-base">
             <div className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
               <span className="flex flex-1 text-left truncate">
@@ -130,6 +132,35 @@ export function ListingToolbar({
             ))}
           </SelectContent>
         </Select>
+
+        <div className="flex bg-background shadow-sm border border-muted-foreground/20 rounded-md p-1 h-14 items-center shrink-0">
+          <Button
+            type="button"
+            variant={currentView === "grid" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => {
+              document.cookie = "admin_view_preference=grid; path=/; max-age=31536000";
+              navigate({ view: "grid" });
+            }}
+            className={`h-full px-3 ${currentView === "grid" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
+            title="Tampilan Grid"
+          >
+            <LayoutGrid className="h-5 w-5" />
+          </Button>
+          <Button
+            type="button"
+            variant={currentView === "list" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => {
+              document.cookie = "admin_view_preference=list; path=/; max-age=31536000";
+              navigate({ view: "list" });
+            }}
+            className={`h-full px-3 ${currentView === "list" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
+            title="Tampilan List"
+          >
+            <ListIcon className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

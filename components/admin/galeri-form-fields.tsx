@@ -236,7 +236,7 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
             </PopoverTrigger>
             <PopoverContent className="w-(--anchor-width) p-0" align="start">
               <Command>
-                <CommandInput placeholder="Cari kategori..." value={search} onValueChange={setSearch} />
+                <CommandInput placeholder="Cari kategori..." value={search} onValueChange={(val) => setSearch(val.toUpperCase())} />
                 <CommandList>
                   <CommandEmpty>
                     <Button
@@ -245,14 +245,17 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
                       className="w-full justify-start text-sm"
                       onPointerDown={(event) => {
                         event.preventDefault();
-                        setCustomCategories([...customCategories, search]);
-                        setKategori(search);
+                        const newCat = search.trim().toUpperCase();
+                        if (!customCategories.includes(newCat) && !existingCategories.includes(newCat)) {
+                          setCustomCategories([...customCategories, newCat]);
+                        }
+                        setKategori(newCat);
                         setComboboxOpen(false);
                         setSearch("");
                       }}
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      Buat &quot;{search}&quot;
+                      Buat &quot;{search.trim().toUpperCase()}&quot;
                     </Button>
                   </CommandEmpty>
                   <CommandGroup>
@@ -260,8 +263,8 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
                       <CommandItem
                         key={cat}
                         value={cat}
-                        onSelect={(currentValue) => {
-                          setKategori(currentValue === kategori ? "" : currentValue);
+                        onSelect={() => {
+                          setKategori(kategori === cat ? "" : cat);
                           setComboboxOpen(false);
                           setSearch("");
                         }}

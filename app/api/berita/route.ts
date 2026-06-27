@@ -14,11 +14,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { judul, ringkasan, isi_berita, url_foto } = body;
+    const { judul, ringkasan, isi_berita, url_foto, kategori } = body;
 
-    if (!judul || !isi_berita) {
+    if (!judul || !isi_berita || !kategori) {
       return NextResponse.json(
-        { success: false, message: "Judul dan isi berita wajib diisi." },
+        { success: false, message: "Judul, isi berita, dan kategori wajib diisi." },
         { status: 400 }
       );
     }
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       ringkasan: ringkasan || "",
       isi_berita: cleanHtml,
       url_foto: url_foto || "",
+      kategori: kategori || "",
     });
     revalidateTag("berita", "max");
 

@@ -17,7 +17,7 @@ export const columns: ColumnDef<BeritaRow>[] = [
     cell: ({ row }) => {
       const url = row.original.url_foto
       return url ? (
-        <div className="relative h-12 w-16 rounded overflow-hidden shrink-0 border bg-muted">
+        <div className="relative h-12 w-16 rounded overflow-hidden shrink-0 bg-muted">
           <Image src={url} alt="Cover" fill className="object-cover" sizes="64px" />
         </div>
       ) : (
@@ -74,7 +74,12 @@ export const columns: ColumnDef<BeritaRow>[] = [
             <Pencil className="h-4 w-4 mr-1" />
             Edit
           </Link>
-          <DeleteBeritaButton id={berita.id} judul={berita.judul} />
+          <DeleteBeritaButton 
+            id={berita.id} 
+            judul={berita.judul} 
+            triggerVariant="ghost"
+            triggerClassName="h-8 px-2 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white"
+          />
         </div>
       )
     },

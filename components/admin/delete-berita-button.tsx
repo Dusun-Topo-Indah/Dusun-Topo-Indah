@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,13 +11,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface DeleteBeritaButtonProps {
   id: string;
   judul: string;
+  triggerClassName?: string;
+  triggerVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  showText?: boolean;
 }
 
-export function DeleteBeritaButton({ id, judul }: DeleteBeritaButtonProps) {
+export function DeleteBeritaButton({ id, judul, triggerClassName, triggerVariant = "destructive", showText = true }: DeleteBeritaButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
@@ -49,9 +52,9 @@ export function DeleteBeritaButton({ id, judul }: DeleteBeritaButtonProps) {
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger render={<Button variant="destructive" size="sm" className="h-8 px-2" disabled={isDeleting} />}>
-        <Trash2 className="h-4 w-4 mr-1" />
-        Hapus
+      <AlertDialogTrigger render={<Button variant={triggerVariant} size="sm" className={triggerClassName || "h-8 px-2"} disabled={isDeleting} />}>
+        <Trash2 className={`h-4 w-4 ${showText ? "mr-2" : ""}`} />
+        {showText && "Hapus"}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

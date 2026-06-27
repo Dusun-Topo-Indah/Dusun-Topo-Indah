@@ -6,7 +6,7 @@ import type { GaleriRow } from "@/types"
 import Image from "next/image"
 import Link from "next/link"
 import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { DeleteGaleriButton } from "@/components/admin/delete-galeri-button"
 import { DataTable } from "@/components/admin/data-table"
 import { Badge } from "@/components/ui/badge"
@@ -18,7 +18,7 @@ export const columns: ColumnDef<GaleriRow>[] = [
     cell: ({ row }) => {
       const url = row.original.url_foto
       return url ? (
-        <div className="relative h-12 w-16 rounded overflow-hidden shrink-0 border bg-muted">
+        <div className="relative h-12 w-16 rounded overflow-hidden shrink-0 bg-muted">
           <Image src={url} alt="Foto Galeri" fill className="object-cover" sizes="64px" />
         </div>
       ) : (
@@ -75,7 +75,11 @@ export const columns: ColumnDef<GaleriRow>[] = [
             <Pencil className="h-4 w-4 mr-1" />
             Edit
           </Link>
-          <DeleteGaleriButton id={galeri.id} />
+          <DeleteGaleriButton 
+            id={galeri.id} 
+            triggerVariant="ghost"
+            triggerClassName="h-8 px-2 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white"
+          />
         </div>
       )
     },

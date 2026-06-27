@@ -38,7 +38,7 @@ export async function getBeritaList(): Promise<BeritaRow[]> {
   const sheets = await getGoogleSheetsInstance();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:F",
+    range: "Berita_Dusun!A:G",
   });
 
   const rows = res.data.values;
@@ -55,16 +55,17 @@ export async function getBeritaList(): Promise<BeritaRow[]> {
     ringkasan: row[3] || "",
     isi_berita: row[4] || "",
     url_foto: row[5] || "",
+    kategori: row[6] || "",
   })).reverse(); 
 }
 export async function appendBerita(data: BeritaRow): Promise<void> {
   const sheets = await getGoogleSheetsInstance();
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:F",
+    range: "Berita_Dusun!A:G",
     valueInputOption: "USER_ENTERED",
     requestBody: {
-      values: [[data.id, data.judul, data.tanggal, data.ringkasan, data.isi_berita, data.url_foto]],
+      values: [[data.id, data.judul, data.tanggal, data.ringkasan, data.isi_berita, data.url_foto, data.kategori]],
     },
   });
 }
@@ -115,7 +116,7 @@ export async function updateBeritaById(id: string, updatedData: Partial<BeritaRo
   
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:F",
+    range: "Berita_Dusun!A:G",
   });
   const rows = res.data.values;
   if (!rows) return false;
@@ -132,13 +133,14 @@ export async function updateBeritaById(id: string, updatedData: Partial<BeritaRo
     updatedData.ringkasan !== undefined ? updatedData.ringkasan : (existingRow[3] || ""),
     updatedData.isi_berita !== undefined ? updatedData.isi_berita : (existingRow[4] || ""),
     updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[5] || ""),
+    updatedData.kategori !== undefined ? updatedData.kategori : (existingRow[6] || ""),
   ];
 
   const sheetRowIndex = rowIndex + 1;
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `Berita_Dusun!A${sheetRowIndex}:F${sheetRowIndex}`,
+    range: `Berita_Dusun!A${sheetRowIndex}:G${sheetRowIndex}`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [newRow],
@@ -239,18 +241,35 @@ interface GaleriListingArgs {
 export async function getBeritaListing(args: BeritaListingArgs) {
   const beritaList = await getBeritaList();
   const query = normalizeText(args.q);
+  const categoryFilter = normalizeText(args.filter);
+  const categories = Array.from(new Set(beritaList.map((item) => item.kategori).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+
   const filtered = beritaList.filter((item) => {
-    const searchable = normalizeText(`${item.judul} ${item.ringkasan} ${stripHtml(item.isi_berita)}`);
+    const searchable = normalizeText(`${item.judul} ${item.ringkasan} ${stripHtml(item.isi_berita)} ${item.kategori}`);
     const matchesSearch = query === "" || searchable.includes(query);
     const hasCover = Boolean(item.url_foto);
-    const matchesFilter =
-      args.filter === "all" ||
-      (args.filter === "with-cover" && hasCover) ||
-      (args.filter === "without-cover" && !hasCover);
+    const isSpecialFilter = args.filter === "all" || args.filter === "with-cover" || args.filter === "without-cover";
+    
+    let matchesFilter = true;
+    if (isSpecialFilter) {
+      matchesFilter = 
+        args.filter === "all" ||
+        (args.filter === "with-cover" && hasCover) ||
+        (args.filter === "without-cover" && !hasCover);
+    } else {
+      matchesFilter = normalizeText(item.kategori) === categoryFilter;
+    }
+    
     return matchesSearch && matchesFilter;
   });
 
-  return paginateItems(filtered, args.page, args.limit);
+  const paginated = paginateItems(filtered, args.page, args.limit);
+  return {
+    ...paginated,
+    categories,
+  };
 }
 
 export async function getGaleriListing(args: GaleriListingArgs) {
@@ -311,6 +330,73 @@ export async function deleteGaleriById(id: string): Promise<boolean> {
           },
         },
       ],
+    },
+  });
+
+  return true;
+}
+
+export async function getGlobalConfig(): Promise<Record<string, string>> {
+  "use cache";
+  cacheTag("global-config");
+  cacheLife("hours");
+  
+  const sheets = await getGoogleSheetsInstance();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Global_Config!A:B",
+  });
+
+  const rows = res.data.values;
+  if (!rows || rows.length === 0) return {};
+  
+  const isHeader = rows[0][0]?.toLowerCase() === "key" || rows[0][1]?.toLowerCase() === "value";
+  const dataRows = isHeader ? rows.slice(1) : rows;
+
+  const config: Record<string, string> = {};
+  for (const row of dataRows) {
+    if (row[0]) {
+      config[row[0]] = row[1] || "";
+    }
+  }
+  
+  return config;
+}
+
+export async function updateGlobalConfig(updates: Record<string, string>): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+  
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Global_Config!A:B",
+  });
+  
+  const rows = res.data.values || [];
+  
+  const currentKeys = new Map<string, number>();
+  rows.forEach((row, index) => {
+    if (row[0]) currentKeys.set(row[0], index);
+  });
+  
+  for (const [key, value] of Object.entries(updates)) {
+    if (currentKeys.has(key)) {
+      const rowIndex = currentKeys.get(key)!;
+      // Ensure the row has enough columns
+      while (rows[rowIndex].length < 2) {
+        rows[rowIndex].push("");
+      }
+      rows[rowIndex][1] = value;
+    } else {
+      rows.push([key, value]);
+    }
+  }
+  
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Global_Config!A:B",
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: rows,
     },
   });
 

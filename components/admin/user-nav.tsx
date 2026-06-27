@@ -1,9 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 export function UserNav() {
   const router = useRouter();
@@ -31,17 +31,22 @@ export function UserNav() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" className="relative h-10 w-10 rounded-full" />}>
-        <Avatar className="h-10 w-10">
-          <AvatarFallback className="bg-primary/10 text-primary font-bold">AD</AvatarFallback>
+      <DropdownMenuTrigger render={<Button variant="ghost" className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 h-auto hover:bg-slate-100 border border-transparent hover:border-slate-200" />}>
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="bg-primary text-white flex items-center justify-center">
+            <User className="h-4 w-4" />
+          </AvatarFallback>
         </Avatar>
+        <div className="flex flex-col items-start text-left">
+          <span className="text-sm font-semibold leading-none">Admin Dusun</span>
+        </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
+      <DropdownMenuContent className="w-56 p-2" align="end">
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">Admin Dusun</p>
-              <p className="text-xs leading-none text-muted-foreground">
+          <DropdownMenuLabel className="font-normal p-2">
+            <div className="flex flex-col space-y-1.5">
+              <p className="text-sm font-bold leading-none text-slate-800">Admin Dusun</p>
+              <p className="text-xs leading-none text-slate-500">
                 Perangkat Desa
               </p>
             </div>

@@ -26,11 +26,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { judul, ringkasan, isi_berita, url_foto } = body;
+    const { judul, ringkasan, isi_berita, url_foto, kategori } = body;
 
-    if (!judul || !isi_berita) {
+    if (!judul || !isi_berita || !kategori) {
       return NextResponse.json(
-        { success: false, message: "Judul dan isi berita wajib diisi." },
+        { success: false, message: "Judul, isi berita, dan kategori wajib diisi." },
         { status: 400 }
       );
     }
@@ -59,6 +59,7 @@ export async function PUT(
       ringkasan,
       isi_berita: cleanHtml,
       url_foto,
+      kategori,
     });
 
     if (!success) {

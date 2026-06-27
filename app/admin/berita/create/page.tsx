@@ -1,22 +1,25 @@
 import { BeritaForm } from "@/components/admin/berita-form";
 import { SetBreadcrumb } from "@/components/admin/breadcrumb-context";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { getBeritaList } from "@/lib/google-sheets";
 
 export const metadata = {
   title: "Tulis Berita Baru — Dusun Topo Indah",
 };
 
-export default function CreateBeritaPage() {
+export default async function CreateBeritaPage() {
+  const beritaList = await getBeritaList();
+  const existingCategories = Array.from(new Set(beritaList.map((item) => item.kategori).filter(Boolean)));
+
   return (
     <div className="flex flex-col gap-6">
       <SetBreadcrumb label="Tulis Berita Baru" />
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Tulis Berita Baru</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Buat artikel untuk mempublikasikan kegiatan atau pengumuman dusun.
-        </p>
-      </div>
+      <DashboardHeader 
+        title="Tulis Berita Baru" 
+        description="Buat artikel untuk mempublikasikan kegiatan atau pengumuman dusun."
+      />
 
-      <BeritaForm />
+      <BeritaForm existingCategories={existingCategories} />
     </div>
   );
 }

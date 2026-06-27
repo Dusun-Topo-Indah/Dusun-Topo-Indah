@@ -1,9 +1,11 @@
 import { getGaleriListing } from "@/lib/google-sheets";
+import { cookies } from "next/headers";
 
 import Link from "next/link";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { EmptyState } from "@/components/admin/empty-state";
 import { GaleriTable } from "./galeri-table";
+import { GaleriGrid } from "./galeri-grid";
 import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingToolbar } from "@/components/admin/listing-toolbar";
@@ -22,6 +24,11 @@ export default async function AdminGaleriPage({ searchParams }: GaleriPageProps)
   const resolvedSearchParams = (await searchParams) ?? {};
   const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
   const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+  
+  const cookieStore = await cookies();
+  const viewPref = cookieStore.get("admin_view_preference")?.value;
+  const view = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : (viewPref === "grid" || viewPref === "list" ? viewPref : "list");
+  
   const page = toPositiveInteger(
     typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : undefined,
     1
@@ -60,19 +67,34 @@ export default async function AdminGaleriPage({ searchParams }: GaleriPageProps)
         ]}
         currentLimit={limit}
         currentPage={galeriResult.page}
+        currentView={view as "list" | "grid"}
       />
 
-      <GaleriTable 
-        data={galeriResult.items} 
-        emptyState={
-          <EmptyState 
-            icon={ImageIcon}
-            title="Galeri Masih Kosong"
-            description="Belum ada foto di galeri. Klik &quot;Unggah Foto&quot; untuk menambahkan data."
-            className="border border-dashed rounded-lg bg-muted/20"
-          />
-        } 
-      />
+      {view === "grid" ? (
+        <GaleriGrid 
+          data={galeriResult.items} 
+          emptyState={
+            <EmptyState 
+              icon={ImageIcon}
+              title="Galeri Masih Kosong"
+              description="Belum ada foto di galeri. Klik &quot;Unggah Foto&quot; untuk menambahkan data."
+              className="border border-dashed rounded-lg bg-muted/20"
+            />
+          } 
+        />
+      ) : (
+        <GaleriTable 
+          data={galeriResult.items} 
+          emptyState={
+            <EmptyState 
+              icon={ImageIcon}
+              title="Galeri Masih Kosong"
+              description="Belum ada foto di galeri. Klik &quot;Unggah Foto&quot; untuk menambahkan data."
+              className="border border-dashed rounded-lg bg-muted/20"
+            />
+          } 
+        />
+      )}
 
       <ListingPagination
         pathname="/admin/galeri"

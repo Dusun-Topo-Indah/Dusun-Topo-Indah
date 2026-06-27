@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { PlusCircle, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBeritaListing } from "@/lib/google-sheets";
@@ -8,6 +9,7 @@ import { ListingToolbar } from "@/components/admin/listing-toolbar";
 import { ListingPagination } from "@/components/admin/listing-pagination";
 import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
 import { BeritaTable } from "./berita-table";
+import { BeritaGrid } from "./berita-grid";
 
 export const metadata = {
   title: "Manajemen Berita — SIG-Dusun Topo Indah",
@@ -21,6 +23,11 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
   const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+  
+  const cookieStore = await cookies();
+  const viewPref = cookieStore.get("admin_view_preference")?.value;
+  const view = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : (viewPref === "grid" || viewPref === "list" ? viewPref : "list");
+  
   const page = toPositiveInteger(
     typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : undefined,
     1
@@ -68,12 +75,20 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
         ]}
         currentLimit={limit}
         currentPage={beritaResult.page}
+        currentView={view as "list" | "grid"}
       />
 
-      <BeritaTable 
-        data={beritaResult.items} 
-        emptyState={emptyState} 
-      />
+      {view === "grid" ? (
+        <BeritaGrid 
+          data={beritaResult.items} 
+          emptyState={emptyState} 
+        />
+      ) : (
+        <BeritaTable 
+          data={beritaResult.items} 
+          emptyState={emptyState} 
+        />
+      )}
 
       <ListingPagination
         pathname="/admin/berita"

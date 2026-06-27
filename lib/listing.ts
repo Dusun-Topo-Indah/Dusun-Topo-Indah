@@ -47,6 +47,7 @@ export interface ListingQueryParams {
   filter: string;
   page: number;
   limit: number;
+  view?: string;
 }
 
 export function buildListingQueryParams(
@@ -58,6 +59,7 @@ export function buildListingQueryParams(
     filter: updates.filter ?? currentParams.filter,
     page: updates.page ?? currentParams.page,
     limit: updates.limit ?? currentParams.limit,
+    view: updates.view !== undefined ? updates.view : currentParams.view,
   };
 }
 
@@ -68,6 +70,7 @@ export function createListingSearchParams(params: ListingQueryParams): string {
   if (params.filter) searchParams.set("filter", params.filter);
   if (params.page > 1) searchParams.set("page", String(params.page));
   if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.view) searchParams.set("view", params.view);
 
   const serialized = searchParams.toString();
   return serialized ? `?${serialized}` : "";

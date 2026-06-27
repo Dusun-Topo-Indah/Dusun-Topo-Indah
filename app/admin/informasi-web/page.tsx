@@ -1,0 +1,22 @@
+import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { InformasiWebForm } from "@/components/admin/informasi-web-form";
+import { getGlobalConfig } from "@/lib/google-sheets";
+
+export const metadata = {
+  title: "Pengaturan Informasi Web — Admin Dusun Topo Indah",
+  description: "Kelola informasi kontak dan profil sosial media dusun.",
+};
+
+export default async function InformasiWebPage() {
+  const globalConfig = await getGlobalConfig();
+
+  return (
+    <div className="flex flex-col gap-6">
+      <DashboardHeader 
+        title="Informasi Web" 
+        description="Kelola informasi kontak dan tautan sosial media untuk ditampilkan di website."
+      />
+      <InformasiWebForm initialData={globalConfig} />
+    </div>
+  );
+}

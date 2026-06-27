@@ -5,6 +5,10 @@ export const metadata = {
   description: "Baca artikel dan pengumuman selengkapnya mengenai Dusun Topo Indah.",
 };
 
+export async function generateStaticParams() {
+  return [{ id: "1" }];
+}
+
 export default async function BeritaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 

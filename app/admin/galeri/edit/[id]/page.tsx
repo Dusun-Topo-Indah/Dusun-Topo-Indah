@@ -21,10 +21,10 @@ export default async function EditGaleriPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="flex flex-col gap-6">
-      <SetBreadcrumb label={galeri.caption || "Edit Galeri"} />
+      <SetBreadcrumb label={galeri.judul || "Edit Galeri"} />
       <DashboardHeader
         title="Edit Galeri"
-        description="Ubah kategori, caption, atau foto yang sudah diunggah."
+        description="Ubah kategori, judul, atau foto yang sudah diunggah."
       />
 
       <GaleriFormFields existingCategories={existingCategories} initialData={galeri} />

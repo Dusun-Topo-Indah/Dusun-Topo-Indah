@@ -5,7 +5,7 @@ import {
   Home,
   Image as ImageIcon,
   Newspaper,
-  PanelTop,
+  PanelTop
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -43,6 +43,9 @@ const menuGroups = [
     section: "Halaman Web",
     items: [
       { title: "Pengaturan Beranda", icon: PanelTop, href: "/admin/pengaturan-beranda" },
+      { title: "Pengaturan Profil", icon: PanelTop, href: "/admin/pengaturan-profil" },
+      { title: "Pengaturan Berita", icon: PanelTop, href: "/admin/pengaturan-berita" },
+      { title: "Pengaturan Galeri", icon: PanelTop, href: "/admin/pengaturan-galeri" },
     ],
   },
 ];

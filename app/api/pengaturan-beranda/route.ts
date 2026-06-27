@@ -18,6 +18,11 @@ export async function POST(request: Request) {
     }
     
     const allowedKeys = [
+      "beranda_hero_slides",
+      "beranda_tentang_narasi",
+      "beranda_tentang_penduduk",
+      "beranda_tentang_rw",
+      "beranda_tentang_rt",
       "beranda_galeri_ids",
     ];
     

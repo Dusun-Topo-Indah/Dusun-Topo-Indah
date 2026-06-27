@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { CopyrightYear } from "./copyright-year";
+import { getGlobalConfig } from "@/lib/google-sheets";
 
-export function Footer() {
+export async function Footer() {
+  const globalConfig = await getGlobalConfig();
+  
+  const deskripsi = globalConfig["info_deskripsi"] || "Mewujudkan dusun yang mandiri, sejahtera, dan berbudaya melalui transparansi informasi dan pelayanan digital terpadu untuk seluruh warga.";
+  const alamat = globalConfig["info_alamat"] || "Balai Dusun Topo Indah, Tidore Kepulauan, Maluku Utara";
+  const email = globalConfig["info_email"] || "halo@topoindah.desa.id";
+  const telepon = globalConfig["info_telepon"] || "+62 812 3456 7890";
+
   return (
     <footer className="relative bg-white pt-16 pb-8 lg:pt-20 border-t border-slate-200 overflow-hidden">
       {/* Background Pattern Grid */}
@@ -31,7 +39,7 @@ export function Footer() {
               <span className="text-xl font-bold tracking-tight text-slate-900">TOPO INDAH</span>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              Mewujudkan dusun yang mandiri, sejahtera, dan berbudaya melalui transparansi informasi dan pelayanan digital terpadu untuk seluruh warga.
+              {deskripsi}
             </p>
           </div>
 
@@ -52,15 +60,15 @@ export function Footer() {
             <ul className="space-y-4 text-sm font-medium text-slate-500">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <span className="leading-relaxed">Balai Dusun Topo Indah, Tidore Kepulauan, Maluku Utara</span>
+                <span className="leading-relaxed">{alamat}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span>halo@topoindah.desa.id</span>
+                <span>{email}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span>+62 812 3456 7890</span>
+                <span>{telepon}</span>
               </li>
             </ul>
           </div>

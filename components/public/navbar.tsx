@@ -63,7 +63,7 @@ export function Navbar() {
       <nav
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b-[0.5px] ${
           useDarkTheme
-            ? "bg-white/90 backdrop-blur-md shadow-sm border-black/10"
+            ? "bg-white/90 backdrop-blur-md border-black/10"
             : "bg-transparent border-white/20"
         }`}
       >
@@ -80,7 +80,7 @@ export function Navbar() {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.label}
@@ -139,7 +139,7 @@ export function Navbar() {
 
         <div className="flex flex-col px-6 py-8 gap-8 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.label}

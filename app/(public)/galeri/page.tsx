@@ -1,6 +1,6 @@
 import { BentoGallery, GalleryItem } from "@/components/public/bento-gallery";
 import { PageHeader } from "@/components/public/page-header";
-import { getGaleriList } from "@/lib/google-sheets";
+import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
 
 export const metadata = {
   title: "Galeri — Dusun Topo Indah",
@@ -9,6 +9,11 @@ export const metadata = {
 
 export default async function GaleriPage() {
   const galeriData = await getGaleriList();
+  const globalConfig = await getGlobalConfig();
+  
+  const headerTitle = globalConfig["galeri_header_title"] || "Galeri Dusun";
+  const headerDesc = globalConfig["galeri_header_desc"] || "Melihat lebih dekat keindahan alam, kegiatan masyarakat, dan momen-momen penting di Dusun Topo Indah.";
+
   
   let items: GalleryItem[] = [];
   
@@ -22,14 +27,14 @@ export default async function GaleriPage() {
     
     items = [...baseItems];
     let loopIndex = 0;
-    while (items.length < 21) {
+    while (items.length < 7) {
       items.push({
         ...baseItems[loopIndex % baseItems.length],
         id: `duplicate-${items.length}`,
       });
       loopIndex++;
     }
-    items = items.slice(0, 21);
+    items = items.slice(0, 7);
   } else {
     const fallbackImages = [
       "/images/hero_bg_desa.png",
@@ -37,7 +42,7 @@ export default async function GaleriPage() {
       "/images/hero_bg_desa_3.png"
     ];
     
-    items = Array.from({ length: 21 }).map((_, i) => ({
+    items = Array.from({ length: 7 }).map((_, i) => ({
       id: `dummy-${i}`,
       image: fallbackImages[i % fallbackImages.length],
       title: `Foto Galeri ${i + 1}`,
@@ -48,8 +53,8 @@ export default async function GaleriPage() {
   return (
     <main className="w-full bg-slate-50 min-h-screen pb-20">
       <PageHeader 
-        title="Galeri Dusun" 
-        description="Melihat lebih dekat keindahan alam, kegiatan masyarakat, dan momen-momen penting di Dusun Topo Indah."
+        title={headerTitle} 
+        description={headerDesc}
       />
       
       {/* Grid Container */}

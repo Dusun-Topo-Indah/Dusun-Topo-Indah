@@ -2,7 +2,8 @@ import { AboutSection } from "@/components/public/about-section";
 import { GaleriSection } from "@/components/public/galeri-section";
 import { HeroBanner } from "@/components/public/hero-banner";
 import { NewsSection } from "@/components/public/news-section";
-import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
+import { getGaleriList, getGlobalConfig, getBeritaList } from "@/lib/google-sheets";
+import { formatDate } from "@/lib/utils";
 
 export const metadata = {
   title: "Beranda — Dusun Topo Indah",
@@ -12,6 +13,7 @@ export const metadata = {
 export default async function BerandaPage() {
   const globalConfig = await getGlobalConfig();
   const galeriList = await getGaleriList();
+  const beritaList = await getBeritaList();
   
   const selectedGaleriIdsStr = globalConfig["beranda_galeri_ids"];
   let selectedGaleri = galeriList;
@@ -59,15 +61,43 @@ export default async function BerandaPage() {
       }))
     : fallbackSlides;
 
+  let parsedHeroSlides = undefined;
+  if (globalConfig["beranda_hero_slides"]) {
+    try {
+      parsedHeroSlides = JSON.parse(globalConfig["beranda_hero_slides"]);
+    } catch (e) {}
+  }
+
+  const parseStat = (val: string | undefined) => {
+    if (!val) return undefined;
+    const parsed = parseInt(val.trim(), 10);
+    return isNaN(parsed) ? undefined : parsed;
+  };
+
+  const totalPenduduk = parseStat(globalConfig["beranda_tentang_penduduk"]);
+  const totalRw = parseStat(globalConfig["beranda_tentang_rw"]);
+  const totalRt = parseStat(globalConfig["beranda_tentang_rt"]);
+  const narasi = globalConfig["beranda_tentang_narasi"];
+
   return (
     <div className="flex flex-col w-full">
-      <HeroBanner />
+      <HeroBanner initialSlides={parsedHeroSlides} />
       {/* About Section */}
-      <AboutSection />
+      <AboutSection 
+        narasi={narasi} 
+        totalPenduduk={totalPenduduk} 
+        totalRw={totalRw} 
+        totalRt={totalRt} 
+      />
       {/* Galeri Section */}
       <GaleriSection initialSlides={galeriSlides} />
       {/* News Section */}
-      <NewsSection />
+      <NewsSection 
+        initialNews={beritaList.slice(0, 4).map(b => ({
+          ...b,
+          tanggal: formatDate(b.tanggal)
+        }))} 
+      />
     </div>
   );
 }

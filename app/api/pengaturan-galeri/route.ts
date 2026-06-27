@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { verifyAdminSession } from "@/lib/auth";
 import { updateGlobalConfig } from "@/lib/google-sheets";
 import { revalidateTag } from "next/cache";
-import { verifyAdminSession } from "@/lib/auth";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -14,17 +14,12 @@ export async function POST(request: Request) {
     const data = await request.json();
     
     if (typeof data !== "object" || data === null) {
-      return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
+      return NextResponse.json({ error: "Format data tidak valid" }, { status: 400 });
     }
     
     const allowedKeys = [
-      "info_deskripsi",
-      "info_alamat",
-      "info_email",
-      "info_telepon",
-      "info_facebook",
-      "info_instagram",
-      "info_youtube",
+      "galeri_header_title",
+      "galeri_header_desc",
     ];
     
     const updates: Record<string, string> = {};
@@ -39,11 +34,11 @@ export async function POST(request: Request) {
       revalidateTag("global-config", "max");
     }
     
-    return NextResponse.json({ success: true, message: "Informasi web berhasil diperbarui" });
+    return NextResponse.json({ success: true, message: "Pengaturan galeri berhasil diperbarui" });
   } catch (error) {
-    console.error("Failed to update informasi web:", error);
+    console.error("Failed to update pengaturan galeri:", error);
     return NextResponse.json(
-      { error: "Terjadi kesalahan saat memperbarui informasi web" },
+      { error: "Terjadi kesalahan saat memperbarui pengaturan" },
       { status: 500 }
     );
   }

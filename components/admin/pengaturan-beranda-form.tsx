@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadToCloudinary } from "@/lib/cloudinary-client";
 import type { GaleriRow } from "@/types";
 import { FileText, ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -27,6 +28,14 @@ type SlideData = {
   currentFotoUrl: string;
 };
 
+type ParsedSlide = {
+  id?: string;
+  title?: string;
+  linkText?: string;
+  linkHref?: string;
+  image?: string;
+};
+
 export function PengaturanBerandaForm({
   globalConfig,
   galeriList,
@@ -38,8 +47,7 @@ export function PengaturanBerandaForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draggingSlideId, setDraggingSlideId] = useState<string | null>(null);
 
-  // State untuk Bagian Hero (Daftar Slide)
-  const [slides, setSlides] = useState<SlideData[]>([
+  let initialSlides: SlideData[] = [
     {
       id: "slide-1",
       judul: "Membangun Dusun Topo Indah yang Lebih Mandiri dan Sejahtera",
@@ -48,13 +56,35 @@ export function PengaturanBerandaForm({
       foto: null,
       currentFotoUrl: "",
     },
-  ]);
+  ];
+
+  if (globalConfig?.["beranda_hero_slides"]) {
+    try {
+      const parsed = JSON.parse(globalConfig["beranda_hero_slides"]);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        initialSlides = parsed.map((s: ParsedSlide, i: number) => ({
+          id: s.id || `slide-initial-${i}`,
+          judul: s.title || "",
+          linkText: s.linkText || "",
+          linkHref: s.linkHref || "",
+          foto: null,
+          currentFotoUrl: s.image || "",
+        }));
+      }
+    } catch(e) {}
+  }
+
+  // State untuk Bagian Hero (Daftar Slide)
+  const [slides, setSlides] = useState<SlideData[]>(initialSlides);
 
   // State untuk Bagian Tentang Dusun
-  const [narasi, setNarasi] = useState("Misi kami adalah mewujudkan Dusun Topo Indah yang sejahtera, mandiri, dan berbudaya melalui kolaborasi aktif warga, pemanfaatan potensi alam yang berkelanjutan, serta pelayanan publik yang transparan.");
-  const [totalPenduduk, setTotalPenduduk] = useState("1250");
-  const [totalRw, setTotalRw] = useState("4");
-  const [totalRt, setTotalRt] = useState("12");
+  const [narasi, setNarasi] = useState(
+    globalConfig?.["beranda_tentang_narasi"] || 
+    "Misi kami adalah mewujudkan Dusun Topo Indah yang sejahtera, mandiri, dan berbudaya melalui kolaborasi aktif warga, pemanfaatan potensi alam yang berkelanjutan, serta pelayanan publik yang transparan."
+  );
+  const [totalPenduduk, setTotalPenduduk] = useState(globalConfig?.["beranda_tentang_penduduk"] || "1250");
+  const [totalRw, setTotalRw] = useState(globalConfig?.["beranda_tentang_rw"] || "4");
+  const [totalRt, setTotalRt] = useState(globalConfig?.["beranda_tentang_rt"] || "12");
 
   // State untuk Bagian Galeri Beranda
   const [selectedGaleriIds, setSelectedGaleriIds] = useState<string[]>(
@@ -132,10 +162,39 @@ export function PengaturanBerandaForm({
     setIsSubmitting(true);
     
     try {
+      const finalSlides = [];
+      
+      for (const slide of slides) {
+        let imageUrl = slide.currentFotoUrl;
+        
+        if (slide.foto) {
+          try {
+            imageUrl = await uploadToCloudinary(slide.foto);
+          } catch (error) {
+            toast.error(`Gagal mengunggah foto untuk slide: ${slide.judul}`);
+            setIsSubmitting(false);
+            return;
+          }
+        }
+        
+        finalSlides.push({
+          id: slide.id,
+          image: imageUrl,
+          title: slide.judul,
+          linkText: slide.linkText,
+          linkHref: slide.linkHref,
+        });
+      }
+
       const response = await fetch("/api/pengaturan-beranda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          beranda_hero_slides: JSON.stringify(finalSlides),
+          beranda_tentang_narasi: narasi,
+          beranda_tentang_penduduk: totalPenduduk,
+          beranda_tentang_rw: totalRw,
+          beranda_tentang_rt: totalRt,
           beranda_galeri_ids: selectedGaleriIds.join(","),
         }),
       });
@@ -154,7 +213,6 @@ export function PengaturanBerandaForm({
     <form onSubmit={handleSubmit} className="max-w-4xl pb-20">
       <Accordion multiple defaultValue={["hero", "tentang", "galeri", "berita"]} className="w-full space-y-4">
         
-        {/* SECTION 1: HERO BANNER */}
         <AccordionItem value="hero" className="border-b pb-4">
           <AccordionTrigger className="text-xl font-bold hover:no-underline">
             Bagian Hero Banner
@@ -181,7 +239,6 @@ export function PengaturanBerandaForm({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Kiri: Upload Gambar */}
                   <div className="space-y-2 md:col-span-2">
                     <Label className="text-sm font-semibold">
                       Gambar Banner <span className="text-red-500 ml-0.5">*</span>
@@ -238,7 +295,6 @@ export function PengaturanBerandaForm({
                     </div>
                   </div>
 
-                  {/* Kanan: Teks Input */}
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor={`judul-${slide.id}`} className="text-sm font-semibold">
                       Judul Utama <span className="text-red-500 ml-0.5">*</span>
@@ -287,7 +343,6 @@ export function PengaturanBerandaForm({
           </AccordionContent>
         </AccordionItem>
 
-        {/* SECTION 2: TENTANG DUSUN & STATISTIK */}
         <AccordionItem value="tentang" className="border-b pb-4">
           <AccordionTrigger className="text-xl font-bold hover:no-underline">
             Bagian Tentang Dusun & Statistik
@@ -346,7 +401,6 @@ export function PengaturanBerandaForm({
           </AccordionContent>
         </AccordionItem>
 
-        {/* SECTION 3: GALERI BERANDA */}
         <AccordionItem value="galeri" className="border-b pb-4">
           <AccordionTrigger className="text-xl font-bold hover:no-underline">
             Bagian Galeri Beranda
@@ -409,7 +463,6 @@ export function PengaturanBerandaForm({
           </AccordionContent>
         </AccordionItem>
         
-        {/* SECTION 4: BERITA */}
         <AccordionItem value="berita" className="border-b pb-4">
           <AccordionTrigger className="text-xl font-bold hover:no-underline">
             Bagian Berita Beranda

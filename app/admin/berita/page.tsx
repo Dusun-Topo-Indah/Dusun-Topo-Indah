@@ -69,9 +69,11 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
         searchValue={q}
         activeFilter={filter}
         filterOptions={[
-          { label: "Semua", value: "all" },
-          { label: "Dengan Cover", value: "with-cover" },
-          { label: "Tanpa Cover", value: "without-cover" },
+          { label: "Semua Kategori", value: "all" },
+          ...beritaResult.categories.map((cat) => ({
+            label: cat,
+            value: cat,
+          })),
         ]}
         currentLimit={limit}
         currentPage={beritaResult.page}

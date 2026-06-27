@@ -5,7 +5,15 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { FadeIn } from "@/components/ui/fade-in";
 
-const slides = [
+type Slide = {
+  id: string | number;
+  image: string;
+  title: string;
+  linkText: string;
+  linkHref: string;
+};
+
+const fallbackSlides: Slide[] = [
   {
     id: 1,
     image: "/images/hero_bg_desa.png",
@@ -29,15 +37,17 @@ const slides = [
   },
 ];
 
-export function HeroBanner() {
+export function HeroBanner({ initialSlides }: { initialSlides?: Slide[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const slides = initialSlides && initialSlides.length > 0 ? initialSlides : fallbackSlides;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000); // Ganti gambar tiap 6 detik
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   return (
     <section className="relative h-screen w-full overflow-hidden">

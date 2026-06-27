@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/public/page-header";
 import { FadeIn } from "@/components/ui/fade-in";
+import { getGlobalConfig } from "@/lib/google-sheets";
 import Image from "next/image";
 
 export const metadata = {
@@ -34,38 +35,73 @@ const profileSections = [
   },
 ];
 
-export default function ProfilPage() {
+export default async function ProfilPage() {
+  const globalConfig = await getGlobalConfig();
+
+  let sections = profileSections;
+  try {
+    if (globalConfig["profil_sections"]) {
+      const parsed = JSON.parse(globalConfig["profil_sections"]);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        sections = parsed;
+      }
+    }
+  } catch {}
+
+  const visi = globalConfig["profil_visi"] || "Menjadikan Dusun Topo Indah sebagai pelopor dusun mandiri, sejahtera, berwawasan lingkungan, dan berpegang teguh pada nilai adat istiadat.";
+  
+  let misiList = [
+    "Meningkatkan kualitas SDM melalui pendidikan dan penyuluhan.",
+    "Mendorong pengembangan sektor pertanian organik secara masif.",
+    "Menjaga kelestarian alam sebagai aset ekowisata utama.",
+    "Memperkuat budaya gotong royong dan kebersamaan warga."
+  ];
+
+  try {
+    if (globalConfig["profil_misi"]) {
+      const parsed = JSON.parse(globalConfig["profil_misi"]);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        misiList = parsed;
+      }
+    }
+  } catch {}
+
+  const headerTitle = globalConfig["profil_header_title"] || "Profil Dusun";
+  const headerDesc = globalConfig["profil_header_desc"] || "Mengenal lebih dekat sejarah, kondisi alam, dan potensi yang dimiliki oleh Dusun Topo Indah.";
+
   return (
     <div className="flex flex-col w-full min-h-screen bg-white">
       <PageHeader
-        title="Profil Dusun"
-        description="Mengenal lebih dekat sejarah, kondisi alam, dan potensi yang dimiliki oleh Dusun Topo Indah."
+        title={headerTitle}
+        description={headerDesc}
       />
 
       <div className="py-24 md:py-32 w-full max-w-7xl mx-auto px-6 flex flex-col gap-24 md:gap-32 overflow-hidden">
         {/* Zigzag Sections */}
-        {profileSections.map((section) => (
+        {sections.map((section, index) => {
+          const isImageLeft = index % 2 === 0;
+          return (
           <div
             key={section.id}
             className={`flex flex-col ${
-              section.imageLeft ? "md:flex-row" : "md:flex-row-reverse"
+              isImageLeft ? "md:flex-row" : "md:flex-row-reverse"
             } items-center gap-12 md:gap-20`}
           >
             {/* Image Side */}
             <FadeIn
-              direction={section.imageLeft ? "right" : "left"}
+              direction={isImageLeft ? "right" : "left"}
               delay={0.1}
               className="w-full md:w-1/2"
             >
               <div 
                 className={`relative aspect-video md:aspect-[4/3] w-full ${
-                  section.imageLeft 
+                  isImageLeft 
                     ? "shadow-[16px_16px_0_0_#a5e00a] md:shadow-[24px_24px_0_0_#a5e00a]" 
                     : "shadow-[-16px_16px_0_0_#a5e00a] md:shadow-[-24px_24px_0_0_#a5e00a]"
                 }`}
               >
                 <Image
-                  src={section.image}
+                  src={section.image || "/images/hero_bg_desa.png"}
                   alt={section.title}
                   fill
                   className="object-cover rounded-none"
@@ -76,7 +112,7 @@ export default function ProfilPage() {
 
             {/* Text Side */}
             <FadeIn
-              direction={section.imageLeft ? "left" : "right"}
+              direction={isImageLeft ? "left" : "right"}
               delay={0.2}
               className="w-full md:w-1/2 flex flex-col"
             >
@@ -84,12 +120,12 @@ export default function ProfilPage() {
                 {section.title}
               </h2>
               <div className="w-40 h-1.5 bg-primary mb-6 rounded-full"></div>
-              <p className="text-slate-600 text-lg leading-relaxed">
+              <p className="text-slate-600 text-lg leading-relaxed whitespace-pre-wrap">
                 {section.description}
               </p>
             </FadeIn>
           </div>
-        ))}
+        )})}
       </div>
 
       {/* Visi Misi Section */}
@@ -118,8 +154,8 @@ export default function ProfilPage() {
             {/* Content */}
             <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center bg-white/50 backdrop-blur-sm">
               <FadeIn direction="left">
-                <p className="text-slate-600 text-xl md:text-2xl leading-relaxed max-w-2xl font-medium">
-                  Menjadikan Dusun Topo Indah sebagai pelopor dusun mandiri, sejahtera, berwawasan lingkungan, dan berpegang teguh pada nilai adat istiadat.
+                <p className="text-slate-600 text-xl md:text-2xl leading-relaxed max-w-2xl font-medium whitespace-pre-wrap">
+                  {visi}
                 </p>
               </FadeIn>
             </div>
@@ -139,17 +175,12 @@ export default function ProfilPage() {
             <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center justify-end text-left bg-white/50 backdrop-blur-sm">
               <FadeIn direction="right" delay={0.2} className="w-full max-w-2xl">
                 <div className="flex flex-col gap-6">
-                  {[
-                    "Meningkatkan kualitas SDM melalui pendidikan dan penyuluhan.",
-                    "Mendorong pengembangan sektor pertanian organik secara masif.",
-                    "Menjaga kelestarian alam sebagai aset ekowisata utama.",
-                    "Memperkuat budaya gotong royong dan kebersamaan warga."
-                  ].map((item, idx) => (
+                  {misiList.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-4">
                       <span className="text-primary font-bold text-xl font-mono shrink-0 pt-0.5">
-                        0{idx + 1}
+                        {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <p className="text-slate-600 text-lg md:text-xl leading-relaxed">
+                      <p className="text-slate-600 text-lg md:text-xl leading-relaxed whitespace-pre-wrap">
                         {item}
                       </p>
                     </div>

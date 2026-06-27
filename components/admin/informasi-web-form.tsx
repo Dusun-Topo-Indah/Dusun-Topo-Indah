@@ -17,6 +17,7 @@ export function InformasiWebForm({ initialData }: InformasiWebFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
+    info_deskripsi: initialData.info_deskripsi || "",
     info_alamat: initialData.info_alamat || "",
     info_email: initialData.info_email || "",
     info_telepon: initialData.info_telepon || "",
@@ -65,6 +66,20 @@ export function InformasiWebForm({ initialData }: InformasiWebFormProps) {
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-10 pb-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        
+        {/* Deskripsi Footer */}
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="info_deskripsi" className="text-sm font-semibold">Deskripsi Singkat (Footer)</Label>
+          <Textarea 
+            id="info_deskripsi" 
+            name="info_deskripsi" 
+            value={formData.info_deskripsi} 
+            onChange={handleChange}
+            placeholder="Mewujudkan dusun yang mandiri, sejahtera..."
+            className="resize-none min-h-[100px]"
+            rows={3}
+          />
+        </div>
         
         {/* Alamat Lengkap */}
         <div className="space-y-2 md:col-span-2">

@@ -84,7 +84,7 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
 
   return (
     <div className="w-full bg-white min-h-screen">
-      <div className="relative w-full h-[60vh] md:h-[70vh] flex items-end">
+      <div className="relative w-full min-h-[60vh] md:min-h-[70vh] flex items-end pt-28 md:pt-32">
         <div className="absolute inset-0 z-0">
           <Image 
             src={berita.image}

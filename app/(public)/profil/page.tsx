@@ -44,7 +44,7 @@ export default function ProfilPage() {
 
       <div className="py-24 md:py-32 w-full max-w-7xl mx-auto px-6 flex flex-col gap-24 md:gap-32 overflow-hidden">
         {/* Zigzag Sections */}
-        {profileSections.map((section, index) => (
+        {profileSections.map((section) => (
           <div
             key={section.id}
             className={`flex flex-col ${

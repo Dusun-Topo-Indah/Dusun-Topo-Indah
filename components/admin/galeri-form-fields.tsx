@@ -32,7 +32,8 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
   const [search, setSearch] = useState("");
   const [kategori, setKategori] = useState(initialData?.kategori || "");
   const [customCategories, setCustomCategories] = useState<string[]>([]);
-  const [caption, setCaption] = useState(initialData?.caption || "");
+  const [judul, setJudul] = useState(initialData?.judul || "");
+  const [deskripsi, setDeskripsi] = useState(initialData?.deskripsi || "");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -139,8 +140,9 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          judul: judul.trim(),
           kategori: kategori.trim(),
-          caption: caption.trim(),
+          deskripsi: deskripsi.trim(),
           url_foto,
         }),
       });
@@ -151,8 +153,9 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
       }
 
       if (mode === "create") {
+        setJudul("");
         setKategori("");
-        setCaption("");
+        setDeskripsi("");
         setFile(null);
         resetPreview();
       }
@@ -220,6 +223,19 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
           </div>
         </div>
 
+        {/* Judul Foto */}
+        <div className="space-y-2 md:col-span-2">
+          <Label className="text-sm font-semibold">Judul Foto <span className="text-red-500 ml-0.5">*</span></Label>
+          <input
+            type="text"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="Contoh: KEINDAHAN ALAM"
+            value={judul}
+            onChange={(e) => setJudul(e.target.value)}
+            required
+          />
+        </div>
+
         {/* Kategori */}
         <div className="space-y-2 md:col-span-2">
           <Label className="text-sm font-semibold">
@@ -285,13 +301,13 @@ export function GaleriFormFields({ existingCategories, initialData, onSuccess }:
           </Popover>
         </div>
 
-        {/* Caption */}
+        {/* Deskripsi */}
         <div className="space-y-2 md:col-span-2">
-          <Label className="text-sm font-semibold">Caption (Opsional)</Label>
+          <Label className="text-sm font-semibold">Deskripsi (Opsional)</Label>
           <Textarea
             placeholder="Tulis deskripsi singkat..."
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
+            value={deskripsi}
+            onChange={(e) => setDeskripsi(e.target.value)}
             className="resize-none min-h-[100px]"
           />
         </div>

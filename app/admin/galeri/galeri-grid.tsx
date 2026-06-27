@@ -28,7 +28,7 @@ export function GaleriGrid({ data, emptyState }: GaleriGridProps) {
             {galeri.url_foto ? (
               <Image 
                 src={galeri.url_foto} 
-                alt={galeri.caption || "Foto Galeri"} 
+                alt={galeri.judul || "Foto Galeri"} 
                 fill 
                 className="object-cover" 
                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, (max-width: 1536px) 33vw, 25vw"
@@ -45,9 +45,14 @@ export function GaleriGrid({ data, emptyState }: GaleriGridProps) {
             </div>
           </div>
           <CardContent className="flex flex-col flex-1 px-4 py-3 justify-start items-start text-left">
-            <h3 className="font-semibold text-[15px] line-clamp-2 mb-2 text-slate-800 leading-snug">
-              {galeri.caption || "Tidak ada caption"}
+            <h3 className="font-semibold text-[15px] line-clamp-2 mb-1 text-slate-800 leading-snug">
+              {galeri.judul || "Tanpa Judul"}
             </h3>
+            {galeri.deskripsi && (
+              <p className="text-xs text-slate-500 line-clamp-2 mb-2">
+                {galeri.deskripsi}
+              </p>
+            )}
             <div className="flex items-center justify-start gap-1.5 text-[11px] text-slate-500 font-medium">
               <CalendarDays className="h-3.5 w-3.5" />
               {new Date(galeri.tanggal_upload).toLocaleDateString("id-ID", {

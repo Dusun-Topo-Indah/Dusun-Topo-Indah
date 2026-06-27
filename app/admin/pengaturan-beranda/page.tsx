@@ -1,11 +1,15 @@
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { PengaturanBerandaForm } from "@/components/admin/pengaturan-beranda-form";
+import { getGlobalConfig, getGaleriList } from "@/lib/google-sheets";
 
 export const metadata = {
   title: "Pengaturan Beranda — SIG-Dusun Topo Indah",
 };
 
-export default function PengaturanBerandaPage() {
+export default async function PengaturanBerandaPage() {
+  const globalConfig = await getGlobalConfig();
+  const galeriList = await getGaleriList();
+
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader 
@@ -13,7 +17,10 @@ export default function PengaturanBerandaPage() {
         description="Kelola teks dan gambar yang tampil di halaman utama website."
       />
 
-      <PengaturanBerandaForm />
+      <PengaturanBerandaForm 
+        globalConfig={globalConfig}
+        galeriList={galeriList}
+      />
     </div>
   );
 }

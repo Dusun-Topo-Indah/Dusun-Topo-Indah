@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ImagePlus, Loader2, Save, FileText, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import type { GaleriRow } from "@/types";
+import { FileText, ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type SlideData = {
   id: string;
@@ -23,7 +27,14 @@ type SlideData = {
   currentFotoUrl: string;
 };
 
-export function PengaturanBerandaForm() {
+export function PengaturanBerandaForm({
+  globalConfig,
+  galeriList,
+}: {
+  globalConfig?: Record<string, string>;
+  galeriList?: GaleriRow[];
+}) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draggingSlideId, setDraggingSlideId] = useState<string | null>(null);
 
@@ -44,6 +55,11 @@ export function PengaturanBerandaForm() {
   const [totalPenduduk, setTotalPenduduk] = useState("1250");
   const [totalRw, setTotalRw] = useState("4");
   const [totalRt, setTotalRt] = useState("12");
+
+  // State untuk Bagian Galeri Beranda
+  const [selectedGaleriIds, setSelectedGaleriIds] = useState<string[]>(
+    globalConfig?.["beranda_galeri_ids"] ? globalConfig["beranda_galeri_ids"].split(",").map(id => id.trim()) : []
+  );
 
   // Handler untuk Slide
   const handleAddSlide = () => {
@@ -97,20 +113,46 @@ export function PengaturanBerandaForm() {
     }
   };
 
+  const handleToggleGaleri = (id: string) => {
+    setSelectedGaleriIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      } else {
+        if (prev.length >= 5) {
+          alert("Maksimal 5 galeri yang dapat dipilih.");
+          return prev;
+        }
+        return [...prev, id];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // TODO: Implementasi upload ke Cloudinary dan simpan ke sheet Global_Config
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/pengaturan-beranda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          beranda_galeri_ids: selectedGaleriIds.join(","),
+        }),
+      });
+      if (!response.ok) throw new Error("Gagal menyimpan pengaturan.");
+      toast.success("Pengaturan galeri beranda berhasil disimpan!");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error("Terjadi kesalahan saat menyimpan pengaturan.");
+    } finally {
       setIsSubmitting(false);
-      alert("Pengaturan beranda berhasil disimpan (Simulasi)!");
-    }, 1500);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl pb-20">
-      <Accordion multiple defaultValue={["hero", "tentang"]} className="w-full space-y-4">
+      <Accordion multiple defaultValue={["hero", "tentang", "galeri", "berita"]} className="w-full space-y-4">
         
         {/* SECTION 1: HERO BANNER */}
         <AccordionItem value="hero" className="border-b pb-4">
@@ -300,6 +342,83 @@ export function PengaturanBerandaForm() {
                   required
                 />
               </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* SECTION 3: GALERI BERANDA */}
+        <AccordionItem value="galeri" className="border-b pb-4">
+          <AccordionTrigger className="text-xl font-bold hover:no-underline">
+            Bagian Galeri Beranda
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 pb-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Pilih hingga 5 foto galeri yang akan ditampilkan pada _slider_ di halaman utama. Jika tidak ada yang dipilih, sistem akan menampilkan 5 foto terbaru secara otomatis.
+              </p>
+              <span className="text-sm font-semibold whitespace-nowrap ml-4">
+                Terpilih: {selectedGaleriIds.length} / 5
+              </span>
+            </div>
+            
+            {galeriList && galeriList.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
+                {galeriList.map((galeri) => {
+                  const isSelected = selectedGaleriIds.includes(galeri.id);
+                  return (
+                    <label 
+                      key={galeri.id}
+                      className={`relative flex flex-col border-2 cursor-pointer overflow-hidden transition-all ${
+                        isSelected ? "border-primary ring-2 ring-primary/20" : "border-transparent hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="relative aspect-video bg-slate-100 border-b flex shrink-0 items-center justify-center">
+                        {galeri.url_foto ? (
+                          <Image src={galeri.url_foto} alt={galeri.judul || "Galeri"} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-muted-foreground"><ImagePlus className="w-8 h-8 opacity-40" /></div>
+                        )}
+                        <div className="absolute top-2 left-2 z-10">
+                          <span className="font-semibold text-[9px] uppercase tracking-wider bg-white/95 backdrop-blur-sm text-slate-700 rounded-full px-2 py-0.5 shadow-sm border">
+                            {galeri.kategori}
+                          </span>
+                        </div>
+                        <div className="absolute top-2 right-2 bg-white rounded-md shadow-sm z-10">
+                          <Checkbox 
+                            checked={isSelected}
+                            onCheckedChange={() => handleToggleGaleri(galeri.id)}
+                            className="data-[state=checked]:bg-primary"
+                          />
+                        </div>
+                      </div>
+                      <div className="p-3 bg-white flex flex-col flex-1 justify-start">
+                        <p className="text-[13px] font-semibold line-clamp-2 leading-snug text-slate-800">{galeri.judul || "Tanpa Judul"}</p>
+                        {galeri.deskripsi && (
+                          <p className="text-[10px] text-slate-500 line-clamp-1">{galeri.deskripsi}</p>
+                        )}
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center p-8 border rounded-lg bg-slate-50 text-slate-500">
+                Belum ada data galeri. Silakan tambahkan galeri terlebih dahulu.
+              </div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+        
+        {/* SECTION 4: BERITA */}
+        <AccordionItem value="berita" className="border-b pb-4">
+          <AccordionTrigger className="text-xl font-bold hover:no-underline">
+            Bagian Berita Beranda
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 pb-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Berita di halaman utama beranda akan selalu menampilkan urutan berita yang <strong>paling baru (terbaru)</strong> secara otomatis. Anda tidak perlu mengatur berita secara manual dari halaman ini.
+              </p>
             </div>
           </AccordionContent>
         </AccordionItem>

@@ -38,12 +38,19 @@ export const columns: ColumnDef<GaleriRow>[] = [
     ),
   },
   {
-    accessorKey: "caption",
-    header: "Caption",
+    accessorKey: "judul",
+    header: "Judul & Deskripsi",
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm line-clamp-2 max-w-[300px]">
-        {row.original.caption || "-"}
-      </span>
+      <div className="flex flex-col gap-0.5">
+        <span className="font-medium text-foreground text-sm line-clamp-1 max-w-[300px]">
+          {row.original.judul || "Tanpa Judul"}
+        </span>
+        {row.original.deskripsi && (
+          <span className="text-muted-foreground text-xs line-clamp-1 max-w-[300px]">
+            {row.original.deskripsi}
+          </span>
+        )}
+      </div>
     ),
   },
   {

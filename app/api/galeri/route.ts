@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { kategori, caption, url_foto } = body;
+    const { judul, kategori, deskripsi, url_foto } = body;
 
     if (!url_foto || !kategori) {
       return NextResponse.json(
@@ -27,8 +27,9 @@ export async function POST(request: Request) {
     
     await appendGaleri({
       id,
+      judul: judul || "",
       kategori,
-      caption: caption || "",
+      deskripsi: deskripsi || "",
       tanggal_upload,
       url_foto,
     });

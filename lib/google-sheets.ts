@@ -155,36 +155,42 @@ export async function getGaleriList(): Promise<GaleriRow[]> {
   cacheTag("galeri");
   cacheLife("hours");
   
-  const sheets = await getGoogleSheetsInstance();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Galeri_Dusun!A:E",
-  });
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Galeri_Dusun!A:F",
+    });
 
-  const rows = res.data.values;
-  if (!rows || rows.length === 0) return [];
-  const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "kategori";
-  const dataRows = isHeader ? rows.slice(1) : rows;
+    const rows = res.data.values;
+    if (!rows || rows.length === 0) return [];
+    const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "judul";
+    const dataRows = isHeader ? rows.slice(1) : rows;
 
-  if (dataRows.length === 0) return [];
+    if (dataRows.length === 0) return [];
 
-  return dataRows.map((row) => ({
-    id: row[0] || "",
-    kategori: row[1] || "",
-    caption: row[2] || "",
-    tanggal_upload: row[3] || "",
-    url_foto: row[4] || "",
-  })).reverse(); 
+    return dataRows.map((row) => ({
+      id: row[0] || "",
+      judul: row[1] || "",
+      kategori: row[2] || "",
+      deskripsi: row[3] || "",
+      tanggal_upload: row[4] || "",
+      url_foto: row[5] || "",
+    })).reverse(); 
+  } catch (error) {
+    console.error("Failed to fetch GaleriList:", error);
+    return [];
+  }
 }
 
 export async function appendGaleri(data: GaleriRow): Promise<void> {
   const sheets = await getGoogleSheetsInstance();
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Galeri_Dusun!A:E",
+    range: "Galeri_Dusun!A:F",
     valueInputOption: "USER_ENTERED",
     requestBody: {
-      values: [[data.id, data.kategori, data.caption, data.tanggal_upload, data.url_foto]],
+      values: [[data.id, data.judul, data.kategori, data.deskripsi, data.tanggal_upload, data.url_foto]],
     },
   });
 }
@@ -194,7 +200,7 @@ export async function updateGaleriById(id: string, updatedData: Partial<GaleriRo
 
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Galeri_Dusun!A:E",
+    range: "Galeri_Dusun!A:F",
   });
 
   const rows = res.data.values;
@@ -206,15 +212,16 @@ export async function updateGaleriById(id: string, updatedData: Partial<GaleriRo
   const existingRow = rows[rowIndex];
   const newRow = [
     existingRow[0] || "",
-    updatedData.kategori !== undefined ? updatedData.kategori : (existingRow[1] || ""),
-    updatedData.caption !== undefined ? updatedData.caption : (existingRow[2] || ""),
-    updatedData.tanggal_upload !== undefined ? updatedData.tanggal_upload : (existingRow[3] || ""),
-    updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[4] || ""),
+    updatedData.judul !== undefined ? updatedData.judul : (existingRow[1] || ""),
+    updatedData.kategori !== undefined ? updatedData.kategori : (existingRow[2] || ""),
+    updatedData.deskripsi !== undefined ? updatedData.deskripsi : (existingRow[3] || ""),
+    updatedData.tanggal_upload !== undefined ? updatedData.tanggal_upload : (existingRow[4] || ""),
+    updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[5] || ""),
   ];
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `Galeri_Dusun!A${rowIndex + 1}:E${rowIndex + 1}`,
+    range: `Galeri_Dusun!A${rowIndex + 1}:F${rowIndex + 1}`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [newRow],
@@ -281,7 +288,7 @@ export async function getGaleriListing(args: GaleriListingArgs) {
   );
 
   const filtered = galeriList.filter((item) => {
-    const searchable = normalizeText(`${item.kategori} ${item.caption}`);
+    const searchable = normalizeText(`${item.judul} ${item.kategori} ${item.deskripsi}`);
     const matchesSearch = query === "" || searchable.includes(query);
     const matchesFilter = categoryFilter === "all" || normalizeText(item.kategori) === categoryFilter;
     return matchesSearch && matchesFilter;
@@ -341,26 +348,31 @@ export async function getGlobalConfig(): Promise<Record<string, string>> {
   cacheTag("global-config");
   cacheLife("hours");
   
-  const sheets = await getGoogleSheetsInstance();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Global_Config!A:B",
-  });
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Global_Config!A:B",
+    });
 
-  const rows = res.data.values;
-  if (!rows || rows.length === 0) return {};
-  
-  const isHeader = rows[0][0]?.toLowerCase() === "key" || rows[0][1]?.toLowerCase() === "value";
-  const dataRows = isHeader ? rows.slice(1) : rows;
+    const rows = res.data.values;
+    if (!rows || rows.length === 0) return {};
+    
+    const isHeader = rows[0][0]?.toLowerCase() === "key" || rows[0][1]?.toLowerCase() === "value";
+    const dataRows = isHeader ? rows.slice(1) : rows;
 
-  const config: Record<string, string> = {};
-  for (const row of dataRows) {
-    if (row[0]) {
-      config[row[0]] = row[1] || "";
+    const config: Record<string, string> = {};
+    for (const row of dataRows) {
+      if (row[0]) {
+        config[row[0]] = row[1] || "";
+      }
     }
+    
+    return config;
+  } catch (error) {
+    console.error("Failed to fetch GlobalConfig:", error);
+    return {};
   }
-  
-  return config;
 }
 
 export async function updateGlobalConfig(updates: Record<string, string>): Promise<boolean> {

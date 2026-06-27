@@ -5,8 +5,9 @@ import { revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 
 interface GaleriPayload {
+  judul?: string;
   kategori?: string;
-  caption?: string;
+  deskripsi?: string;
   url_foto?: string;
 }
 
@@ -31,8 +32,9 @@ export async function PUT(
     }
 
     const body = (await request.json()) as GaleriPayload;
+    const judul = body.judul?.trim() || "";
     const kategori = body.kategori?.trim();
-    const caption = body.caption?.trim() || "";
+    const deskripsi = body.deskripsi?.trim() || "";
     const url_foto = body.url_foto?.trim();
 
     if (!kategori || !url_foto) {
@@ -53,8 +55,9 @@ export async function PUT(
     }
 
     const success = await updateGaleriById(id, {
+      judul,
       kategori,
-      caption,
+      deskripsi,
       url_foto,
     });
 

@@ -10,8 +10,9 @@ export interface BeritaRow {
 
 export interface GaleriRow {
   id: string;
+  judul: string;
   kategori: string;
-  caption: string;
+  deskripsi: string;
   tanggal_upload: string;
   url_foto: string;
 }

@@ -55,6 +55,7 @@ export function HeroBanner() {
             fill
             priority={index === 0}
             className="object-cover"
+            sizes="100vw"
           />
           <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />

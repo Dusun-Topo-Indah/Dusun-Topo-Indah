@@ -1,91 +1,67 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { FadeIn } from "@/components/ui/fade-in";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { FadeIn } from "@/components/ui/fade-in";
+import { useEffect, useState } from "react";
 
-const baseSlides = [
-  {
-    id: 1,
-    image: "/images/hero_bg_desa.png",
-    title: "KEINDAHAN ALAM",
-    subtitle: "Dusun Topo Indah - Tidore",
-    description: "Nikmati pemandangan alam yang asri dan sejuk, membentang dari perbukitan hingga pesisir pantai. Sebuah harmoni alam yang menenangkan.",
-  },
-  {
-    id: 2,
-    image: "/images/hero_bg_desa_2.png",
-    title: "PANEN RAYA",
-    subtitle: "Pertanian Organik",
-    description: "Sektor pertanian yang terus berkembang dengan hasil panen padi organik melimpah setiap musimnya. Bukti kesuburan tanah Topo Indah.",
-  },
-  {
-    id: 3,
-    image: "/images/hero_bg_desa_3.png",
-    title: "PESONA PAGI",
-    subtitle: "Destinasi Ekowisata",
-    description: "Keindahan embun pagi dan udara segar menjadikan Topo Indah sebagai destinasi ekowisata favorit bagi wisatawan lokal maupun mancanegara.",
-  },
-];
+export interface GaleriSlide {
+  id: string;
+  image: string;
+  title: string;
+  subtitle: string;
+  description: string;
+}
 
-// Duplicate base slides to show loop behavior with more items as requested
-const slides = [
-  ...baseSlides,
-  ...baseSlides.map((s) => ({ ...s, id: s.id + 3 })),
-];
+interface GaleriSectionProps {
+  initialSlides: GaleriSlide[];
+}
 
-// Create 5 sets of slides for a seamless infinite loop
-// Indices: 0-5 (Set 0), 6-11 (Set 1), 12-17 (Set 2), 18-23 (Set 3), 24-29 (Set 4)
-const extendedSlides = [
-  ...slides,
-  ...slides,
-  ...slides,
-  ...slides,
-  ...slides,
-].map((s, i) => ({ ...s, uniqueIndex: i }));
+export function GaleriSection({ initialSlides }: GaleriSectionProps) {
+  // Multiply slides for smooth infinite loop feeling
+  const slides = [
+    ...initialSlides,
+    ...initialSlides.map((s) => ({ ...s, id: s.id + "-copy" })),
+  ];
 
-export function GaleriSection() {
-  // Start in the middle set (Set 2) at index 12
+  const extendedSlides = [
+    ...slides,
+    ...slides,
+    ...slides,
+    ...slides,
+    ...slides,
+  ].map((s, i) => ({ ...s, uniqueIndex: i }));
+
   const [currentIndex, setCurrentIndex] = useState(slides.length * 2);
   const [isTransitioning, setIsTransitioning] = useState(true);
-
-  // The visual logical slide (0-5)
   const currentSlide = currentIndex % slides.length;
 
-  // Seamless jump effect when reaching boundaries
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     if (currentIndex >= slides.length * 3) {
-      // If we crossed into Set 3 (index 18+), seamlessly jump back to Set 2
       timeout = setTimeout(() => {
         setIsTransitioning(false);
         setCurrentIndex(currentIndex - slides.length);
       }, 700);
     } else if (currentIndex < slides.length * 2) {
-      // If we crossed into Set 1 (index 11-), seamlessly jump forward to Set 2
       timeout = setTimeout(() => {
         setIsTransitioning(false);
         setCurrentIndex(currentIndex + slides.length);
       }, 700);
     }
     return () => clearTimeout(timeout);
-  }, [currentIndex]);
+  }, [currentIndex, slides.length]);
 
-  // Auto-loop timer and progress bar animation
-  // Only dependent on logical slide so it doesn't reset during seamless jump
   useEffect(() => {
     let frame1: number;
     let frame2: number;
 
     const el = document.getElementById("galeri-progress-bar");
     if (el) {
-      // Reset progress bar instantly
       el.style.transition = "none";
       el.style.width = "0%";
 
-      // Start animation to 100% over 6 seconds
       frame1 = requestAnimationFrame(() => {
         frame2 = requestAnimationFrame(() => {
           el.style.transition = "width 6000ms linear";
@@ -119,7 +95,7 @@ export function GaleriSection() {
   return (
     <section id="galeri" className="relative h-screen w-full overflow-hidden flex items-center bg-black">
       {/* Background Images Crossfade */}
-      {slides.map((slide, index) => (
+      {slides.length > 0 && slides.map((slide, index) => (
         <div
           key={`bg-${slide.id}`}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -132,6 +108,7 @@ export function GaleriSection() {
             fill
             priority={index === 0}
             className="object-cover"
+            sizes="100vw"
           />
           {/* Dark Overlay for Text Readability */}
           <div className="absolute inset-0 bg-black/60" />
@@ -161,7 +138,7 @@ export function GaleriSection() {
           
           {/* Left Side: Title & Description */}
           <FadeIn direction="left" delay={0.2} className="flex flex-col text-white relative min-h-[300px] justify-center mt-32 md:mt-0">
-            {slides.map((slide, index) => (
+            {slides.length > 0 && slides.map((slide, index) => (
               <div
                 key={`text-${slide.id}`}
                 className={`transition-all duration-700 absolute inset-x-0 top-1/2 -translate-y-1/2 ${
@@ -192,10 +169,9 @@ export function GaleriSection() {
             <div className="hidden md:block w-full pointer-events-auto">
               <div 
                 className={`flex items-end gap-5 pl-2 py-4 ${isTransitioning ? "transition-transform duration-700 ease-in-out" : ""}`}
-                // Geser ke kiri berdasarkan card yang aktif. Lebar inactive card = 160px (w-40), gap = 20px (gap-5). Total = 180px
                 style={{ transform: `translateX(calc(-${currentIndex * 180}px))` }}
               >
-                {extendedSlides.map((slide, index) => {
+                {extendedSlides.length > 0 && extendedSlides.map((slide, index) => {
                   const isActive = index === currentIndex;
                   return (
                     <div
@@ -214,6 +190,7 @@ export function GaleriSection() {
                         src={slide.image}
                         alt={slide.title}
                         fill
+                        sizes="(max-width: 768px) 30vw, 15vw"
                         className={`object-cover transition-transform duration-1000 ${
                           isActive ? "scale-100" : "scale-110 group-hover:scale-105"
                         }`}

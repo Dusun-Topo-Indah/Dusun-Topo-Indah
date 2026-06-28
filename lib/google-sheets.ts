@@ -1,7 +1,7 @@
-import { google } from "googleapis";
-import type { sheets_v4 } from "googleapis";
-import type { BeritaRow, GaleriRow } from "@/types";
 import { normalizeText, paginateItems, stripHtml } from "@/lib/listing";
+import type { BeritaRow, GaleriRow } from "@/types";
+import type { sheets_v4 } from "googleapis";
+import { google } from "googleapis";
 
 let sheetsInstance: sheets_v4.Sheets | null = null;
 
@@ -28,7 +28,7 @@ export async function getGoogleSheetsInstance(): Promise<sheets_v4.Sheets> {
 
 export const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 
-import { cacheTag, cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 export async function getBeritaList(): Promise<BeritaRow[]> {
   "use cache";
@@ -97,6 +97,58 @@ export async function getRecentBerita(limit: number = 4): Promise<BeritaRow[]> {
     url_foto: row[5] || "",
     kategori: row[6] || "",
   })).reverse(); 
+}
+
+export async function getTotalBerita(): Promise<number> {
+  "use cache";
+  cacheTag("berita", "berita-total");
+  cacheLife("hours");
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const idRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Berita_Dusun!A:A",
+    });
+    const total = idRes.data.values?.length || 0;
+    return total > 1 ? total - 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getTotalGaleri(): Promise<number> {
+  "use cache";
+  cacheTag("galeri", "galeri-total");
+  cacheLife("hours");
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const idRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Galeri_Dusun!A:A",
+    });
+    const total = idRes.data.values?.length || 0;
+    return total > 1 ? total - 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function checkSystemStatus(): Promise<{ status: "Online" | "Offline"; message: string }> {
+  "use cache";
+  cacheTag("system-status");
+  cacheLife("minutes");
+  
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    await sheets.spreadsheets.get({
+      spreadsheetId: SPREADSHEET_ID,
+      fields: "properties.title",
+    });
+    return { status: "Online", message: "Koneksi ke Database Terhubung" };
+  } catch (error) {
+    console.error("System Status Check Error:", error);
+    return { status: "Offline", message: "Koneksi ke Database Terputus" };
+  }
 }
 export async function appendBerita(data: BeritaRow): Promise<void> {
   const sheets = await getGoogleSheetsInstance();

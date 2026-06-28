@@ -4,16 +4,20 @@ import {
   BadgeInfo,
   Home,
   Image as ImageIcon,
+  LogOut,
   Newspaper,
-  PanelTop
+  PanelTop,
+  Settings
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
+import { toast } from "sonner";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -28,7 +32,7 @@ const menuGroups = [
   {
     section: "Main",
     items: [
-      { title: "Beranda", icon: Home, href: "/admin" },
+      { title: "Dashboard", icon: Home, href: "/admin" },
     ],
   },
   {
@@ -48,11 +52,30 @@ const menuGroups = [
       { title: "Pengaturan Galeri", icon: PanelTop, href: "/admin/pengaturan-galeri" },
     ],
   },
+  {
+    section: "Lainnya",
+    items: [
+      { title: "Pengaturan", icon: Settings, href: "/admin/pengaturan" }
+    ],
+  }
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { setOpenMobile } = useSidebar();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      toast.success("Berhasil keluar dari dashboard");
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      toast.error("Gagal keluar dari dashboard");
+      console.error("Failed to logout", error);
+    }
+  };
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -100,6 +123,17 @@ export function AppSidebar() {
           </React.Fragment>
         ))}
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip="Keluar" onClick={handleLogout} className="text-red-500 hover:bg-red-600 hover:text-white cursor-pointer [&>svg]:text-red-500 hover:[&>svg]:text-white">
+              <LogOut className="h-4 w-4 text-red-500! group-hover/menu-button:text-white!" />
+              <span>Keluar</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

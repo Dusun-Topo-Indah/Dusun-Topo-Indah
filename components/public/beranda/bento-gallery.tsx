@@ -4,6 +4,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface GalleryItem {
   id: string;
@@ -105,7 +106,7 @@ export function BentoGallery({ items }: BentoGalleryProps) {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 mb-20">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 mb-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 grid-flow-row-dense auto-rows-[150px] md:auto-rows-[250px]">
           {items.map((item, index) => (
             <FadeIn 
@@ -118,11 +119,12 @@ export function BentoGallery({ items }: BentoGalleryProps) {
                 className="absolute inset-0 cursor-pointer group"
                 onClick={() => openLightbox(index)}
               >
+                <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
                 <Image
                   src={item.image}
                   alt={item.title}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="object-cover relative z-10 transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 25vw"
                 />
                 

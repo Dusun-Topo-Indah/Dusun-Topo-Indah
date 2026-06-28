@@ -7,6 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface InformasiWebFormProps {
   initialData: Record<string, string>;
@@ -15,6 +26,7 @@ interface InformasiWebFormProps {
 export function InformasiWebForm({ initialData }: InformasiWebFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     info_deskripsi: initialData.info_deskripsi || "",
@@ -33,8 +45,13 @@ export function InformasiWebForm({ initialData }: InformasiWebFormProps) {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setIsConfirmOpen(false);
     setIsSubmitting(true);
 
     try {
@@ -52,19 +69,20 @@ export function InformasiWebForm({ initialData }: InformasiWebFormProps) {
         throw new Error(json.error || "Gagal menyimpan informasi web");
       }
 
-      alert("Informasi web berhasil diperbarui.");
+      toast.success("Informasi web berhasil diperbarui.");
       router.refresh();
     } catch (error: unknown) {
       console.error(error);
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan sistem saat menyimpan data.";
-      alert(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl space-y-10 pb-20">
+    <>
+      <form onSubmit={handleSubmit} className="max-w-3xl space-y-10 pb-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         
         {/* Deskripsi Footer */}
@@ -177,5 +195,21 @@ export function InformasiWebForm({ initialData }: InformasiWebFormProps) {
         </Button>
       </div>
     </form>
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Simpan Perubahan?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menyimpan perubahan informasi web ini? Perubahan akan langsung tampil di situs publik.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>Ya, Simpan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

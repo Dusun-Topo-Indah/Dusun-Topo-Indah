@@ -8,6 +8,16 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
@@ -41,10 +51,13 @@ export function PengaturanProfilForm({
     handleDragLeave,
     handleDrop,
     handleSubmit,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    handleConfirmSubmit,
   } = usePengaturanProfilForm({ globalConfig });
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl pb-20">
+    <> <form onSubmit={handleSubmit} className="max-w-4xl pb-20">
       <Accordion multiple defaultValue={["header", "visi-misi", "sections"]} className="w-full space-y-4">
         
         {/* SECTION: HEADER */}
@@ -279,6 +292,24 @@ export function PengaturanProfilForm({
           )}
         </Button>
       </div>
-    </form>
+      </form>
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Simpan Pengaturan Profil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menyimpan perubahan ini? Data akan diperbarui dan ditampilkan di halaman publik.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Menyimpan..." : "Ya, Simpan"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

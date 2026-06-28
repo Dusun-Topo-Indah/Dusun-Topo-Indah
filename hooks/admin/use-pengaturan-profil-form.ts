@@ -11,6 +11,7 @@ export function usePengaturanProfilForm({
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
 
   const [visi, setVisi] = useState(globalConfig["profil_visi"] || "");
@@ -100,13 +101,18 @@ export function usePengaturanProfilForm({
       if (f.type.startsWith("image/")) {
         updateSection(id, "foto", f);
       } else {
-        alert("Harap unggah file gambar.");
+        toast.error("Harap unggah file gambar.");
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setIsConfirmOpen(false);
     setIsSubmitting(true);
     
     try {
@@ -171,5 +177,8 @@ export function usePengaturanProfilForm({
     handleDragLeave,
     handleDrop,
     handleSubmit,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    handleConfirmSubmit,
   };
 }

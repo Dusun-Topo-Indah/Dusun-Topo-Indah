@@ -7,6 +7,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { Calendar, ChevronRight, ChevronLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface NewsItem {
   id: string;
@@ -107,11 +108,12 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
                 transition={{ duration: 0.2 }}
               >
                 {/* Background Image - Kotak tanpa border radius */}
+                <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
                 <Image
                   src={activeNews.url_foto}
                   alt={activeNews.judul}
                   fill
-                  className="object-cover"
+                  className="object-cover relative z-10 transition-opacity duration-500"
                   sizes="(max-width: 1024px) 100vw, 60vw"
                   priority
                 />
@@ -170,12 +172,13 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
                   onClick={() => setActiveIndex(idx)}
                 >
                   {/* Thumbnail Image - Persegi panjang / Landscape, Kotak */}
-                  <div className="relative w-36 h-24 md:w-48 md:h-32 overflow-hidden flex-shrink-0 bg-slate-100">
+                  <div className="relative w-36 h-24 md:w-48 md:h-32 overflow-hidden flex-shrink-0 bg-slate-100 group">
+                    <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
                     <Image
                       src={news.url_foto}
                       alt={news.judul}
                       fill
-                      className="object-cover"
+                      className="object-cover relative z-10 transition-opacity duration-300"
                       sizes="192px"
                     />
                   </div>

@@ -58,6 +58,46 @@ export async function getBeritaList(): Promise<BeritaRow[]> {
     kategori: row[6] || "",
   })).reverse(); 
 }
+
+export async function getRecentBerita(limit: number = 4): Promise<BeritaRow[]> {
+  "use cache";
+  cacheTag("berita", "berita-recent");
+  cacheLife("hours");
+  
+  const sheets = await getGoogleSheetsInstance();
+  
+  // 1. Ambil kolom A (hanya ID) untuk mengetahui total baris tanpa download data berat
+  const idRes = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Berita_Dusun!A:A",
+  });
+  
+  const totalRows = idRes.data.values?.length || 0;
+  if (totalRows <= 1) return []; // Hanya header atau kosong
+  
+  // 2. Hitung rentang (range) untuk mengambil {limit} baris terakhir
+  // Baris pertama (index 1) adalah header. Data mulai baris 2.
+  const startIndex = Math.max(2, totalRows - limit + 1);
+  const range = `Berita_Dusun!A${startIndex}:G${totalRows}`;
+  
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: range,
+  });
+  
+  const rows = res.data.values;
+  if (!rows || rows.length === 0) return [];
+  
+  return rows.map((row) => ({
+    id: row[0] || "",
+    judul: row[1] || "",
+    tanggal: row[2] || "",
+    ringkasan: row[3] || "",
+    isi_berita: row[4] || "",
+    url_foto: row[5] || "",
+    kategori: row[6] || "",
+  })).reverse(); 
+}
 export async function appendBerita(data: BeritaRow): Promise<void> {
   const sheets = await getGoogleSheetsInstance();
   await sheets.spreadsheets.values.append({

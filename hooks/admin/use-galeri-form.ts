@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { GaleriRow } from "@/types";
 import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { galeriSchema, type GaleriFormValues } from "@/types/forms";
 
 interface UseGaleriFormProps {
   existingCategories: string[];
@@ -17,11 +21,7 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [search, setSearch] = useState("");
-  const [kategori, setKategori] = useState(initialData?.kategori || "");
   const [customCategories, setCustomCategories] = useState<string[]>([]);
-  const [judul, setJudul] = useState(initialData?.judul || "");
-  const [deskripsi, setDeskripsi] = useState(initialData?.deskripsi || "");
-  const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
   const mode: "create" | "edit" = initialData ? "edit" : "create";
@@ -30,6 +30,15 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
     () => Array.from(new Set([...existingCategories, ...customCategories])),
     [existingCategories, customCategories]
   );
+
+  const form = useForm<GaleriFormValues>({
+    resolver: zodResolver(galeriSchema),
+    defaultValues: {
+      judul: initialData?.judul || "",
+      kategori: initialData?.kategori || "",
+      deskripsi: initialData?.deskripsi || "",
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -51,17 +60,17 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
     if (!nextFile) return;
 
     if (!nextFile.type.startsWith("image/")) {
-      alert("Harap unggah file gambar.");
+      toast.error("Harap unggah file gambar.");
       return;
     }
 
     if (nextFile.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-      alert("Ukuran gambar maksimal 4 MB.");
+      toast.error("Ukuran gambar maksimal 4 MB.");
       return;
     }
 
     resetPreview();
-    setFile(nextFile);
+    form.setValue("foto", nextFile, { shouldValidate: true });
     setPreview(URL.createObjectURL(nextFile));
   };
 
@@ -83,30 +92,23 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
     if (!droppedFile) return;
 
     if (!droppedFile.type.startsWith("image/")) {
-      alert("Harap unggah file gambar.");
+      toast.error("Harap unggah file gambar.");
       return;
     }
 
     if (droppedFile.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-      alert("Ukuran gambar maksimal 4 MB.");
+      toast.error("Ukuran gambar maksimal 4 MB.");
       return;
     }
 
     resetPreview();
-    setFile(droppedFile);
+    form.setValue("foto", droppedFile, { shouldValidate: true });
     setPreview(URL.createObjectURL(droppedFile));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!kategori.trim()) {
-      alert("Kategori wajib diisi.");
-      return;
-    }
-
-    if (mode === "create" && !file) {
-      alert("Harap unggah foto terlebih dahulu.");
+  const onSubmit = async (values: GaleriFormValues) => {
+    if (mode === "create" && !values.foto) {
+      toast.error("Harap unggah foto terlebih dahulu.");
       return;
     }
 
@@ -115,8 +117,8 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
 
     try {
       let url_foto = initialData?.url_foto || "";
-      if (file) {
-        url_foto = await uploadToCloudinary(file);
+      if (values.foto) {
+        url_foto = await uploadToCloudinary(values.foto);
         uploadedImageUrl = url_foto;
       }
 
@@ -127,9 +129,9 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          judul: judul.trim(),
-          kategori: kategori.trim(),
-          deskripsi: deskripsi.trim(),
+          judul: values.judul.trim(),
+          kategori: values.kategori.trim(),
+          deskripsi: values.deskripsi?.trim() || "",
           url_foto,
         }),
       });
@@ -139,11 +141,10 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
         throw new Error(data?.message || `Gagal ${mode === "edit" ? "memperbarui" : "menyimpan"} galeri.`);
       }
 
+      toast.success(`Galeri berhasil ${mode === "edit" ? "diperbarui" : "ditambahkan"}!`);
+
       if (mode === "create") {
-        setJudul("");
-        setKategori("");
-        setDeskripsi("");
-        setFile(null);
+        form.reset();
         resetPreview();
       }
 
@@ -156,28 +157,22 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
           console.error(rollbackError);
         });
       }
-      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan.");
+      toast.error(error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
+    form,
     isLoading,
     comboboxOpen,
     setComboboxOpen,
     isDragging,
     search,
     setSearch,
-    kategori,
-    setKategori,
     customCategories,
     setCustomCategories,
-    judul,
-    setJudul,
-    deskripsi,
-    setDeskripsi,
-    file,
     mode,
     selectedPreview,
     allCategories,
@@ -185,6 +180,6 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
     handleDragOver,
     handleDragLeave,
     handleDrop,
-    handleSubmit
+    onSubmit
   };
 }

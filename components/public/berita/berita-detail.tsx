@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BeritaDetailProps {
   berita: {
@@ -85,12 +86,13 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
   return (
     <div className="w-full bg-white min-h-screen">
       <div className="relative w-full min-h-[60vh] md:min-h-[70vh] flex items-end pt-28 md:pt-32">
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 bg-slate-900">
+          <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
           <Image 
             src={berita.image}
             alt={berita.title}
             fill
-            className="object-cover"
+            className="object-cover relative z-10 transition-opacity duration-700"
             priority
           />
           <div className="absolute inset-0 bg-black/60" />

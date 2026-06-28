@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary-client";
 import type { ParsedSlide, SlideData } from "@/types";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function usePengaturanBerandaForm({
   globalConfig,
@@ -11,6 +11,7 @@ export function usePengaturanBerandaForm({
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [draggingSlideId, setDraggingSlideId] = useState<string | null>(null);
 
   let initialSlides: SlideData[] = [
@@ -37,13 +38,13 @@ export function usePengaturanBerandaForm({
           currentFotoUrl: s.image || "",
         }));
       }
-    } catch(e) {}
+    } catch {
+      // ignore parse error
+    }
   }
 
-  // State untuk Bagian Hero (Daftar Slide)
   const [slides, setSlides] = useState<SlideData[]>(initialSlides);
 
-  // State untuk Bagian Tentang Dusun
   const [narasi, setNarasi] = useState(
     globalConfig?.["beranda_tentang_narasi"] || 
     "Misi kami adalah mewujudkan Dusun Topo Indah yang sejahtera, mandiri, dan berbudaya melalui kolaborasi aktif warga, pemanfaatan potensi alam yang berkelanjutan, serta pelayanan publik yang transparan."
@@ -52,12 +53,10 @@ export function usePengaturanBerandaForm({
   const [totalRw, setTotalRw] = useState(globalConfig?.["beranda_tentang_rw"] || "4");
   const [totalRt, setTotalRt] = useState(globalConfig?.["beranda_tentang_rt"] || "12");
 
-  // State untuk Bagian Galeri Beranda
   const [selectedGaleriIds, setSelectedGaleriIds] = useState<string[]>(
     globalConfig?.["beranda_galeri_ids"] ? globalConfig["beranda_galeri_ids"].split(",").map(id => id.trim()) : []
   );
 
-  // Handler untuk Slide
   const handleAddSlide = () => {
     setSlides([
       ...slides,
@@ -74,7 +73,7 @@ export function usePengaturanBerandaForm({
 
   const handleRemoveSlide = (id: string) => {
     if (slides.length === 1) {
-      alert("Minimal harus ada 1 slide banner.");
+      toast.error("Minimal harus ada 1 slide banner.");
       return;
     }
     setSlides(slides.filter((slide) => slide.id !== id));
@@ -104,7 +103,7 @@ export function usePengaturanBerandaForm({
       if (f.type.startsWith("image/")) {
         updateSlide(slideId, "foto", f);
       } else {
-        alert("Harap unggah file gambar.");
+        toast.error("Harap unggah file gambar.");
       }
     }
   };
@@ -115,7 +114,7 @@ export function usePengaturanBerandaForm({
         return prev.filter((item) => item !== id);
       } else {
         if (prev.length >= 5) {
-          alert("Maksimal 5 galeri yang dapat dipilih.");
+          toast.error("Maksimal 5 galeri yang dapat dipilih.");
           return prev;
         }
         return [...prev, id];
@@ -123,8 +122,13 @@ export function usePengaturanBerandaForm({
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setIsConfirmOpen(false);
     setIsSubmitting(true);
     
     try {
@@ -136,7 +140,7 @@ export function usePengaturanBerandaForm({
         if (slide.foto) {
           try {
             imageUrl = await uploadToCloudinary(slide.foto);
-          } catch (error) {
+          } catch {
             toast.error(`Gagal mengunggah foto untuk slide: ${slide.judul}`);
             setIsSubmitting(false);
             return;
@@ -196,5 +200,8 @@ export function usePengaturanBerandaForm({
     handleDrop,
     handleToggleGaleri,
     handleSubmit,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    handleConfirmSubmit,
   };
 }

@@ -15,7 +15,7 @@ export function formatDate(dateStr: string) {
       month: 'long',
       year: 'numeric'
     }).format(dateObj);
-  } catch (e) {
+  } catch {
     return dateStr;
   }
 }

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface DeleteBeritaButtonProps {
   id: string;
@@ -37,14 +38,15 @@ export function DeleteBeritaButton({ id, judul, triggerClassName, triggerVariant
       });
       if (res.ok) {
         setOpen(false);
+        toast.success("Berhasil dihapus.");
         router.refresh();
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || "Gagal menghapus berita");
+        toast.error(err.message || "Gagal menghapus berita");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan sistem");
+      toast.error("Terjadi kesalahan sistem");
     } finally {
       setIsDeleting(false);
     }

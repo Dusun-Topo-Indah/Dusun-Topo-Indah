@@ -3,6 +3,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -20,12 +30,18 @@ interface PengaturanBeritaFormProps {
 
 export function PengaturanBeritaForm({ globalConfig }: PengaturanBeritaFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
   const [headerTitle, setHeaderTitle] = useState(globalConfig["berita_header_title"] || "Berita & Pengumuman");
   const [headerDesc, setHeaderDesc] = useState(globalConfig["berita_header_desc"] || "Dapatkan informasi terkini, artikel, dan pengumuman resmi seputar aktivitas masyarakat di Dusun Topo Indah.");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setIsConfirmOpen(false);
     setIsSubmitting(true);
 
     try {
@@ -55,7 +71,8 @@ export function PengaturanBeritaForm({ globalConfig }: PengaturanBeritaFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl pb-20 space-y-6">
+    <>
+      <form onSubmit={handleSubmit} className="max-w-4xl pb-20 space-y-6">
       <Accordion multiple defaultValue={["header"]} className="w-full space-y-4">
         <AccordionItem value="header" className="border-b pb-4">
           <AccordionTrigger className="text-xl font-bold hover:no-underline">
@@ -103,6 +120,24 @@ export function PengaturanBeritaForm({ globalConfig }: PengaturanBeritaFormProps
           )}
         </Button>
       </div>
-    </form>
+      </form>
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Simpan Pengaturan?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menyimpan perubahan ini?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Menyimpan..." : "Ya, Simpan"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

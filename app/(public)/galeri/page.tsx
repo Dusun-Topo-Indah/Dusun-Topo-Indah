@@ -1,5 +1,6 @@
-import { BentoGallery, GalleryItem } from "@/components/public/beranda/bento-gallery";
+import { type GalleryItem } from "@/components/public/beranda/bento-gallery";
 import { PageHeader } from "@/components/public/common/page-header";
+import { PaginatedGallery } from "@/components/public/galeri/paginated-gallery";
 import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
 
 export const metadata = {
@@ -14,27 +15,27 @@ export default async function GaleriPage() {
   const headerTitle = globalConfig["galeri_header_title"] || "Galeri Dusun";
   const headerDesc = globalConfig["galeri_header_desc"] || "Melihat lebih dekat keindahan alam, kegiatan masyarakat, dan momen-momen penting di Dusun Topo Indah.";
 
-  
   let items: GalleryItem[] = [];
   
   if (galeriData.length > 0) {
-    const baseItems = galeriData.map(g => ({
+    items = galeriData.map(g => ({
       id: g.id,
       image: g.url_foto,
       title: g.judul || "Tanpa Judul",
       category: g.kategori
     }));
-    
-    items = [...baseItems];
-    let loopIndex = 0;
-    while (items.length < 7) {
-      items.push({
-        ...baseItems[loopIndex % baseItems.length],
-        id: `duplicate-${items.length}`,
-      });
-      loopIndex++;
+
+    if (items.length < 7) {
+      const baseItems = [...items];
+      let loopIndex = 0;
+      while (items.length < 7) {
+        items.push({
+          ...baseItems[loopIndex % baseItems.length],
+          id: `duplicate-${items.length}`,
+        });
+        loopIndex++;
+      }
     }
-    items = items.slice(0, 7);
   } else {
     const fallbackImages = [
       "/images/hero_bg_desa.png",
@@ -59,7 +60,7 @@ export default async function GaleriPage() {
       
       {/* Grid Container */}
       <div className="w-full pt-4 md:pt-10">
-        <BentoGallery items={items} />
+        <PaginatedGallery items={items} />
       </div>
     </main>
   );

@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import type { BeritaRow } from "@/types";
+import { beritaSchema, type BeritaFormValues } from "@/types/forms";
 
 interface UseBeritaFormProps {
   initialData?: BeritaRow;
@@ -13,17 +17,21 @@ export function useBeritaForm({ initialData, existingCategories }: UseBeritaForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [kategori, setKategori] = useState(initialData?.kategori || "");
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const allCategories = Array.from(new Set([...existingCategories, ...customCategories]));
-
-  const [judul, setJudul] = useState(initialData?.judul || "");
-  const [ringkasan, setRingkasan] = useState(initialData?.ringkasan || "");
-  const [isiBerita, setIsiBerita] = useState(initialData?.isi_berita || "");
-  const [foto, setFoto] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const isEdit = !!initialData;
+
+  const form = useForm<BeritaFormValues>({
+    resolver: zodResolver(beritaSchema),
+    defaultValues: {
+      judul: initialData?.judul || "",
+      kategori: initialData?.kategori || "",
+      ringkasan: initialData?.ringkasan || "",
+      isi_berita: initialData?.isi_berita || "",
+    },
+  });
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
@@ -41,27 +49,27 @@ export function useBeritaForm({ initialData, existingCategories }: UseBeritaForm
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const f = e.dataTransfer.files[0];
       if (f.type.startsWith("image/")) {
-        setFoto(f);
+        form.setValue("foto", f, { shouldValidate: true });
       } else {
-        alert("Harap unggah file gambar.");
+        toast.error("Harap unggah file gambar.");
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!judul || !isiBerita || !kategori) {
-      alert("Judul, isi berita, dan kategori wajib diisi.");
-      return;
-    }
-
+  const onSubmit = async (values: BeritaFormValues) => {
     setIsSubmitting(true);
     let uploadedCoverUrl = "";
     try {
       let urlFoto = initialData?.url_foto || "";
-      if (foto) {
-        urlFoto = await uploadToCloudinary(foto);
+      if (values.foto) {
+        urlFoto = await uploadToCloudinary(values.foto);
         uploadedCoverUrl = urlFoto;
+      }
+
+      if (!isEdit && !urlFoto) {
+        toast.error("Harap unggah gambar sampul untuk berita baru.");
+        setIsSubmitting(false);
+        return;
       }
 
       const method = isEdit ? "PUT" : "POST";
@@ -71,11 +79,11 @@ export function useBeritaForm({ initialData, existingCategories }: UseBeritaForm
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          judul,
-          ringkasan,
-          isi_berita: isiBerita,
+          judul: values.judul,
+          ringkasan: values.ringkasan,
+          isi_berita: values.isi_berita,
           url_foto: urlFoto,
-          kategori: kategori.trim(),
+          kategori: values.kategori.trim(),
         }),
       });
 
@@ -84,8 +92,12 @@ export function useBeritaForm({ initialData, existingCategories }: UseBeritaForm
         throw new Error(data.message || `Gagal ${isEdit ? "memperbarui" : "menyimpan"} berita.`);
       }
 
-      router.push("/admin/berita");
-      router.refresh();
+      toast.success(`Berita berhasil ${isEdit ? "diperbarui" : "diterbitkan"}!`);
+      // Tunggu sebentar agar toast terlihat
+      setTimeout(() => {
+        router.push("/admin/berita");
+        router.refresh();
+      }, 1500);
     } catch (error: unknown) {
       console.error(error);
       if (uploadedCoverUrl) {
@@ -94,36 +106,26 @@ export function useBeritaForm({ initialData, existingCategories }: UseBeritaForm
         });
       }
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan sistem saat menyimpan berita.";
-      alert(msg);
-    } finally {
+      toast.error(msg);
       setIsSubmitting(false);
     }
   };
 
   return {
+    form,
     isSubmitting,
     comboboxOpen,
     setComboboxOpen,
     search,
     setSearch,
-    kategori,
-    setKategori,
     customCategories,
     setCustomCategories,
     allCategories,
-    judul,
-    setJudul,
-    ringkasan,
-    setRingkasan,
-    isiBerita,
-    setIsiBerita,
-    foto,
-    setFoto,
     isDragging,
     isEdit,
     handleDragOver,
     handleDragLeave,
     handleDrop,
-    handleSubmit,
+    onSubmit,
   };
 }

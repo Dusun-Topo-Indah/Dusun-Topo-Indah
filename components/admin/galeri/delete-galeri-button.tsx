@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface DeleteGaleriButtonProps {
   id: string;
@@ -36,14 +37,15 @@ export function DeleteGaleriButton({ id, triggerClassName, triggerVariant = "des
       });
       if (res.ok) {
         setOpen(false);
+        toast.success("Berhasil dihapus.");
         router.refresh();
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || "Gagal menghapus foto");
+        toast.error(err.message || "Gagal menghapus foto");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan sistem.");
+      toast.error("Terjadi kesalahan sistem.");
     } finally {
       setIsDeleting(false);
     }

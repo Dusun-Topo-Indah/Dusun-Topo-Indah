@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistem Informasi Geografis & Profil Dusun Topo Indah
 
-## Getting Started
+Ini adalah web profil dan dashboard CMS untuk Dusun Topo Indah. Dibangun dengan pendekatan Zero-Cost menggunakan Next.js (App Router), Google Sheets API (Headless CMS), dan Cloudinary (Media Storage).
 
-First, run the development server:
+## 🚀 Getting Started (Local Development)
 
+Proyek ini memanfaatkan **Vercel Environments** sebagai *Single Source of Truth* untuk mengelola kredensial dan environment variables. 
+
+Dengan setup ini, kita tidak perlu membagikan file `.env` secara manual. Semua ditarik langsung dengan aman dari Vercel!
+
+### Prasyarat
+
+Pastikan Anda sudah menginstal:
+- [Node.js](https://nodejs.org/) (versi 18.x ke atas)
+- [Vercel CLI](https://vercel.com/docs/cli)
+
+Instal Vercel CLI secara global (jika belum):
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm i -g vercel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Langkah Setup Lokal
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone repository dan install dependencies:**
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Hubungkan ke project Vercel (Vercel Link):**
+   ```bash
+   vercel link
+   ```
+   *Anda akan diminta login ke akun Vercel yang memiliki akses ke project ini, kemudian ikuti instruksi untuk menghubungkan direktori ini ke project yang ada di Vercel.*
 
-## Learn More
+3. **Tarik Environment Variables:**
+   ```bash
+   npm run env:pull
+   ```
+   *Perintah ini akan menjalankan `vercel env pull .env.local` dan mengunduh variabel dari environment **Development** Vercel ke komputer Anda.*
 
-To learn more about Next.js, take a look at the following resources:
+4. **Jalankan Development Server:**
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Buka [http://localhost:3000](http://localhost:3000) pada browser Anda.
+Dashboard admin dapat diakses di `/admin`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🌍 Vercel Environments (Workflow)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Proyek ini memiliki 3 tahapan (environments) yang terpusat di Vercel:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Development (Lokal):**
+   - Variabel yang digunakan khusus untuk Anda kembangkan di komputer lokal.
+   - Cara ambil: `npm run env:pull`.
+
+2. **Preview (Staging / Uji Coba):**
+   - Setiap kali Anda melakukan `git push` ke branch selain `main` (misal: `fitur-a`), Vercel akan membuat URL sementara (*Preview Deployment*).
+   - Berguna untuk tes QA/Review tanpa merusak data *Production*.
+
+3. **Production (Live):**
+   - Terjadi saat branch di-merge ke `main`.
+   - Menggunakan environment variables khusus *Production*.
+
+## 🛠️ Stack & Panduan Lengkap
+
+- **Frontend**: Next.js 16 (App Router), Tailwind CSS, shadcn/ui.
+- **Backend / CMS**: Google Sheets API, Route Handlers.
+- **Media**: Cloudinary.
+
+Baca [Dokumentasi Proyek Lengkap (PRD)](md/prd.MD) dan peraturan pada file [AGENTS.md](AGENTS.md) untuk detail arsitektur, tipe data, serta aturan kode yang disepakati.

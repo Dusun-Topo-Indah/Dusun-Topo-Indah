@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -27,6 +29,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <TooltipProvider>{children}</TooltipProvider>
         <Toaster />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

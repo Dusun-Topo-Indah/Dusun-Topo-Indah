@@ -1,7 +1,7 @@
-import { AboutSection } from "@/components/public/about-section";
-import { GaleriSection } from "@/components/public/galeri-section";
-import { HeroBanner } from "@/components/public/hero-banner";
-import { NewsSection } from "@/components/public/news-section";
+import { AboutSection } from "@/components/public/beranda/about-section";
+import { GaleriSection } from "@/components/public/galeri/galeri-section";
+import { HeroBanner } from "@/components/public/beranda/hero-banner";
+import { NewsSection } from "@/components/public/beranda/news-section";
 import { getGaleriList, getGlobalConfig, getBeritaList } from "@/lib/google-sheets";
 import { formatDate } from "@/lib/utils";
 

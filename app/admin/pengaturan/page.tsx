@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
-import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { PengaturanForm } from "./pengaturan-form";
 
 const JWT_SECRET = new TextEncoder().encode(

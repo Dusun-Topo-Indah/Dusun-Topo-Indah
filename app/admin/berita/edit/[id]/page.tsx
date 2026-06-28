@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getBeritaList } from "@/lib/google-sheets";
-import { BeritaForm } from "@/components/admin/berita-form";
-import { SetBreadcrumb } from "@/components/admin/breadcrumb-context";
-import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { BeritaForm } from "@/components/admin/berita/berita-form";
+import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 
 export const metadata = {
   title: "Edit Berita — Dusun Topo Indah",

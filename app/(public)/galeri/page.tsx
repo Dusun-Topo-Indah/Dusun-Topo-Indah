@@ -1,5 +1,5 @@
-import { BentoGallery, GalleryItem } from "@/components/public/bento-gallery";
-import { PageHeader } from "@/components/public/page-header";
+import { BentoGallery, GalleryItem } from "@/components/public/beranda/bento-gallery";
+import { PageHeader } from "@/components/public/common/page-header";
 import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
 
 export const metadata = {

@@ -1,5 +1,5 @@
-import { DashboardHeader } from "@/components/admin/dashboard-header";
-import { PengaturanBeritaForm } from "@/components/admin/pengaturan-berita-form";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { PengaturanBeritaForm } from "@/components/admin/pengaturan/pengaturan-berita-form";
 import { getGlobalConfig } from "@/lib/google-sheets";
 
 export const metadata = {

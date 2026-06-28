@@ -4,12 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
 import { FileText, ImagePlus, Loader2, Save, Send, Check, ChevronsUpDown, Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -21,102 +18,40 @@ const RichTextEditor = dynamic(
   { ssr: false }
 );
 
+import { useBeritaForm } from "@/hooks/admin/use-berita-form";
+
 interface BeritaFormProps {
   initialData?: BeritaRow;
   existingCategories: string[];
 }
 
 export function BeritaForm({ initialData, existingCategories }: BeritaFormProps) {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [comboboxOpen, setComboboxOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [kategori, setKategori] = useState(initialData?.kategori || "");
-  const [customCategories, setCustomCategories] = useState<string[]>([]);
-  const allCategories = Array.from(new Set([...existingCategories, ...customCategories]));
-
-  const [judul, setJudul] = useState(initialData?.judul || "");
-  const [ringkasan, setRingkasan] = useState(initialData?.ringkasan || "");
-  const [isiBerita, setIsiBerita] = useState(initialData?.isi_berita || "");
-  const [foto, setFoto] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const isEdit = !!initialData;
-
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const f = e.dataTransfer.files[0];
-      if (f.type.startsWith("image/")) {
-        setFoto(f);
-      } else {
-        alert("Harap unggah file gambar.");
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!judul || !isiBerita || !kategori) {
-      alert("Judul, isi berita, dan kategori wajib diisi.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    let uploadedCoverUrl = "";
-    try {
-      let urlFoto = initialData?.url_foto || "";
-      if (foto) {
-        urlFoto = await uploadToCloudinary(foto);
-        uploadedCoverUrl = urlFoto;
-      }
-
-      const method = isEdit ? "PUT" : "POST";
-      const endpoint = isEdit ? `/api/berita/${initialData.id}` : "/api/berita";
-
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          judul,
-          ringkasan,
-          isi_berita: isiBerita,
-          url_foto: urlFoto,
-          kategori: kategori.trim(),
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || `Gagal ${isEdit ? "memperbarui" : "menyimpan"} berita.`);
-      }
-
-      router.push("/admin/berita");
-      router.refresh();
-    } catch (error: unknown) {
-      console.error(error);
-      if (uploadedCoverUrl) {
-        await deleteUploadedCloudinaryImage(uploadedCoverUrl).catch((rollbackError: unknown) => {
-          console.error(rollbackError);
-        });
-      }
-      const msg = error instanceof Error ? error.message : "Terjadi kesalahan sistem saat menyimpan berita.";
-      alert(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    isSubmitting,
+    comboboxOpen,
+    setComboboxOpen,
+    search,
+    setSearch,
+    kategori,
+    setKategori,
+    customCategories,
+    setCustomCategories,
+    allCategories,
+    judul,
+    setJudul,
+    ringkasan,
+    setRingkasan,
+    isiBerita,
+    setIsiBerita,
+    foto,
+    setFoto,
+    isDragging,
+    isEdit,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleSubmit,
+  } = useBeritaForm({ initialData, existingCategories });
 
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-10 pb-20">

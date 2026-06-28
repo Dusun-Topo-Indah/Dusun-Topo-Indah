@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/public/page-header";
+import { PageHeader } from "@/components/public/common/page-header";
 import { FadeIn } from "@/components/ui/fade-in";
 import { getGlobalConfig } from "@/lib/google-sheets";
 import Image from "next/image";

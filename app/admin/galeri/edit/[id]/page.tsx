@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getGaleriList } from "@/lib/google-sheets";
-import { GaleriFormFields } from "@/components/admin/galeri-form-fields";
-import { SetBreadcrumb } from "@/components/admin/breadcrumb-context";
-import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { GaleriFormFields } from "@/components/admin/galeri/galeri-form-fields";
+import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 
 export const metadata = {
   title: "Edit Galeri — Dusun Topo Indah",

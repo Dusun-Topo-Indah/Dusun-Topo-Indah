@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/public/page-header";
-import { BeritaLayout, BeritaItem } from "@/components/public/berita-layout";
+import { PageHeader } from "@/components/public/common/page-header";
+import { BeritaLayout, BeritaItem } from "@/components/public/berita/berita-layout";
 import { getGlobalConfig, getBeritaList } from "@/lib/google-sheets";
 import { formatDate } from "@/lib/utils";
 

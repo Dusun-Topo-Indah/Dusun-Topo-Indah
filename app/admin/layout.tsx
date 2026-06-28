@@ -1,11 +1,11 @@
-import { AppSidebar } from "@/components/admin/app-sidebar";
+import { AppSidebar } from "@/components/admin/layout/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { DynamicBreadcrumb } from "@/components/admin/dynamic-breadcrumb";
-import { BreadcrumbProvider } from "@/components/admin/breadcrumb-context";
+import { DynamicBreadcrumb } from "@/components/admin/layout/dynamic-breadcrumb";
+import { BreadcrumbProvider } from "@/components/admin/layout/breadcrumb-context";
 import { Suspense } from "react";
 
-import { UserNav } from "@/components/admin/user-nav";
+import { UserNav } from "@/components/admin/layout/user-nav";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,5 +1,5 @@
-import { DashboardHeader } from "@/components/admin/dashboard-header";
-import { InformasiWebForm } from "@/components/admin/informasi-web-form";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { InformasiWebForm } from "@/components/admin/pengaturan/informasi-web-form";
 import { getGlobalConfig } from "@/lib/google-sheets";
 
 export const metadata = {

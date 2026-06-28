@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
-import { DeleteBeritaButton } from "@/components/admin/delete-berita-button"
+import { DeleteBeritaButton } from "@/components/admin/berita/delete-berita-button"
 import { Card, CardContent } from "@/components/ui/card"
 
 interface BeritaGridProps {

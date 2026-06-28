@@ -7,8 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
-import { DeleteGaleriButton } from "@/components/admin/delete-galeri-button"
-import { DataTable } from "@/components/admin/data-table"
+import { DeleteGaleriButton } from "@/components/admin/galeri/delete-galeri-button"
+import { DataTable } from "@/components/admin/common/data-table"
 import { Badge } from "@/components/ui/badge"
 
 export const columns: ColumnDef<GaleriRow>[] = [

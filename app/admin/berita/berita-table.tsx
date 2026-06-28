@@ -7,8 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
-import { DeleteBeritaButton } from "@/components/admin/delete-berita-button"
-import { DataTable } from "@/components/admin/data-table"
+import { DeleteBeritaButton } from "@/components/admin/berita/delete-berita-button"
+import { DataTable } from "@/components/admin/common/data-table"
 
 export const columns: ColumnDef<BeritaRow>[] = [
   {

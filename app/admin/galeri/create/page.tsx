@@ -1,6 +1,6 @@
-import { SetBreadcrumb } from "@/components/admin/breadcrumb-context";
-import { GaleriFormFields } from "@/components/admin/galeri-form-fields";
-import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
+import { GaleriFormFields } from "@/components/admin/galeri/galeri-form-fields";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { getGaleriList } from "@/lib/google-sheets";
 
 export const metadata = {

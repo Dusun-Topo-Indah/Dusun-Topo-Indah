@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
-import { DeleteGaleriButton } from "@/components/admin/delete-galeri-button"
+import { DeleteGaleriButton } from "@/components/admin/galeri/delete-galeri-button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 

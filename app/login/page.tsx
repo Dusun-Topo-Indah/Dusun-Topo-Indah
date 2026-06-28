@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -32,12 +33,17 @@ export default function LoginPage() {
         throw new Error(data.message || "Gagal login");
       }
 
+      toast.success("Berhasil masuk, mengalihkan ke dashboard...");
+      setUsername("");
+      setPassword("");
       router.push("/admin");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
+        toast.error(err.message);
       } else {
         setError("Terjadi kesalahan yang tidak diketahui");
+        toast.error("Terjadi kesalahan yang tidak diketahui");
       }
     } finally {
       setLoading(false);

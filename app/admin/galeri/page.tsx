@@ -2,14 +2,14 @@ import { getGaleriListing } from "@/lib/google-sheets";
 import { cookies } from "next/headers";
 
 import Link from "next/link";
-import { DashboardHeader } from "@/components/admin/dashboard-header";
-import { EmptyState } from "@/components/admin/empty-state";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { EmptyState } from "@/components/admin/common/empty-state";
 import { GaleriTable } from "./galeri-table";
 import { GaleriGrid } from "./galeri-grid";
 import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ListingToolbar } from "@/components/admin/listing-toolbar";
-import { ListingPagination } from "@/components/admin/listing-pagination";
+import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
+import { ListingPagination } from "@/components/admin/common/listing-pagination";
 import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
 
 export const metadata = {

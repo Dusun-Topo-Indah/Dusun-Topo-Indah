@@ -1,4 +1,4 @@
-import { BeritaDetail } from "@/components/public/berita-detail";
+import { BeritaDetail } from "@/components/public/berita/berita-detail";
 
 import { getBeritaList } from "@/lib/google-sheets";
 import { notFound } from "next/navigation";

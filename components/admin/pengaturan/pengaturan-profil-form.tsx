@@ -8,171 +8,56 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { uploadToCloudinary } from "@/lib/cloudinary-client";
 import { FileText, ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 
-type ProfileSection = {
-  id: string;
-  title: string;
-  description: string;
-  foto: File | null;
-  currentFotoUrl: string;
-};
+import { usePengaturanProfilForm } from "@/hooks/admin/use-pengaturan-profil-form";
 
 export function PengaturanProfilForm({
   globalConfig,
 }: {
   globalConfig: Record<string, string>;
 }) {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
-
-  const [visi, setVisi] = useState(globalConfig["profil_visi"] || "");
-  const [headerTitle, setHeaderTitle] = useState(globalConfig["profil_header_title"] || "Profil Dusun");
-  const [headerDesc, setHeaderDesc] = useState(globalConfig["profil_header_desc"] || "Mengenal lebih dekat sejarah, kondisi alam, dan potensi yang dimiliki oleh Dusun Topo Indah.");
-  
-  const [misiList, setMisiList] = useState<string[]>(() => {
-    try {
-      if (globalConfig["profil_misi"]) {
-        const parsed = JSON.parse(globalConfig["profil_misi"]);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return [""];
-  });
-
-  const [sections, setSections] = useState<ProfileSection[]>(() => {
-    try {
-      if (globalConfig["profil_sections"]) {
-        const parsed = JSON.parse(globalConfig["profil_sections"]);
-        if (Array.isArray(parsed)) {
-          return parsed.map((s: { id?: string; title?: string; description?: string; image?: string }, index: number) => ({
-            id: s.id || `section-initial-${index}`,
-            title: s.title || "",
-            description: s.description || "",
-            foto: null,
-            currentFotoUrl: s.image || "",
-          }));
-        }
-      }
-    } catch {}
-    return [];
-  });
-
-  // Misi Handlers
-  const handleAddMisi = () => setMisiList([...misiList, ""]);
-  const handleRemoveMisi = (index: number) => {
-    const newMisi = [...misiList];
-    newMisi.splice(index, 1);
-    setMisiList(newMisi.length > 0 ? newMisi : [""]);
-  };
-  const handleChangeMisi = (index: number, value: string) => {
-    const newMisi = [...misiList];
-    newMisi[index] = value;
-    setMisiList(newMisi);
-  };
-
-  // Section Handlers
-  const handleAddSection = () => {
-    setSections([
-      ...sections,
-      {
-        id: `section-${Date.now()}`,
-        title: "",
-        description: "",
-        foto: null,
-        currentFotoUrl: "",
-      },
-    ]);
-  };
-
-  const handleRemoveSection = (id: string) => {
-    setSections(sections.filter((s) => s.id !== id));
-  };
-
-  const updateSection = <K extends keyof ProfileSection>(id: string, field: K, value: ProfileSection[K]) => {
-    setSections(
-      sections.map((s) => (s.id === id ? { ...s, [field]: value } : s))
-    );
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>, id: string) => {
-    e.preventDefault();
-    setDraggingSectionId(id);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setDraggingSectionId(null);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>, id: string) => {
-    e.preventDefault();
-    setDraggingSectionId(null);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const f = e.dataTransfer.files[0];
-      if (f.type.startsWith("image/")) {
-        updateSection(id, "foto", f);
-      } else {
-        alert("Harap unggah file gambar.");
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      const finalSections = await Promise.all(
-        sections.map(async (sec) => {
-          let imageUrl = sec.currentFotoUrl;
-          if (sec.foto) {
-            imageUrl = await uploadToCloudinary(sec.foto);
-          }
-          return {
-            id: sec.id,
-            title: sec.title,
-            description: sec.description,
-            image: imageUrl,
-          };
-        })
-      );
-
-      const payload = {
-        profil_header_title: headerTitle,
-        profil_header_desc: headerDesc,
-        profil_visi: visi,
-        profil_misi: JSON.stringify(misiList.filter(m => m.trim() !== "")),
-        profil_sections: JSON.stringify(finalSections),
-      };
-
-      const response = await fetch("/api/pengaturan-profil", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("Gagal menyimpan pengaturan.");
-      toast.success("Pengaturan profil berhasil disimpan!");
-      router.refresh();
-    } catch (error) {
-      console.error(error);
-      toast.error("Terjadi kesalahan saat menyimpan pengaturan.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    isSubmitting,
+    draggingSectionId,
+    visi,
+    setVisi,
+    headerTitle,
+    setHeaderTitle,
+    headerDesc,
+    setHeaderDesc,
+    misiList,
+    sections,
+    handleAddMisi,
+    handleRemoveMisi,
+    handleChangeMisi,
+    handleAddSection,
+    handleRemoveSection,
+    updateSection,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleSubmit,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    handleConfirmSubmit,
+  } = usePengaturanProfilForm({ globalConfig });
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl pb-20">
+    <> <form onSubmit={handleSubmit} className="max-w-4xl pb-20">
       <Accordion multiple defaultValue={["header", "visi-misi", "sections"]} className="w-full space-y-4">
         
         {/* SECTION: HEADER */}
@@ -407,6 +292,24 @@ export function PengaturanProfilForm({
           )}
         </Button>
       </div>
-    </form>
+      </form>
+
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Simpan Pengaturan Profil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menyimpan perubahan ini? Data akan diperbarui dan ditampilkan di halaman publik.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Menyimpan..." : "Ya, Simpan"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

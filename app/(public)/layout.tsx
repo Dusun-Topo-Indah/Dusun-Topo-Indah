@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/public/layout/navbar";
 import { Footer } from "@/components/public/layout/footer";
+import { ScrollToTop } from "@/components/public/layout/scroll-to-top";
 
 export default function PublicLayout({
   children,
@@ -11,6 +12,7 @@ export default function PublicLayout({
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

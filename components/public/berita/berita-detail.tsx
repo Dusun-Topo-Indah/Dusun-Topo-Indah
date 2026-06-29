@@ -1,11 +1,11 @@
 "use client";
 
 import { FadeIn } from "@/components/ui/fade-in";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface BeritaDetailProps {
   berita: {
@@ -95,7 +95,7 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
             className="object-cover relative z-10 transition-opacity duration-700"
             priority
           />
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 z-20 bg-black/40" />
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-6 pb-12 md:pb-20">
           <Link href="/berita" className="inline-flex items-center text-slate-300 hover:text-white transition-colors mb-6 md:mb-10 text-sm font-medium">

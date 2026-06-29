@@ -89,9 +89,9 @@ export function ListingToolbar({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-3 rounded-lg w-full">
-      <div className="flex w-full md:flex-1 items-center gap-2">
-        <div className="relative w-full md:max-w-md">
+    <div className="flex flex-col lg:flex-row items-center gap-3 rounded-lg w-full">
+      <div className="flex w-full lg:flex-1 items-center gap-2">
+        <div className="relative w-full lg:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
           <Input
             value={draftSearch}
@@ -115,14 +115,14 @@ export function ListingToolbar({
         </div>
       </div>
 
-      <div className="flex flex-wrap w-full md:flex-nowrap md:w-auto items-center gap-2 shrink-0">
+      <div className="flex flex-col lg:flex-row w-full lg:w-auto items-center gap-2 shrink-0">
         {(searchValue || (activeFilter && activeFilter !== "all") || (activeStatusFilter && activeStatusFilter !== "all")) && (
           <Button 
             type="button" 
             variant="outline" 
             size="sm" 
             onClick={resetFilters} 
-            className="h-14 px-4 shrink-0 w-full md:w-auto order-last md:order-0"
+            className="h-14 px-4 shrink-0 w-full lg:w-auto order-last lg:order-0"
             title="Reset semua pencarian & filter"
           >
             <span className="mr-2">Reset Filter</span>
@@ -136,7 +136,7 @@ export function ListingToolbar({
             if (value !== null) navigate({ filter: value, page: 1 });
           }}
         >
-          <SelectTrigger className="h-14 flex-1 min-w-[130px] md:w-[220px] md:flex-none bg-background shadow-sm border-muted-foreground/20 text-base relative overflow-visible">
+          <SelectTrigger className="h-14 w-full lg:w-[220px] bg-background shadow-sm border-muted-foreground/20 text-base relative overflow-visible">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -168,7 +168,7 @@ export function ListingToolbar({
               if (value !== null) navigate({ status: value, page: 1 });
             }}
           >
-            <SelectTrigger className="h-14 flex-1 min-w-[130px] md:w-[180px] md:flex-none bg-background shadow-sm border-muted-foreground/20 text-base relative overflow-visible">
+            <SelectTrigger className="h-14 w-full lg:w-[180px] bg-background shadow-sm border-muted-foreground/20 text-base relative overflow-visible">
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -194,7 +194,7 @@ export function ListingToolbar({
           </Select>
         )}
 
-        <div className="flex w-full md:w-auto bg-background shadow-sm border border-muted-foreground/20 rounded-md p-1 h-14 items-center justify-center shrink-0">
+        <div className="flex w-full lg:w-auto bg-background shadow-sm border border-muted-foreground/20 rounded-md p-1 h-14 items-center justify-center shrink-0">
           <Button
             type="button"
             variant={currentView === "grid" ? "secondary" : "ghost"}
@@ -203,7 +203,7 @@ export function ListingToolbar({
               document.cookie = "admin_view_preference=grid; path=/; max-age=31536000";
               navigate({ view: "grid" });
             }}
-            className={`h-full px-3 flex-1 md:flex-none ${currentView === "grid" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
+            className={`h-full px-3 flex-1 lg:flex-none ${currentView === "grid" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
             title="Tampilan Grid"
           >
             <LayoutGrid className="h-5 w-5 mx-auto" />
@@ -216,7 +216,7 @@ export function ListingToolbar({
               document.cookie = "admin_view_preference=list; path=/; max-age=31536000";
               navigate({ view: "list" });
             }}
-            className={`h-full px-3 flex-1 md:flex-none ${currentView === "list" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
+            className={`h-full px-3 flex-1 lg:flex-none ${currentView === "list" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
             title="Tampilan List"
           >
             <ListIcon className="h-5 w-5 mx-auto" />

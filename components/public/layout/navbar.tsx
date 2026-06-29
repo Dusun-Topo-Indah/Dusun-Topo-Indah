@@ -26,7 +26,6 @@ export function Navbar() {
       
       if (galeriEl) {
         const rect = galeriEl.getBoundingClientRect();
-        // Cek apakah navbar (sekitar 80px tingginya) menimpa section galeri
         if (rect.top <= 80 && rect.bottom >= 80) {
           isOverTransparentSection = true;
         }
@@ -43,7 +42,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Prevent scrolling when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -137,7 +135,7 @@ export function Navbar() {
           </Button>
         </div>
 
-        <div className="flex flex-col px-6 py-8 gap-8 overflow-y-auto">
+        <div className="flex flex-col px-6 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
             return (
@@ -145,7 +143,7 @@ export function Navbar() {
                 key={item.label}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-2xl font-bold tracking-tight transition-colors ${
+                className={`text-4xl py-10 border-b border-slate-200/60 last:border-0 font-bold tracking-tight transition-colors ${
                   isActive ? "text-primary" : "text-slate-900 hover:text-slate-600"
                 }`}
               >

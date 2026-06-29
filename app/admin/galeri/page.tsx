@@ -1,16 +1,16 @@
 import { getGaleriListing } from "@/lib/google-sheets";
 import { cookies } from "next/headers";
 
-import Link from "next/link";
-import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { EmptyState } from "@/components/admin/common/empty-state";
-import { GaleriTable } from "./galeri-table";
-import { GaleriGrid } from "./galeri-grid";
-import { ImageIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
 import { ListingPagination } from "@/components/admin/common/listing-pagination";
+import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { Button } from "@/components/ui/button";
 import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
+import { ImageIcon } from "lucide-react";
+import Link from "next/link";
+import { GaleriGrid } from "./galeri-grid";
+import { GaleriTable } from "./galeri-table";
 
 export const metadata = {
   title: "Galeri — Dusun Topo Indah",
@@ -62,7 +62,7 @@ export default async function AdminGaleriPage({ searchParams }: GaleriPageProps)
         searchValue={q}
         activeFilter={filter}
         filterOptions={[
-          { label: "Semua", value: "all" },
+          { label: "Semua Kategori", value: "all" },
           ...galeriResult.categories.map((category) => ({ label: category, value: category })),
         ]}
         currentLimit={limit}

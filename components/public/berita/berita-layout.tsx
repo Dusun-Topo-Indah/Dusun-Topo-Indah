@@ -1,6 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/ui/fade-in";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,9 +13,7 @@ import {
 import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useDeferredValue } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useDeferredValue, useState } from "react";
 
 export interface BeritaItem {
   id: string;
@@ -100,40 +100,48 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
       )}
 
       {/* Search and Year Filter Bar */}
-      <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-4 mb-12 md:mb-16 md:border-b border-slate-200 md:pb-8">
-        {/* Search Input */}
-        <div className="relative w-full sm:w-96">
-          <Input
-            type="text" 
-            placeholder="Cari berita..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className="w-full pr-24"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => { setSearchQuery(""); setCurrentPage(1); }}
-              className="absolute right-12 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 transition-colors rounded-full hover:bg-slate-100"
-              title="Hapus pencarian"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          <button className="absolute right-0 top-0 bottom-0 px-4 text-primary bg-transparent hover:bg-primary hover:text-slate-900 transition-colors rounded-r-md cursor-pointer">
-            <Search className="w-5 h-5" />
-          </button>
+      <div className="flex flex-col lg:flex-row items-center gap-3 w-full mb-12 md:mb-16 pb-8 border-b border-slate-200">
+        <div className="flex w-full lg:flex-1 items-center gap-2">
+          <div className="relative w-full lg:max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+            <Input
+              type="text" 
+              placeholder="Cari berita..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-11 pr-12 h-14 bg-white shadow-sm border-slate-200 text-base"
+            />
+            {searchQuery && (
+              <button 
+                type="button"
+                onClick={() => { setSearchQuery(""); setCurrentPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+                title="Hapus pencarian"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Year Filter */}
-        <div className="w-full sm:w-48 relative">
-          {activeYear !== "Semua Tahun" && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3 z-10">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-            </span>
+        <div className="flex flex-col lg:flex-row w-full lg:w-auto items-center gap-2 shrink-0">
+          {(searchQuery || activeCategory !== "Semua" || activeYear !== "Semua Tahun") && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              onClick={() => { setSearchQuery(""); setActiveCategory("Semua"); setActiveYear("Semua Tahun"); setCurrentPage(1); }} 
+              className="h-14 px-4 shrink-0 w-full lg:w-auto order-last lg:order-0"
+              title="Reset semua pencarian & filter"
+            >
+              <span className="mr-2">Reset Filter</span>
+              <X className="h-4 w-4" />
+            </Button>
           )}
+
+          {/* Year Filter */}
           <Select value={activeYear} onValueChange={(val) => { setActiveYear(val || "Semua Tahun"); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full h-[50px] bg-white border border-slate-200 rounded-none focus:ring-0 focus:ring-offset-0 focus:border-primary text-slate-700 transition-colors rounded-md relative">
+            <SelectTrigger className="h-14 w-full lg:w-[220px] bg-white shadow-sm border-slate-200 text-base">
               <SelectValue placeholder="Semua Tahun" />
             </SelectTrigger>
             <SelectContent className="rounded-md border-slate-200">

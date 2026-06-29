@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -51,7 +52,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-[100dvh] flex items-center justify-center bg-white md:bg-slate-50 md:p-6 overflow-hidden">
+    <div className="relative min-h-dvh flex items-center justify-center bg-white md:bg-slate-50 md:p-6 overflow-hidden">
       {/* Background Pattern Grid for Desktop */}
       <div
         className="hidden md:block absolute inset-0 pointer-events-none opacity-40"
@@ -64,7 +65,7 @@ export default function LoginPage() {
       />
 
       {/* Main Container */}
-      <div className="w-full h-full md:h-auto min-h-[100dvh] md:min-h-[550px] md:max-w-4xl bg-white md:rounded-2xl md:shadow-xl flex flex-col md:flex-row overflow-hidden relative z-10 border border-slate-100">
+      <div className="w-full h-full md:h-auto min-h-dvh md:min-h-[550px] md:max-w-4xl bg-white md:rounded-2xl md:shadow-xl flex flex-col md:flex-row overflow-hidden relative z-10 border border-slate-100">
         
         {/* Left Side: Branding / Illustration (Hidden on Mobile) */}
         <div className="hidden md:flex md:w-[45%] bg-primary relative items-center justify-center p-12 overflow-hidden">
@@ -123,13 +124,23 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Password</Label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-6">

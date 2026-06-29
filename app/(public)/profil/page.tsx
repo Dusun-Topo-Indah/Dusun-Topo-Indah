@@ -94,7 +94,7 @@ export default async function ProfilPage() {
               className="w-full md:w-1/2"
             >
               <div 
-                className={`relative aspect-video md:aspect-[4/3] w-full ${
+                className={`relative aspect-video md:aspect-4/3 w-full ${
                   isImageLeft 
                     ? "shadow-[16px_16px_0_0_#a5e00a] md:shadow-[24px_24px_0_0_#a5e00a]" 
                     : "shadow-[-16px_16px_0_0_#a5e00a] md:shadow-[-24px_24px_0_0_#a5e00a]"
@@ -144,7 +144,7 @@ export default async function ProfilPage() {
           {/* Row 1: VISI */}
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-200 border-b border-slate-200">
             {/* Title */}
-            <div className="w-full md:w-1/3 lg:w-1/4 p-12 md:p-16 flex items-center justify-center md:justify-end bg-white/50 backdrop-blur-sm">
+            <div className="w-full md:w-1/3 lg:w-1/4 p-12 md:p-16 flex items-center justify-center md:justify-end bg-white/80">
               <FadeIn direction="right">
                 <h3 className="text-4xl font-bold text-slate-900 tracking-widest uppercase">
                   Visi
@@ -152,7 +152,7 @@ export default async function ProfilPage() {
               </FadeIn>
             </div>
             {/* Content */}
-            <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center bg-white/50 backdrop-blur-sm">
+            <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center bg-white/80">
               <FadeIn direction="left">
                 <p className="text-slate-600 text-xl md:text-2xl leading-relaxed max-w-2xl font-medium whitespace-pre-wrap">
                   {visi}
@@ -164,7 +164,7 @@ export default async function ProfilPage() {
           {/* Row 2: MISI */}
           <div className="flex flex-col md:flex-row-reverse divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-slate-200">
             {/* Title */}
-            <div className="w-full md:w-1/3 lg:w-1/4 p-12 md:p-16 flex items-center justify-center md:justify-start bg-white/50 backdrop-blur-sm">
+            <div className="w-full md:w-1/3 lg:w-1/4 p-12 md:p-16 flex items-center justify-center md:justify-start bg-white/80">
               <FadeIn direction="left" delay={0.2}>
                 <h3 className="text-4xl font-bold text-slate-900 tracking-widest uppercase">
                   Misi
@@ -172,7 +172,7 @@ export default async function ProfilPage() {
               </FadeIn>
             </div>
             {/* Content */}
-            <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center justify-end text-left bg-white/50 backdrop-blur-sm">
+            <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center justify-end text-left bg-white/80">
               <FadeIn direction="right" delay={0.2} className="w-full max-w-2xl">
                 <div className="flex flex-col gap-6">
                   {misiList.map((item, idx) => (

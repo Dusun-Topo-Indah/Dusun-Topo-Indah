@@ -1,13 +1,20 @@
 "use client"
 
-import * as React from "react"
+import { DeleteBeritaButton } from "@/components/admin/berita/delete-berita-button"
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import type { BeritaRow } from "@/types"
+import { CalendarDays, ImageIcon, Pencil } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
-import { buttonVariants } from "@/components/ui/button"
-import { DeleteBeritaButton } from "@/components/admin/berita/delete-berita-button"
-import { Card, CardContent } from "@/components/ui/card"
+import * as React from "react"
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "Draf") return <Badge variant="secondary" className="absolute top-3 left-3 text-orange-800 border-orange-800 shadow-sm">Draf</Badge>
+  if (status === "Arsip") return <Badge variant="secondary" className="absolute top-3 left-3 text-slate-800 border-slate-800 shadow-sm">Arsip</Badge>
+  return <Badge variant="default" className="absolute top-3 left-3 text-white border-primary shadow-sm">Publik</Badge>
+}
 
 interface BeritaGridProps {
   data: BeritaRow[]
@@ -37,6 +44,7 @@ export function BeritaGrid({ data, emptyState }: BeritaGridProps) {
                 <ImageIcon className="h-8 w-8 opacity-40" />
               </div>
             )}
+            <StatusBadge status={berita.status_publikasi || "Publik"} />
           </div>
           <CardContent className="flex flex-col flex-1 px-4 py-3 justify-start items-start text-left">
             <h3 className="font-semibold text-[15px] line-clamp-2 mb-2 text-slate-800 leading-snug">

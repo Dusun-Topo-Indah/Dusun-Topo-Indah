@@ -23,6 +23,7 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
   const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+  const status = typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : "all";
   
   const cookieStore = await cookies();
   const viewPref = cookieStore.get("admin_view_preference")?.value;
@@ -40,6 +41,7 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
   const beritaResult = await getBeritaListing({
     q,
     filter,
+    status,
     page,
     limit,
   });
@@ -75,6 +77,13 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
             value: cat,
           })),
         ]}
+        activeStatusFilter={status}
+        statusOptions={[
+          { label: "Semua Status", value: "all" },
+          { label: "Publik", value: "Publik" },
+          { label: "Draf", value: "Draf" },
+          { label: "Arsip", value: "Arsip" },
+        ]}
         currentLimit={limit}
         currentPage={beritaResult.page}
         currentView={view as "list" | "grid"}
@@ -94,7 +103,7 @@ export default async function BeritaPage({ searchParams }: BeritaPageProps) {
 
       <ListingPagination
         pathname="/admin/berita"
-        query={{ q, filter, page: beritaResult.page, limit }}
+        query={{ q, filter, status, page: beritaResult.page, limit }}
         page={beritaResult.page}
         totalPages={beritaResult.totalPages}
         totalItems={beritaResult.totalItems}

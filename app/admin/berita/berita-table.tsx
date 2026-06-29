@@ -1,14 +1,21 @@
 "use client"
 
-import * as React from "react"
-import { ColumnDef } from "@tanstack/react-table"
-import type { BeritaRow } from "@/types"
-import Image from "next/image"
-import Link from "next/link"
-import { ImageIcon, CalendarDays, Pencil } from "lucide-react"
-import { buttonVariants } from "@/components/ui/button"
 import { DeleteBeritaButton } from "@/components/admin/berita/delete-berita-button"
 import { DataTable } from "@/components/admin/common/data-table"
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
+import type { BeritaRow } from "@/types"
+import { ColumnDef } from "@tanstack/react-table"
+import { CalendarDays, ImageIcon, Pencil } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import * as React from "react"
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "Draf") return <Badge variant="secondary" className="text-orange-800 border-orange-800">Draf</Badge>
+  if (status === "Arsip") return <Badge variant="secondary" className="text-slate-800 border-slate-800">Arsip</Badge>
+  return <Badge variant="default" className="text-white border-primary">Publik</Badge>
+}
 
 export const columns: ColumnDef<BeritaRow>[] = [
   {
@@ -44,6 +51,11 @@ export const columns: ColumnDef<BeritaRow>[] = [
         {row.original.ringkasan || "-"}
       </span>
     ),
+  },
+  {
+    accessorKey: "status_publikasi",
+    header: "Status",
+    cell: ({ row }) => <StatusBadge status={row.original.status_publikasi || "Publik"} />
   },
   {
     accessorKey: "tanggal",

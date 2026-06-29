@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Search, X, Filter, LayoutGrid, List as ListIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,6 +10,9 @@ import {
 } from "@/components/ui/select";
 import type { ListingQueryParams } from "@/lib/listing";
 import { buildListingQueryParams, createListingSearchParams } from "@/lib/listing";
+import { Filter, LayoutGrid, List as ListIcon, Search, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export interface ListingFilterOption {
   label: string;
@@ -24,6 +24,8 @@ interface ListingToolbarProps {
   searchValue: string;
   activeFilter: string;
   filterOptions: ListingFilterOption[];
+  activeStatusFilter?: string;
+  statusOptions?: ListingFilterOption[];
   currentLimit: number;
   currentPage: number;
   currentView?: "list" | "grid";
@@ -34,6 +36,8 @@ export function ListingToolbar({
   searchValue,
   activeFilter,
   filterOptions,
+  activeStatusFilter,
+  statusOptions,
   currentLimit,
   currentPage,
   currentView = "list",
@@ -46,11 +50,12 @@ export function ListingToolbar({
     () => ({
       q: searchValue,
       filter: activeFilter,
+      status: activeStatusFilter,
       page: currentPage,
       limit: currentLimit,
       view: currentView,
     }),
-    [activeFilter, currentLimit, currentPage, searchValue, currentView]
+    [activeFilter, activeStatusFilter, currentLimit, currentPage, searchValue, currentView]
   );
 
   useEffect(() => {
@@ -87,40 +92,63 @@ export function ListingToolbar({
     <div className="flex flex-col md:flex-row items-center gap-3 rounded-lg w-full">
       <div className="flex w-full md:flex-1 items-center gap-2">
         <div className="relative w-full md:max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
           <Input
             value={draftSearch}
             onChange={(e) => setDraftSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pl-11 h-14 bg-background shadow-sm border-muted-foreground/20 text-base"
+            className="w-full pl-11 pr-12 h-14 bg-background shadow-sm border-muted-foreground/20 text-base"
           />
+          {draftSearch && (
+            <button
+              type="button"
+              onClick={() => {
+                setDraftSearch("");
+                navigate({ q: "", page: 1 });
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
+              title="Hapus Pencarian"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
-        {(searchValue || (activeFilter && activeFilter !== "all")) && (
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="sm" 
-            onClick={resetFilters} 
-            className="h-14 px-4 text-muted-foreground shrink-0 hover:bg-background/80 hidden tablet:flex text-base"
-          >
-            Reset
-            <X className="ml-2 h-5 w-5" />
-          </Button>
-        )}
       </div>
 
-      <div className="flex w-full md:w-auto items-center gap-2 shrink-0">
+      <div className="flex flex-wrap w-full md:flex-nowrap md:w-auto items-center gap-2 shrink-0">
+        {(searchValue || (activeFilter && activeFilter !== "all") || (activeStatusFilter && activeStatusFilter !== "all")) && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={resetFilters} 
+            className="h-14 px-4 shrink-0 w-full md:w-auto order-last md:order-0"
+            title="Reset semua pencarian & filter"
+          >
+            <span className="mr-2">Reset Filter</span>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+
         <Select 
           value={activeFilter} 
           onValueChange={(value) => {
             if (value !== null) navigate({ filter: value, page: 1 });
           }}
         >
-          <SelectTrigger className="h-14 w-full md:w-[220px] bg-background shadow-sm border-muted-foreground/20 text-base">
+          <SelectTrigger className="h-14 flex-1 min-w-[130px] md:w-[220px] md:flex-none bg-background shadow-sm border-muted-foreground/20 text-base relative overflow-visible">
             <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
+              <div className="relative">
+                <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
+                {activeFilter && activeFilter !== "all" && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+                  </span>
+                )}
+              </div>
               <span className="flex flex-1 text-left truncate">
-                {filterOptions.find((opt) => opt.value === activeFilter)?.label || "Filter..."}
+                {filterOptions.find((opt) => opt.value === activeFilter)?.label || "Kategori..."}
               </span>
             </div>
           </SelectTrigger>
@@ -133,7 +161,40 @@ export function ListingToolbar({
           </SelectContent>
         </Select>
 
-        <div className="flex bg-background shadow-sm border border-muted-foreground/20 rounded-md p-1 h-14 items-center shrink-0">
+        {statusOptions && (
+          <Select 
+            value={activeStatusFilter || "all"} 
+            onValueChange={(value) => {
+              if (value !== null) navigate({ status: value, page: 1 });
+            }}
+          >
+            <SelectTrigger className="h-14 flex-1 min-w-[130px] md:w-[180px] md:flex-none bg-background shadow-sm border-muted-foreground/20 text-base relative overflow-visible">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Filter className="h-5 w-5 text-muted-foreground shrink-0" />
+                  {activeStatusFilter && activeStatusFilter !== "all" && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+                    </span>
+                  )}
+                </div>
+                <span className="flex flex-1 text-left truncate">
+                  {statusOptions.find((opt) => opt.value === (activeStatusFilter || "all"))?.label || "Status..."}
+                </span>
+              </div>
+            </SelectTrigger>
+            <SelectContent align="end">
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        <div className="flex w-full md:w-auto bg-background shadow-sm border border-muted-foreground/20 rounded-md p-1 h-14 items-center justify-center shrink-0">
           <Button
             type="button"
             variant={currentView === "grid" ? "secondary" : "ghost"}
@@ -142,10 +203,10 @@ export function ListingToolbar({
               document.cookie = "admin_view_preference=grid; path=/; max-age=31536000";
               navigate({ view: "grid" });
             }}
-            className={`h-full px-3 ${currentView === "grid" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
+            className={`h-full px-3 flex-1 md:flex-none ${currentView === "grid" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
             title="Tampilan Grid"
           >
-            <LayoutGrid className="h-5 w-5" />
+            <LayoutGrid className="h-5 w-5 mx-auto" />
           </Button>
           <Button
             type="button"
@@ -155,10 +216,10 @@ export function ListingToolbar({
               document.cookie = "admin_view_preference=list; path=/; max-age=31536000";
               navigate({ view: "list" });
             }}
-            className={`h-full px-3 ${currentView === "list" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
+            className={`h-full px-3 flex-1 md:flex-none ${currentView === "list" ? "bg-muted" : "text-muted-foreground hover:text-foreground"}`}
             title="Tampilan List"
           >
-            <ListIcon className="h-5 w-5" />
+            <ListIcon className="h-5 w-5 mx-auto" />
           </Button>
         </div>
       </div>

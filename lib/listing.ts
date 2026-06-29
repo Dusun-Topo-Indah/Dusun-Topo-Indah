@@ -45,6 +45,7 @@ export function paginateItems<T>(items: T[], page: number, limit: number): Pagin
 export interface ListingQueryParams {
   q: string;
   filter: string;
+  status?: string;
   page: number;
   limit: number;
   view?: string;
@@ -57,6 +58,7 @@ export function buildListingQueryParams(
   return {
     q: updates.q ?? currentParams.q,
     filter: updates.filter ?? currentParams.filter,
+    status: updates.status !== undefined ? updates.status : currentParams.status,
     page: updates.page ?? currentParams.page,
     limit: updates.limit ?? currentParams.limit,
     view: updates.view !== undefined ? updates.view : currentParams.view,
@@ -68,6 +70,7 @@ export function createListingSearchParams(params: ListingQueryParams): string {
 
   if (params.q) searchParams.set("q", params.q);
   if (params.filter) searchParams.set("filter", params.filter);
+  if (params.status) searchParams.set("status", params.status);
   if (params.page > 1) searchParams.set("page", String(params.page));
   if (params.limit) searchParams.set("limit", String(params.limit));
   if (params.view) searchParams.set("view", params.view);

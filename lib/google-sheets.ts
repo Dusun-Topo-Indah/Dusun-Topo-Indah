@@ -38,7 +38,7 @@ export async function getBeritaList(): Promise<BeritaRow[]> {
   const sheets = await getGoogleSheetsInstance();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:G",
+    range: "Berita_Dusun!A:I",
   });
 
   const rows = res.data.values;
@@ -56,47 +56,19 @@ export async function getBeritaList(): Promise<BeritaRow[]> {
     isi_berita: row[4] || "",
     url_foto: row[5] || "",
     kategori: row[6] || "",
+    media_assets: row[7] || "",
+    status_publikasi: row[8] || "Publik",
   })).reverse(); 
 }
 
-export async function getRecentBerita(limit: number = 4): Promise<BeritaRow[]> {
+export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
   "use cache";
   cacheTag("berita", "berita-recent");
   cacheLife("hours");
   
-  const sheets = await getGoogleSheetsInstance();
-  
-  // 1. Ambil kolom A (hanya ID) untuk mengetahui total baris tanpa download data berat
-  const idRes = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:A",
-  });
-  
-  const totalRows = idRes.data.values?.length || 0;
-  if (totalRows <= 1) return []; // Hanya header atau kosong
-  
-  // 2. Hitung rentang (range) untuk mengambil {limit} baris terakhir
-  // Baris pertama (index 1) adalah header. Data mulai baris 2.
-  const startIndex = Math.max(2, totalRows - limit + 1);
-  const range = `Berita_Dusun!A${startIndex}:G${totalRows}`;
-  
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: range,
-  });
-  
-  const rows = res.data.values;
-  if (!rows || rows.length === 0) return [];
-  
-  return rows.map((row) => ({
-    id: row[0] || "",
-    judul: row[1] || "",
-    tanggal: row[2] || "",
-    ringkasan: row[3] || "",
-    isi_berita: row[4] || "",
-    url_foto: row[5] || "",
-    kategori: row[6] || "",
-  })).reverse(); 
+  const allBerita = await getBeritaList();
+  const publicBerita = allBerita.filter(b => b.status_publikasi === "Publik" || !b.status_publikasi);
+  return publicBerita.slice(0, limit);
 }
 
 export async function getTotalBerita(): Promise<number> {
@@ -154,10 +126,10 @@ export async function appendBerita(data: BeritaRow): Promise<void> {
   const sheets = await getGoogleSheetsInstance();
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:G",
+    range: "Berita_Dusun!A:I",
     valueInputOption: "USER_ENTERED",
     requestBody: {
-      values: [[data.id, data.judul, data.tanggal, data.ringkasan, data.isi_berita, data.url_foto, data.kategori]],
+      values: [[data.id, data.judul, data.tanggal, data.ringkasan, data.isi_berita, data.url_foto, data.kategori, data.media_assets || "", data.status_publikasi || "Publik"]],
     },
   });
 }
@@ -208,7 +180,7 @@ export async function updateBeritaById(id: string, updatedData: Partial<BeritaRo
   
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:G",
+    range: "Berita_Dusun!A:I",
   });
   const rows = res.data.values;
   if (!rows) return false;
@@ -226,13 +198,15 @@ export async function updateBeritaById(id: string, updatedData: Partial<BeritaRo
     updatedData.isi_berita !== undefined ? updatedData.isi_berita : (existingRow[4] || ""),
     updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[5] || ""),
     updatedData.kategori !== undefined ? updatedData.kategori : (existingRow[6] || ""),
+    updatedData.media_assets !== undefined ? updatedData.media_assets : (existingRow[7] || ""),
+    updatedData.status_publikasi !== undefined ? updatedData.status_publikasi : (existingRow[8] || "Publik"),
   ];
 
   const sheetRowIndex = rowIndex + 1;
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `Berita_Dusun!A${sheetRowIndex}:G${sheetRowIndex}`,
+    range: `Berita_Dusun!A${sheetRowIndex}:I${sheetRowIndex}`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [newRow],
@@ -326,6 +300,7 @@ export async function updateGaleriById(id: string, updatedData: Partial<GaleriRo
 interface BeritaListingArgs {
   q: string;
   filter: string;
+  status?: string;
   page: number;
   limit: number;
 }
@@ -361,7 +336,10 @@ export async function getBeritaListing(args: BeritaListingArgs) {
       matchesFilter = normalizeText(item.kategori) === categoryFilter;
     }
     
-    return matchesSearch && matchesFilter;
+    const statusFilter = args.status && args.status !== "all" ? args.status : "all";
+    const matchesStatus = statusFilter === "all" || item.status_publikasi === statusFilter;
+    
+    return matchesSearch && matchesFilter && matchesStatus;
   });
 
   const paginated = paginateItems(filtered, args.page, args.limit);

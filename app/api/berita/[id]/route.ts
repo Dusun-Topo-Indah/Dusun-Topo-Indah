@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { deleteBeritaById, getBeritaList, updateBeritaById } from "@/lib/google-sheets";
-import { revalidateTag } from "next/cache";
-import { deleteFromCloudinary } from "@/lib/cloudinary";
-import { sanitizeHtml } from "@/lib/sanitize";
 import { verifyAdminSession } from "@/lib/auth";
+import { deleteFromCloudinary } from "@/lib/cloudinary";
+import { deleteBeritaById, getBeritaList, updateBeritaById } from "@/lib/google-sheets";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { revalidateTag } from "next/cache";
+import { NextResponse } from "next/server";
 
 export async function PUT(
   request: Request,
@@ -26,7 +26,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { judul, ringkasan, isi_berita, url_foto, kategori } = body;
+    const { judul, ringkasan, isi_berita, url_foto, kategori, media_assets, status_publikasi } = body;
 
     if (!judul || !isi_berita || !kategori) {
       return NextResponse.json(
@@ -58,8 +58,10 @@ export async function PUT(
       judul,
       ringkasan,
       isi_berita: cleanHtml,
-      url_foto,
+      url_foto: url_foto !== undefined ? url_foto : undefined,
       kategori,
+      media_assets: media_assets !== undefined ? media_assets : undefined,
+      status_publikasi: status_publikasi !== undefined ? status_publikasi : undefined,
     });
 
     if (!success) {
@@ -71,29 +73,17 @@ export async function PUT(
 
     revalidateTag("berita", "max");
 
+    // Cascading delete for URL Foto
     const oldUrls = new Set<string>();
     if (oldBerita.url_foto && oldBerita.url_foto.includes("cloudinary.com")) {
       oldUrls.add(oldBerita.url_foto);
     }
-    const oldImgRegex = /<img[^>]+src="([^">]+)"/g;
-    let match;
-    while ((match = oldImgRegex.exec(oldBerita.isi_berita)) !== null) {
-      if (match[1].includes("cloudinary.com")) {
-        oldUrls.add(match[1]);
-      }
-    }
-
+    
     const newUrls = new Set<string>();
     if (url_foto && url_foto.includes("cloudinary.com")) {
       newUrls.add(url_foto);
     }
-    const newImgRegex = /<img[^>]+src="([^">]+)"/g;
-    while ((match = newImgRegex.exec(cleanHtml)) !== null) {
-      if (match[1].includes("cloudinary.com")) {
-        newUrls.add(match[1]);
-      }
-    }
-
+    
     const urlsToDelete = Array.from(oldUrls).filter((oldUrl) => !newUrls.has(oldUrl));
     if (urlsToDelete.length > 0) {
       await Promise.allSettled(urlsToDelete.map((url) => deleteFromCloudinary(url)));
@@ -144,11 +134,18 @@ export async function DELETE(
       urlsToDelete.push(berita.url_foto);
     }
 
-    const imgRegex = /<img[^>]+src="([^">]+)"/g;
-    let match;
-    while ((match = imgRegex.exec(berita.isi_berita)) !== null) {
-      if (match[1].includes("cloudinary.com")) {
-        urlsToDelete.push(match[1]);
+    if (berita.media_assets) {
+      try {
+        const assets: string[] = JSON.parse(berita.media_assets);
+        if (Array.isArray(assets)) {
+          assets.forEach((url) => {
+            if (url && url.includes("cloudinary.com")) {
+              urlsToDelete.push(url);
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Failed to parse media_assets on DELETE", e);
       }
     }
 

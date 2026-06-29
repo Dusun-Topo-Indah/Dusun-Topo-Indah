@@ -14,7 +14,8 @@ export default async function BeritaPage() {
   const headerTitle = globalConfig["berita_header_title"] || "Berita & Pengumuman";
   const headerDesc = globalConfig["berita_header_desc"] || "Dapatkan informasi terkini, artikel, dan pengumuman resmi seputar aktivitas masyarakat di Dusun Topo Indah.";
 
-  const rawBerita = await getBeritaList();
+  const allBerita = await getBeritaList();
+  const rawBerita = allBerita.filter(b => b.status_publikasi === "Publik" || !b.status_publikasi);
 
   const categories = Array.from(new Set(rawBerita.map((b) => b.kategori))).filter(Boolean);
   if (categories.length === 0) categories.push("Umum");

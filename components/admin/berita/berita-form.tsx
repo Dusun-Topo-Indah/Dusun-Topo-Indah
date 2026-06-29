@@ -1,21 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  FileText,
-  ImagePlus,
-  Loader2,
-  Save,
-  Send,
-  Check,
-  ChevronsUpDown,
-  Plus,
-} from "lucide-react";
-import dynamic from "next/dynamic";
-import Image from "next/image";
 import {
   Command,
   CommandEmpty,
@@ -25,11 +10,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Form,
   FormControl,
   FormField,
@@ -37,7 +17,36 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import type { BeritaFormValues } from "@/types/forms";
+import {
+  Check,
+  ChevronsUpDown,
+  FileText,
+  ImagePlus,
+  Loader2,
+  Plus,
+  Save,
+  Send
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import type { UseFormReturn } from "react-hook-form";
 
 import type { BeritaRow } from "@/types";
 
@@ -61,7 +70,7 @@ export function BeritaForm({
   existingCategories,
 }: BeritaFormProps) {
   const {
-    form,
+    form: rawForm,
     isSubmitting,
     comboboxOpen,
     setComboboxOpen,
@@ -72,11 +81,17 @@ export function BeritaForm({
     allCategories,
     isDragging,
     isEdit,
+    mediaAssets,
+    setMediaAssets,
+    handleMediaUploadSuccess,
+    handleCancel,
     handleDragOver,
     handleDragLeave,
     handleDrop,
     onSubmit,
   } = useBeritaForm({ initialData, existingCategories });
+
+  const form = rawForm as unknown as UseFormReturn<BeritaFormValues>;
 
   const foto = form.watch("foto");
 
@@ -324,6 +339,9 @@ export function BeritaForm({
                       <RichTextEditor
                         value={field.value}
                         onChange={field.onChange}
+                        mediaAssets={mediaAssets}
+                        setMediaAssets={setMediaAssets}
+                        onMediaUploadSuccess={handleMediaUploadSuccess}
                       />
                     </div>
                   </FormControl>
@@ -334,29 +352,85 @@ export function BeritaForm({
           </div>
         </div>
 
-        <div className="pt-4 flex md:col-span-2">
+        {isEdit && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div className="space-y-2 md:col-span-2">
+              <FormField
+                control={form.control}
+                name="status_publikasi"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold">
+                      Status Publikasi
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Publik">Publik</SelectItem>
+                        <SelectItem value="Draf">Draf</SelectItem>
+                        <SelectItem value="Arsip">Arsip</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="pt-4 flex flex-col sm:flex-row gap-3 md:col-span-2">
           <Button
-            type="submit"
+            type="button"
+            variant="destructive"
             disabled={isSubmitting}
-            className="w-full text-base h-14"
+            className="w-full sm:w-auto text-base h-14 order-2 sm:order-1"
+            onClick={handleCancel}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                {isEdit ? "Menyimpan..." : "Menerbitkan..."}
-              </>
-            ) : isEdit ? (
-              <>
-                <Save className="mr-2 h-5 w-5" />
-                Simpan Perubahan
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-5 w-5" />
-                Terbitkan Berita
-              </>
-            )}
+            Batal
           </Button>
+
+          {isEdit ? (
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:flex-1 text-base h-14 order-1 sm:order-2"
+            >
+              {isSubmitting ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Menyimpan...</>
+              ) : (
+                <><Save className="mr-2 h-5 w-5" /> Simpan Perubahan</>
+              )}
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={isSubmitting}
+                className="w-full sm:flex-1 text-base h-14 order-1 sm:order-2"
+                onClick={() => form.setValue("status_publikasi", "Draf")}
+              >
+                <FileText className="mr-2 h-5 w-5" /> Simpan sebagai Draf
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:flex-1 text-base h-14 order-1 sm:order-3"
+                onClick={() => form.setValue("status_publikasi", "Publik")}
+              >
+                {isSubmitting ? (
+                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Menerbitkan...</>
+                ) : (
+                  <><Send className="mr-2 h-5 w-5" /> Terbitkan Berita</>
+                )}
+              </Button>
+            </>
+          )}
         </div>
       </form>
     </Form>

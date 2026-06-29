@@ -1,15 +1,15 @@
 "use client";
 
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import type { GaleriRow } from "@/types";
 import {
   Check,
   ChevronsUpDown,
   Image as ImageIcon,
   Loader2,
-  Plus,
+  Plus
 } from "lucide-react";
-import type { GaleriRow } from "@/types";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 import {
   Command,
@@ -19,12 +19,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Form,
   FormControl,
@@ -34,6 +28,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +67,7 @@ export function GaleriFormFields({
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    handleCancel,
     onSubmit,
   } = useGaleriForm({ existingCategories, initialData, onSuccess });
 
@@ -286,10 +287,19 @@ export function GaleriFormFields({
           </div>
         </div>
 
-        <div className="pt-4 flex md:col-span-2">
+        <div className="pt-4 flex flex-col sm:flex-row gap-3 md:col-span-2">
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isLoading}
+            className="w-full sm:w-auto text-base h-14 order-2 sm:order-1"
+            onClick={handleCancel}
+          >Batal
+          </Button>
+
           <Button
             type="submit"
-            className="w-full text-base h-14"
+            className="w-full sm:flex-1 text-base h-14 order-1 sm:order-2"
             disabled={isLoading || !kategori || (mode === "create" && !file)}
           >
             {isLoading ? (

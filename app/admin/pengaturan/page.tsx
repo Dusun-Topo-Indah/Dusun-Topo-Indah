@@ -1,6 +1,6 @@
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 import { PengaturanForm } from "./pengaturan-form";
 
 const JWT_SECRET = new TextEncoder().encode(
@@ -19,17 +19,18 @@ export default async function PengaturanPage() {
         currentUsername = verified.payload.username as string;
       }
     } catch {
-      // Abaikan jika token tidak valid atau expired (sudah di-handle proxy)
     }
   }
 
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader 
-        title="Pengaturan Akun" 
-        description="Kelola kredensial login administrator untuk menjaga keamanan sistem." 
+        title="Pengaturan" 
+        description="Kelola kredensial administrator dan pemeliharaan sistem." 
       />
-      <PengaturanForm initialUsername={currentUsername} />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <PengaturanForm initialUsername={currentUsername} />
+      </div>
     </div>
   );
 }

@@ -141,8 +141,21 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
 
           {/* Year Filter */}
           <Select value={activeYear} onValueChange={(val) => { setActiveYear(val || "Semua Tahun"); setCurrentPage(1); }}>
-            <SelectTrigger className="h-14 w-full lg:w-[220px] bg-white shadow-sm border-slate-200 text-base">
-              <SelectValue placeholder="Semua Tahun" />
+            <SelectTrigger className="h-14 w-full lg:w-[220px] bg-white shadow-sm border-slate-200 text-base relative overflow-visible">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Calendar className="h-5 w-5 text-slate-400 shrink-0" />
+                  {activeYear !== "Semua Tahun" && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+                    </span>
+                  )}
+                </div>
+                <span className="flex flex-1 text-left truncate">
+                  {activeYear}
+                </span>
+              </div>
             </SelectTrigger>
             <SelectContent className="rounded-md border-slate-200">
               <SelectItem value="Semua Tahun">Semua Tahun</SelectItem>

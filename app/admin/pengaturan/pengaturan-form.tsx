@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
+import { StorageManagement } from "./storage-management";
 
 interface PengaturanFormProps {
   initialUsername: string;
@@ -119,7 +120,7 @@ export function PengaturanForm({ initialUsername }: PengaturanFormProps) {
 
   return (
     <div className="max-w-3xl pb-20">
-      <Accordion multiple defaultValue={["username", "password"]} className="w-full space-y-4">
+      <Accordion multiple defaultValue={["username", "password", "storage"]} className="w-full space-y-4">
         
         {/* SECTION 1: UPDATE USERNAME */}
         <AccordionItem value="username" className="border-b pb-4">
@@ -243,6 +244,21 @@ export function PengaturanForm({ initialUsername }: PengaturanFormProps) {
                 </div>
               </div>
             </form>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* SECTION 3: STORAGE MANAGEMENT */}
+        <AccordionItem value="storage" className="border-b pb-4">
+          <AccordionTrigger className="text-xl font-bold hover:no-underline text-red-700">
+            Manajemen Penyimpanan
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 pb-6">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Alat pembersih ini berguna untuk menghapus sisa-sisa gambar sampah (yatim piatu) di Database akibat peramban tertutup sebelum artikel sempat disimpan. Hanya gambar yang usianya lebih dari 24 jam yang akan dipindai dan dibersihkan dari Database.
+              </p>
+              <StorageManagement />
+            </div>
           </AccordionContent>
         </AccordionItem>
 

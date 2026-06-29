@@ -1,7 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { checkSystemStatus, getTotalBerita, getTotalGaleri } from "@/lib/google-sheets";
+import { getStorageUsage } from "@/lib/cloudinary";
+import { getTotalBerita, getTotalGaleri } from "@/lib/google-sheets";
 import {
   BadgeInfo,
   Database,
@@ -11,13 +12,25 @@ import {
   PlusCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { StorageManagement } from "./pengaturan/storage-management";
 
 export default async function AdminDashboardPage() {
-  const [totalBerita, totalGaleri, systemStatus] = await Promise.all([
+  const [totalBerita, totalGaleri, storageBytes] = await Promise.all([
     getTotalBerita(),
     getTotalGaleri(),
-    checkSystemStatus(),
+    getStorageUsage(),
   ]);
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return "0 MB";
+    if (bytes < 1024 * 1024 * 1024) {
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  const formattedStorage = formatBytes(storageBytes);
+  const percentUsed = ((storageBytes / (15 * 1024 * 1024 * 1024)) * 100).toFixed(2);
 
   return (
     <div className="space-y-8 pb-10 max-w-5xl">
@@ -54,13 +67,14 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card className="bg-transparent rounded-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status Sistem</CardTitle>
-            <Database className={`h-4 w-4 ${systemStatus.status === "Online" ? "text-primary" : "text-red-500"}`} />
+            <CardTitle className="text-sm font-medium">Total Penyimpanan</CardTitle>
+            <Database className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${systemStatus.status === "Online" ? "text-primary" : "text-red-600"}`}>{systemStatus.status}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {systemStatus.message}
+            <div className="text-2xl font-bold text-primary">{formattedStorage}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
+              <span>Batas Kapasitas: 15 GB</span>
+              <span className="font-semibold">{percentUsed}% Terpakai</span>
             </p>
           </CardContent>
         </Card>
@@ -93,7 +107,7 @@ export default async function AdminDashboardPage() {
             Panduan lengkap mengelola sistem informasi desa.
           </p>
           <div className="w-full">
-            <Accordion multiple defaultValue={["item-1", "item-2", "item-3", "item-4", "item-5"]} className="w-full space-y-4">
+            <Accordion multiple defaultValue={["item-1", "item-2", "item-3", "item-4", "item-5", "item-6"]} className="w-full space-y-4">
               
               <AccordionItem value="item-1" className="border-b pb-4">
                 <AccordionTrigger className="text-lg font-bold hover:no-underline">
@@ -142,6 +156,18 @@ export default async function AdminDashboardPage() {
                     <li>Pilih <b>Pengaturan Akun (Settings)</b> untuk mengubah <i>username</i> dan <i>password</i>.</li>
                     <li>Pilih <b>Keluar (Log out)</b> untuk mengakhiri sesi Anda dengan aman saat hendak meninggalkan perangkat atau komputer.</li>
                   </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-6" className="border-b pb-4">
+                <AccordionTrigger className="text-lg font-bold hover:no-underline text-red-700">
+                  6. Manajemen Penyimpanan
+                </AccordionTrigger>
+                <AccordionContent className="pt-4 pb-6 text-slate-600 leading-relaxed text-base">
+                  <p className="mb-4">
+                    Alat pembersih ini berguna untuk menghapus sisa-sisa gambar sampah (yatim piatu) di Database akibat peramban tertutup sebelum artikel sempat disimpan. Hanya gambar yang usianya lebih dari 24 jam yang akan dipindai dan dibersihkan dari Database.
+                  </p>
+                  <StorageManagement />
                 </AccordionContent>
               </AccordionItem>
 

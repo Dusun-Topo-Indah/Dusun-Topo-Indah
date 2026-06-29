@@ -8,10 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useDeferredValue } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -31,6 +31,7 @@ interface BeritaLayoutProps {
 
 export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [activeYear, setActiveYear] = useState("Semua Tahun");
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,15 +43,15 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
   ).filter(Boolean).sort((a, b) => Number(b) - Number(a));
 
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.summary.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.title.toLowerCase().includes(deferredSearchQuery.toLowerCase()) || 
+                          item.summary.toLowerCase().includes(deferredSearchQuery.toLowerCase());
     const matchesCategory = activeCategory === "Semua" || item.category === activeCategory;
     const itemYear = item.date.split(" ").pop() || "";
     const matchesYear = activeYear === "Semua Tahun" || itemYear === activeYear;
     return matchesSearch && matchesCategory && matchesYear;
   });
 
-  const isSearching = searchQuery.length > 0 || activeCategory !== "Semua" || activeYear !== "Semua Tahun";
+  const isSearching = deferredSearchQuery.length > 0 || activeCategory !== "Semua" || activeYear !== "Semua Tahun";
   
   const highlightItem = !isSearching && currentPage === 1 && items.length > 0 ? filteredItems[0] : null;
   const listItemsBase = highlightItem && currentPage === 1 ? filteredItems.slice(1) : filteredItems;
@@ -107,16 +108,32 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
             placeholder="Cari berita..."
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            className="w-full pr-24"
           />
+          {searchQuery && (
+            <button 
+              onClick={() => { setSearchQuery(""); setCurrentPage(1); }}
+              className="absolute right-12 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 transition-colors rounded-full hover:bg-slate-100"
+              title="Hapus pencarian"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
           <button className="absolute right-0 top-0 bottom-0 px-4 text-primary bg-transparent hover:bg-primary hover:text-slate-900 transition-colors rounded-r-md cursor-pointer">
             <Search className="w-5 h-5" />
           </button>
         </div>
 
         {/* Year Filter */}
-        <div className="w-full sm:w-48">
+        <div className="w-full sm:w-48 relative">
+          {activeYear !== "Semua Tahun" && (
+            <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3 z-10">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+            </span>
+          )}
           <Select value={activeYear} onValueChange={(val) => { setActiveYear(val || "Semua Tahun"); setCurrentPage(1); }}>
-            <SelectTrigger className="w-full h-[50px] bg-white border border-slate-200 rounded-none focus:ring-0 focus:ring-offset-0 focus:border-primary text-slate-700 transition-colors rounded-md">
+            <SelectTrigger className="w-full h-[50px] bg-white border border-slate-200 rounded-none focus:ring-0 focus:ring-offset-0 focus:border-primary text-slate-700 transition-colors rounded-md relative">
               <SelectValue placeholder="Semua Tahun" />
             </SelectTrigger>
             <SelectContent className="rounded-md border-slate-200">

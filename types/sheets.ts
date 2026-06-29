@@ -6,6 +6,8 @@ export interface BeritaRow {
   isi_berita: string;
   url_foto: string;
   kategori: string;
+  media_assets?: string;
+  status_publikasi?: string;
 }
 
 export interface GaleriRow {

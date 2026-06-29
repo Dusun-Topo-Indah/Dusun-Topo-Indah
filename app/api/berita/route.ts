@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { judul, ringkasan, isi_berita, url_foto, kategori } = body;
+    const { judul, ringkasan, isi_berita, url_foto, kategori, media_assets, status_publikasi } = body;
 
     if (!judul || !isi_berita || !kategori) {
       return NextResponse.json(
@@ -41,6 +41,8 @@ export async function POST(request: Request) {
       isi_berita: cleanHtml,
       url_foto: url_foto || "",
       kategori: kategori || "",
+      media_assets: media_assets || "",
+      status_publikasi: status_publikasi || "Publik",
     });
     revalidateTag("berita", "max");
 

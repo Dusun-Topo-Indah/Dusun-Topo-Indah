@@ -1,52 +1,137 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import { Bold, Italic, Strikethrough, Heading2, Heading3, List, ListOrdered, ImageIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toggle } from "@/components/ui/toggle";
+import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
+import ImageExtension from "@tiptap/extension-image";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Bold, CheckCircle2, FileImage, Heading2, Heading3, ImageIcon, Italic, Link as LinkIcon, List, ListOrdered, Loader2, Strikethrough, Trash2, UploadCloud } from "lucide-react";
+import Image from "next/image";
 import * as React from "react";
+import { toast } from "sonner";
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
+  mediaAssets?: string[];
+  setMediaAssets?: React.Dispatch<React.SetStateAction<string[]>>;
+  onMediaUploadSuccess?: (url: string) => void;
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAssets, onMediaUploadSuccess }: RichTextEditorProps) {
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+  const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
+  const [urlInput, setUrlInput] = React.useState("");
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [assetToDelete, setAssetToDelete] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: {
-          levels: [2, 3],
-        },
+        heading: { levels: [2, 3] },
       }),
-      Image.configure({
+      ImageExtension.configure({
         HTMLAttributes: {
           class: "rounded-md max-w-full h-auto mx-auto object-contain",
         },
       }),
     ],
     content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-    onTransaction: () => {
-      forceUpdate();
-    },
+    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onTransaction: () => forceUpdate(),
     editorProps: {
       attributes: {
-        class:
-          "min-h-[300px] w-full bg-transparent px-4 py-4 text-sm outline-none prose prose-sm max-w-none focus:outline-none",
+        class: "min-h-[300px] w-full bg-transparent px-4 py-4 text-sm outline-none prose prose-sm max-w-none focus:outline-none",
       },
     },
   });
 
-  if (!editor) {
-    return null;
-  }
+  if (!editor) return null;
+
+  const currentHTML = editor.getHTML();
+  const unusedAssets = mediaAssets.filter(url => !currentHTML.includes(url));
+
+  const handleAddUrl = () => {
+    if (!urlInput) return;
+    editor.chain().focus().setImage({ src: urlInput }).run();
+    setUrlInput("");
+    setIsMediaModalOpen(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (mediaAssets.length >= 5) {
+      toast.error("Batas maksimal 5 gambar per berita telah tercapai.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      if (setMediaAssets) {
+        setMediaAssets((prev) => [...prev, url]);
+      }
+      if (onMediaUploadSuccess) {
+        onMediaUploadSuccess(url);
+      }
+      toast.success("Gambar berhasil diunggah.");
+      editor.chain().focus().setImage({ src: url }).run();
+      setIsMediaModalOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal mengunggah gambar.";
+      toast.error(msg);
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const confirmDeleteAsset = async () => {
+    if (!assetToDelete) return;
+    setIsDeleting(true);
+    
+    try {
+      await deleteUploadedCloudinaryImage(assetToDelete);
+      if (setMediaAssets) {
+        setMediaAssets((prev) => prev.filter((u) => u !== assetToDelete));
+      }
+      
+      if (currentHTML.includes(assetToDelete)) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = currentHTML;
+        
+        const images = tempDiv.querySelectorAll(`img[src="${assetToDelete}"]`);
+        images.forEach(img => img.remove());
+        
+        editor.commands.setContent(tempDiv.innerHTML);
+      }
+      
+      toast.success("Gambar berhasil dihapus.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
+      toast.error("Gagal menghapus gambar: " + msg);
+    } finally {
+      setIsDeleting(false);
+      setAssetToDelete(null);
+    }
+  };
 
   return (
     <div className="flex flex-col rounded-md border bg-white shadow-sm overflow-hidden focus-within:ring-1 focus-within:ring-ring focus-within:border-primary transition-all">
@@ -57,7 +142,6 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleBold().run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle bold"
         >
           <Bold className="h-4 w-4" />
         </Toggle>
@@ -67,7 +151,6 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleItalic().run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle italic"
         >
           <Italic className="h-4 w-4" />
         </Toggle>
@@ -77,7 +160,6 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle strikethrough"
         >
           <Strikethrough className="h-4 w-4" />
         </Toggle>
@@ -88,7 +170,6 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle heading 2"
         >
           <Heading2 className="h-4 w-4" />
         </Toggle>
@@ -98,7 +179,6 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle heading 3"
         >
           <Heading3 className="h-4 w-4" />
         </Toggle>
@@ -109,7 +189,6 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle bullet list"
         >
           <List className="h-4 w-4" />
         </Toggle>
@@ -119,27 +198,169 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
           onMouseDown={(e) => e.preventDefault()}
           className="border border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:border-primary transition-all"
-          aria-label="Toggle ordered list"
         >
           <ListOrdered className="h-4 w-4" />
         </Toggle>
         <div className="w-px h-4 bg-border mx-1" />
-        <Toggle
-          size="sm"
-          pressed={false}
-          onPressedChange={() => {
-            const url = window.prompt("Masukkan URL Gambar:");
-            if (url) {
-              editor.chain().focus().setImage({ src: url }).run();
-            }
-          }}
-          onMouseDown={(e) => e.preventDefault()}
-          className="border hover:bg-muted transition-all"
-          aria-label="Insert Image"
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Toggle>
+
+        {/* Media Manager Dialog */}
+        <Dialog open={isMediaModalOpen} onOpenChange={setIsMediaModalOpen}>
+          <DialogTrigger render={
+            <Toggle
+              size="sm"
+              pressed={false}
+              className="border hover:bg-muted transition-all"
+              aria-label="Insert Image"
+            />
+          }>
+            <ImageIcon className="h-4 w-4" />
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] h-[550px] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
+              <DialogTitle>Media Berita</DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">Kelola dan sisipkan gambar untuk berita ini.</p>
+            </DialogHeader>
+            <Tabs defaultValue="upload" className="flex-1 flex flex-col px-6 pb-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="upload">Upload</TabsTrigger>
+                <TabsTrigger value="media">
+                  Media Tersimpan {mediaAssets.length > 0 && `(${mediaAssets.length})`}
+                </TabsTrigger>
+                <TabsTrigger value="url">URL Eksternal</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="upload" className="flex-1 mt-4">
+                <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-slate-200 rounded-md bg-slate-50">
+                  {isUploading ? (
+                    <div className="flex flex-col items-center text-slate-500">
+                      <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                      <p>Mengunggah gambar...</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <UploadCloud className="w-12 h-12 text-slate-300 mb-4" />
+                      <p className="text-sm text-slate-600 font-medium">Geser & lepas file atau klik tombol di bawah</p>
+                      <p className="text-xs text-slate-500 mt-1 mb-6">Maksimal 5 gambar per berita ({5 - mediaAssets.length} tersisa).</p>
+                      <label className={`cursor-pointer bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors ${mediaAssets.length >= 5 ? "opacity-50 pointer-events-none" : ""}`}>
+                        Pilih Gambar Baru
+                        <Input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={handleFileUpload} 
+                          disabled={mediaAssets.length >= 5}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="media" className="flex-1 mt-4 overflow-y-auto max-h-[350px]">
+                {mediaAssets.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-[300px] text-slate-500">
+                    <FileImage className="w-12 h-12 text-slate-300 mb-4" />
+                    <p>Belum ada media yang diunggah.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {mediaAssets.map((url, idx) => {
+                      const isUsed = currentHTML.includes(url);
+                      return (
+                        <div key={idx} className="relative group border rounded-md overflow-hidden bg-slate-100 aspect-square">
+                          <Image src={url} alt={`Media ${idx}`} fill className="object-cover" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                            <Button size="sm" variant="secondary" onClick={() => {
+                              editor.chain().focus().setImage({ src: url }).run();
+                              setIsMediaModalOpen(false);
+                            }}>Gunakan</Button>
+                            <Button size="sm" variant="destructive" onClick={() => setAssetToDelete(url)}>
+                              <Trash2 className="w-4 h-4 mr-1" /> Hapus
+                            </Button>
+                          </div>
+                          {!isUsed && (
+                            <span className="absolute top-2 right-2 bg-yellow-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase shadow-sm">
+                              Tdk Dipakai
+                            </span>
+                          )}
+                          {isUsed && (
+                            <span className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-sm">
+                              <CheckCircle2 className="w-3 h-3" />
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="url" className="flex-1 mt-4">
+                <div className="flex flex-col gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tautan Gambar Lengkap</label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="https://example.com/image.jpg" 
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={handleAddUrl} disabled={!urlInput}>
+                    <LinkIcon className="w-4 h-4 mr-2" />
+                    Sisipkan Tautan
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
       </div>
+      
+      {unusedAssets.length > 0 && (
+        <div className="bg-yellow-50/50 border-b border-yellow-200 px-4 py-2 flex items-center justify-between text-xs text-yellow-800">
+          <span>Terdapat {unusedAssets.length} gambar yang telah diunggah tapi tidak terpakai di naskah.</span>
+          <Button variant="ghost" size="sm" className="h-6 text-xs px-2 hover:bg-yellow-200/50" onClick={() => setIsMediaModalOpen(true)}>
+            Kelola
+          </Button>
+        </div>
+      )}
+
+      {/* Alert Dialog Konfirmasi Hapus */}
+      <AlertDialog open={!!assetToDelete} onOpenChange={(open) => !open && !isDeleting && setAssetToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus media secara permanen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Gambar akan dihapus dari server Cloudinary
+              {assetToDelete && currentHTML.includes(assetToDelete) && (
+                <span className="block mt-2 font-medium text-red-600">
+                  Perhatian: Gambar ini sedang digunakan dalam naskah berita. Menghapusnya juga akan menghapus gambar tersebut dari naskah Anda.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDeleteAsset} 
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menghapus...
+                </>
+              ) : (
+                "Ya, Hapus Permanen"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <EditorContent editor={editor} />
     </div>
   );

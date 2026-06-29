@@ -33,7 +33,7 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
 
   const form = useForm<GaleriFormValues>({
     resolver: zodResolver(galeriSchema),
-    defaultValues: {
+    values: {
       judul: initialData?.judul || "",
       kategori: initialData?.kategori || "",
       deskripsi: initialData?.deskripsi || "",
@@ -104,6 +104,12 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
     resetPreview();
     form.setValue("foto", droppedFile, { shouldValidate: true });
     setPreview(URL.createObjectURL(droppedFile));
+  };
+
+  const handleCancel = () => {
+    form.reset();
+    resetPreview();
+    router.push("/admin/galeri");
   };
 
   const onSubmit = async (values: GaleriFormValues) => {
@@ -180,6 +186,7 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    handleCancel,
     onSubmit
   };
 }

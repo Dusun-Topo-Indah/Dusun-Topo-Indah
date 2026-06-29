@@ -30,6 +30,7 @@ export const beritaSchema = z.object({
   kategori: z.string().min(1, { message: "Kategori wajib dipilih atau diisi." }),
   ringkasan: z.string().max(200, { message: "Ringkasan maksimal 200 karakter." }).optional(),
   isi_berita: z.string().min(10, { message: "Isi berita minimal 10 karakter." }),
+  status_publikasi: z.enum(["Publik", "Draf", "Arsip"]),
   foto: z.any().optional(),
 });
 

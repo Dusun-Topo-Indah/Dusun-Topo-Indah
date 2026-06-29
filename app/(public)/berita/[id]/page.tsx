@@ -7,7 +7,7 @@ import { stripHtml } from "@/lib/listing";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const list = await getBeritaList();
-  const berita = list.find((b) => b.id === id);
+  const berita = list.find((b) => b.id === id && (b.status_publikasi === "Publik" || !b.status_publikasi));
   
   if (!berita) {
     return {
@@ -23,13 +23,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export async function generateStaticParams() {
   const list = await getBeritaList();
-  return list.map((b) => ({ id: b.id }));
+  const publicList = list.filter((b) => b.status_publikasi === "Publik" || !b.status_publikasi);
+  
+  if (publicList.length === 0) {
+    return [{ id: "_empty" }];
+  }
+  
+  return publicList.map((b) => ({ id: b.id }));
 }
 
 export default async function BeritaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const list = await getBeritaList();
-  const beritaData = list.find((b) => b.id === id);
+  const beritaData = list.find((b) => b.id === id && (b.status_publikasi === "Publik" || !b.status_publikasi));
 
   if (!beritaData) {
     notFound();

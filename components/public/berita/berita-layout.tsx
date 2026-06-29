@@ -7,14 +7,12 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
+  SelectTrigger
 } from "@/components/ui/select";
 import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDeferredValue, useState } from "react";
-
 export interface BeritaItem {
   id: string;
   title: string;

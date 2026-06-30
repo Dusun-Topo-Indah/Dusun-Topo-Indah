@@ -17,6 +17,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { deleteUploadedCloudinaryImage, uploadToCloudinary } from "@/lib/cloudinary-client";
 import ImageExtension from "@tiptap/extension-image";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, CheckCircle2, FileImage, Heading2, Heading3, ImageIcon, Italic, Link as LinkIcon, List, ListOrdered, Loader2, Strikethrough, Trash2, UploadCloud } from "lucide-react";
 import Image from "next/image";
@@ -30,6 +31,9 @@ interface RichTextEditorProps {
   setMediaAssets?: React.Dispatch<React.SetStateAction<string[]>>;
   onMediaUploadSuccess?: (url: string) => void;
 }
+
+const BUBBLE_MENU_OPTIONS = { placement: "top" } as const;
+const FLOATING_MENU_OPTIONS = { placement: "bottom-start", offset: 8 } as const;
 
 export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAssets, onMediaUploadSuccess }: RichTextEditorProps) {
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
@@ -221,12 +225,12 @@ export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAsse
               <p className="text-sm text-muted-foreground mt-1">Kelola dan sisipkan gambar untuk berita ini.</p>
             </DialogHeader>
             <Tabs defaultValue="upload" className="flex-1 flex flex-col px-6 pb-6">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="upload">Upload</TabsTrigger>
-                <TabsTrigger value="media">
+              <TabsList className="grid w-full grid-cols-1 tablet:grid-cols-3 desktop:grid-cols-3 h-auto! gap-1">
+                <TabsTrigger value="upload" className="w-full cursor-pointer h-auto! py-1.5">Upload</TabsTrigger>
+                <TabsTrigger value="media" className="w-full cursor-pointer h-auto! py-1.5 whitespace-normal text-center">
                   Media Tersimpan {mediaAssets.length > 0 && `(${mediaAssets.length})`}
                 </TabsTrigger>
-                <TabsTrigger value="url">URL Eksternal</TabsTrigger>
+                <TabsTrigger value="url" className="w-full cursor-pointer h-auto! py-1.5">URL Eksternal</TabsTrigger>
               </TabsList>
               
               <TabsContent value="upload" className="flex-1 mt-4">
@@ -360,6 +364,62 @@ export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAsse
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {editor && (
+        <BubbleMenu editor={editor} options={BUBBLE_MENU_OPTIONS}>
+          <div className="flex items-center gap-1 bg-white border shadow-md rounded-md p-1 border-slate-200">
+            <Toggle size="sm" pressed={editor.isActive("bold")} onPressedChange={() => editor.chain().focus().toggleBold().run()} className="h-8 px-2 data-[state=on]:bg-slate-100">
+              <Bold className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("italic")} onPressedChange={() => editor.chain().focus().toggleItalic().run()} className="h-8 px-2 data-[state=on]:bg-slate-100">
+              <Italic className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("strike")} onPressedChange={() => editor.chain().focus().toggleStrike().run()} className="h-8 px-2 data-[state=on]:bg-slate-100">
+              <Strikethrough className="h-4 w-4" />
+            </Toggle>
+            <div className="w-px h-4 bg-slate-200 mx-1" />
+            <Toggle size="sm" pressed={editor.isActive("heading", { level: 2 })} onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className="h-8 px-2 data-[state=on]:bg-slate-100">
+              <Heading2 className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("heading", { level: 3 })} onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className="h-8 px-2 data-[state=on]:bg-slate-100">
+              <Heading3 className="h-4 w-4" />
+            </Toggle>
+          </div>
+        </BubbleMenu>
+      )}
+
+      {editor && (
+        <FloatingMenu editor={editor} options={FLOATING_MENU_OPTIONS}>
+          <div className="flex flex-wrap items-center gap-1 bg-white border shadow-md rounded-md p-1 border-slate-200">
+            <Toggle size="sm" pressed={editor.isActive("bold")} onPressedChange={() => editor.chain().focus().toggleBold().run()} className="h-8 px-2" title="Bold">
+              <Bold className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("italic")} onPressedChange={() => editor.chain().focus().toggleItalic().run()} className="h-8 px-2" title="Italic">
+              <Italic className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("strike")} onPressedChange={() => editor.chain().focus().toggleStrike().run()} className="h-8 px-2" title="Strikethrough">
+              <Strikethrough className="h-4 w-4" />
+            </Toggle>
+            <div className="w-px h-4 bg-slate-200 mx-1" />
+            <Toggle size="sm" pressed={editor.isActive("heading", { level: 2 })} onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className="h-8 px-2" title="Heading 2">
+              <Heading2 className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("heading", { level: 3 })} onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className="h-8 px-2" title="Heading 3">
+              <Heading3 className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("bulletList")} onPressedChange={() => editor.chain().focus().toggleBulletList().run()} className="h-8 px-2" title="Bullet List">
+              <List className="h-4 w-4" />
+            </Toggle>
+            <Toggle size="sm" pressed={editor.isActive("orderedList")} onPressedChange={() => editor.chain().focus().toggleOrderedList().run()} className="h-8 px-2" title="Ordered List">
+              <ListOrdered className="h-4 w-4" />
+            </Toggle>
+            <div className="w-px h-4 bg-slate-200 mx-1" />
+            <Button size="sm" variant="ghost" className="h-8 px-2 hover:bg-slate-100" onClick={(e) => { e.preventDefault(); setIsMediaModalOpen(true); }} title="Sisipkan Gambar">
+              <ImageIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </FloatingMenu>
+      )}
 
       <EditorContent editor={editor} />
     </div>

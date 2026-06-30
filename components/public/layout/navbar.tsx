@@ -15,9 +15,16 @@ const navItems = [
 ];
 
 export function Navbar() {
+  const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setMounted(true);
+    });
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,7 +45,9 @@ export function Navbar() {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -53,8 +62,10 @@ export function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  const isHomePage = pathname === "/";
-  const useDarkTheme = !isHomePage || isScrolled;
+  const safePathname = pathname || "/";
+  const isHomePage = safePathname === "/";
+  
+  const useDarkTheme = !mounted ? !isHomePage : (!isHomePage || isScrolled);
 
   return (
     <>
@@ -78,13 +89,16 @@ export function Navbar() {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => {
-              const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
+              const isActive = item.href === "/" 
+                ? safePathname === item.href 
+                : safePathname.startsWith(item.href);
+                
               return (
                 <Link
                   key={item.label}
                   href={item.href}
                   className={`relative text-sm font-medium transition-colors ${
-                    useDarkTheme ? "text-slate-700" : "text-white/90"
+                    useDarkTheme ? "text-slate-700 hover:text-primary" : "text-white/90 hover:text-white"
                   } after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-full after:bg-current after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100 ${
                     isActive ? "after:origin-bottom-left after:scale-x-100" : "after:origin-bottom-right after:scale-x-0"
                   }`}
@@ -137,7 +151,10 @@ export function Navbar() {
 
         <div className="flex flex-col px-6 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
+            const isActive = item.href === "/" 
+              ? safePathname === item.href 
+              : safePathname.startsWith(item.href);
+              
             return (
               <Link
                 key={item.label}

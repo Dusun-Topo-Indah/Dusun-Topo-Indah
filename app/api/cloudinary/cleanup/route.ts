@@ -1,5 +1,5 @@
 import { verifyAdminSession } from "@/lib/auth";
-import { getCloudinaryResources, deleteFromCloudinary } from "@/lib/cloudinary";
+import { deleteFromCloudinary, getCloudinaryResources } from "@/lib/cloudinary";
 import { getBeritaList, getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
 import { NextResponse } from "next/server";
 
@@ -46,9 +46,34 @@ export async function POST() {
       if (g.url_foto) usedUrls.add(g.url_foto);
     });
 
-    if (globalConfig.hero_image) usedUrls.add(globalConfig.hero_image);
-    if (globalConfig.struktur_organisasi) usedUrls.add(globalConfig.struktur_organisasi);
+    // Parse Hero Slides (Global Config)
+    if (globalConfig["beranda_hero_slides"]) {
+      try {
+        const slides = JSON.parse(globalConfig["beranda_hero_slides"]);
+        if (Array.isArray(slides)) {
+          slides.forEach((slide: { image?: string; currentFotoUrl?: string }) => {
+            if (slide.image) usedUrls.add(slide.image);
+            if (slide.currentFotoUrl) usedUrls.add(slide.currentFotoUrl);
+          });
+        }
+      } catch (e) {
+        console.error("Error parsing beranda_hero_slides:", e);
+      }
+    }
 
+    // Parse Profil Sections (Global Config)
+    if (globalConfig["profil_sections"]) {
+      try {
+        const sections = JSON.parse(globalConfig["profil_sections"]);
+        if (Array.isArray(sections)) {
+          sections.forEach((sec: { image?: string }) => {
+            if (sec.image) usedUrls.add(sec.image);
+          });
+        }
+      } catch (e) {
+        console.error("Error parsing profil_sections:", e);
+      }
+    }
     // 3. Find Orphaned Media older than 24 hours
     const oneDayInMs = 24 * 60 * 60 * 1000;
     const now = Date.now();

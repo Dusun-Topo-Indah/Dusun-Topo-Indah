@@ -87,7 +87,7 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
           
           {/* KIRI: Featured News (Kotak, gambar full, overlay hitam di bawah) */}
           <FadeIn direction="up" delay={0.2} className="lg:col-span-7 relative min-h-[400px] lg:h-auto w-full overflow-hidden group">
-            <AnimatePresence initial={false} mode="wait">
+            <AnimatePresence initial={false}>
               <motion.div
                 key={activeIndex}
                 className="absolute inset-0 cursor-grab active:cursor-grabbing"
@@ -102,10 +102,10 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
                     paginate(-1);
                   }
                 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1 }}
+                transition={{ duration: 0.3 }}
               >
                 {/* Background Image - Kotak tanpa border radius */}
                 <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
@@ -160,17 +160,22 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
           </FadeIn>
 
           {/* KANAN: List Berita (Tanpa border/shadow, clean list) */}
-          <FadeIn direction="right" delay={0.4} className="lg:col-span-5 flex flex-col gap-6 lg:pl-4">
+          <div className="lg:col-span-5 flex flex-col gap-6 lg:pl-4">
             {initialNews.map((news, idx) => {
               return (
-                <div 
+                <FadeIn 
                   key={news.id} 
-                  className={cn(
-                    "group flex gap-4 items-start cursor-pointer transition-all flex-1",
-                    activeIndex === idx ? "pointer-events-none" : "hover:opacity-90"
-                  )}
-                  onClick={() => setActiveIndex(idx)}
+                  direction="up" 
+                  delay={Math.min(idx * 0.05, 0.2)}
+                  className="flex-1"
                 >
+                  <div 
+                    className={cn(
+                      "group flex gap-4 items-start cursor-pointer transition-all flex-1",
+                      activeIndex === idx ? "pointer-events-none" : "hover:opacity-90"
+                    )}
+                    onClick={() => setActiveIndex(idx)}
+                  >
                   {/* Thumbnail Image - Persegi panjang / Landscape, Kotak */}
                   <div className="relative w-36 h-24 md:w-48 md:h-32 overflow-hidden flex-shrink-0 bg-slate-100 group">
                     <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
@@ -178,7 +183,7 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
                       src={news.url_foto}
                       alt={news.judul}
                       fill
-                      className="object-cover relative z-10 transition-opacity duration-300"
+                      className="object-cover relative z-10 transition-all duration-500 group-hover:scale-105"
                       sizes="192px"
                     />
                   </div>
@@ -204,10 +209,11 @@ export function NewsSection({ initialNews = [] }: NewsSectionProps) {
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {news.tanggal}</span>
                     </div>
                   </div>
-                </div>
+                  </div>
+                </FadeIn>
               );
             })}
-          </FadeIn>
+          </div>
 
         </div>
 

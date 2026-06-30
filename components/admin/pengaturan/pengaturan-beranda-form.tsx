@@ -6,9 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +16,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { GaleriRow } from "@/types";
@@ -97,7 +97,7 @@ export function PengaturanBerandaForm({
                     <div className="relative group mt-1">
                       <label 
                         htmlFor={`foto-${slide.id}`} 
-                        className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-md cursor-pointer overflow-hidden transition-all ${
+                        className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-md cursor-pointer overflow-hidden transition-all ${
                           draggingSlideId === slide.id 
                             ? "border-primary bg-primary/5" 
                             : "border-slate-300 bg-white hover:border-slate-400/80 hover:bg-slate-50"
@@ -120,6 +120,7 @@ export function PengaturanBerandaForm({
                               fill 
                               className="object-cover opacity-40 group-hover:opacity-20 transition-opacity" 
                               sizes="400px" 
+                              priority
                             />
                             <div className="relative z-10 flex flex-col items-center justify-center">
                               <ImagePlus className="w-8 h-8 text-foreground mb-2" />
@@ -279,7 +280,7 @@ export function PengaturanBerandaForm({
                     >
                       <div className="relative aspect-video bg-slate-100 border-b flex shrink-0 items-center justify-center">
                         {galeri.url_foto ? (
-                          <Image src={galeri.url_foto} alt={galeri.judul || "Galeri"} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" />
+                          <Image src={galeri.url_foto} alt={galeri.judul || "Galeri"} fill className="object-cover" sizes="(max-width: 768px) 50vw, 20vw" priority={true} />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-muted-foreground"><ImagePlus className="w-8 h-8 opacity-40" /></div>
                         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export function FadeIn({ 
   children, 
@@ -13,11 +13,13 @@ export function FadeIn({
   direction?: "up" | "down" | "left" | "right" | "none",
   className?: string
 }) {
+  const shouldReduceMotion = useReducedMotion();
+
   const directions = {
-    up: { y: 40, x: 0 },
-    down: { y: -40, x: 0 },
-    left: { x: 40, y: 0 },
-    right: { x: -40, y: 0 },
+    up: { y: 15, x: 0 },
+    down: { y: -15, x: 0 },
+    left: { x: 15, y: 0 },
+    right: { x: -15, y: 0 },
     none: { x: 0, y: 0 }
   };
 
@@ -26,18 +28,18 @@ export function FadeIn({
       className={className}
       initial={{ 
         opacity: 0, 
-        ...directions[direction]
+        ...(shouldReduceMotion ? {} : directions[direction])
       }}
       whileInView={{ 
         opacity: 1, 
         x: 0, 
         y: 0 
       }}
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-20px" }}
       transition={{ 
-        duration: 0.7, 
-        delay, 
-        ease: [0.21, 0.47, 0.32, 0.98] 
+        duration: shouldReduceMotion ? 0.1 : 0.4, 
+        delay: shouldReduceMotion ? 0 : delay, 
+        ease: "easeOut" 
       }}
     >
       {children}

@@ -268,7 +268,7 @@ export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAsse
                       const isUsed = currentHTML.includes(url);
                       return (
                         <div key={idx} className="relative group border rounded-md overflow-hidden bg-slate-100 aspect-square">
-                          <Image src={url} alt={`Media ${idx}`} fill className="object-cover" />
+                          <Image src={url} alt={`Media ${idx}`} fill sizes="120px" className="object-cover" />
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                             <Button size="sm" variant="secondary" onClick={() => {
                               editor.chain().focus().setImage({ src: url }).run();

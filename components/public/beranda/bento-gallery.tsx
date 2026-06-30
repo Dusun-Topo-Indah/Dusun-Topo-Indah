@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AnimatePresence, motion } from "framer-motion";
 
 export interface GalleryItem {
   id: string;
@@ -111,7 +112,7 @@ export function BentoGallery({ items }: BentoGalleryProps) {
           {items.map((item, index) => (
             <FadeIn 
               key={`${item.id}-${index}`}
-              direction="up" 
+              direction="none"
               delay={0.05 * (index % 7)}
               className={`relative bg-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ${getBentoClasses(index)}`}
             >
@@ -126,6 +127,7 @@ export function BentoGallery({ items }: BentoGalleryProps) {
                   fill
                   className="object-cover relative z-10 transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 25vw"
+                  priority={index < 6}
                 />
                 
                 {/* Overlay on hover */}
@@ -144,8 +146,15 @@ export function BentoGallery({ items }: BentoGalleryProps) {
       </div>
 
       {/* Lightbox Overlay */}
-      {selectedIndex !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm">
+      <AnimatePresence>
+        {selectedIndex !== null && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
+          >
           
           {/* Top Bar (Title & Close) */}
           <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex items-center justify-center z-50 bg-gradient-to-b from-black/80 to-transparent">
@@ -198,8 +207,9 @@ export function BentoGallery({ items }: BentoGalleryProps) {
             </div>
           </div>
           
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

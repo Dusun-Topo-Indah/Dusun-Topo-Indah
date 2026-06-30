@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import { FadeIn } from "@/components/ui/fade-in";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 type Slide = {
   id: string | number;
@@ -55,7 +55,7 @@ export function HeroBanner({ initialSlides }: { initialSlides?: Slide[] }) {
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+          className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
             index === currentSlide ? "opacity-100 z-0" : "opacity-0 -z-10"
           }`}
         >
@@ -81,7 +81,7 @@ export function HeroBanner({ initialSlides }: { initialSlides?: Slide[] }) {
             {slides.map((slide, index) => (
               <div
                 key={`text-${slide.id}`}
-                className={`transition-all duration-700 absolute bottom-0 left-0 w-full ${
+                className={`transition-all duration-300 absolute bottom-0 left-0 w-full ${
                   index === currentSlide
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-4 pointer-events-none"
@@ -102,7 +102,7 @@ export function HeroBanner({ initialSlides }: { initialSlides?: Slide[] }) {
           </FadeIn>
 
           {/* Pagination Indicators */}
-          <FadeIn direction="left" delay={0.4} className="flex items-center gap-3 shrink-0 mb-2">
+          <FadeIn direction="up" delay={0.1} className="flex items-center gap-3 shrink-0 mb-2">
             {slides.map((_, index) => (
               <button
                 key={index}

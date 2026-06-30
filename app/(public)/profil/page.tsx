@@ -89,8 +89,7 @@ export default async function ProfilPage() {
           >
             {/* Image Side */}
             <FadeIn
-              direction={isImageLeft ? "right" : "left"}
-              delay={0.1}
+              direction="up"
               className="w-full md:w-1/2"
             >
               <div 
@@ -112,7 +111,7 @@ export default async function ProfilPage() {
 
             {/* Text Side */}
             <FadeIn
-              direction={isImageLeft ? "left" : "right"}
+              direction="up"
               delay={0.2}
               className="w-full md:w-1/2 flex flex-col"
             >
@@ -145,7 +144,7 @@ export default async function ProfilPage() {
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-200 border-b border-slate-200">
             {/* Title */}
             <div className="w-full md:w-1/3 lg:w-1/4 p-12 md:p-16 flex items-center justify-center md:justify-end bg-white/80">
-              <FadeIn direction="right">
+              <FadeIn direction="up">
                 <h3 className="text-4xl font-bold text-slate-900 tracking-widest uppercase">
                   Visi
                 </h3>
@@ -153,7 +152,7 @@ export default async function ProfilPage() {
             </div>
             {/* Content */}
             <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center bg-white/80">
-              <FadeIn direction="left">
+              <FadeIn direction="up" delay={0.2}>
                 <p className="text-slate-600 text-xl md:text-2xl leading-relaxed max-w-2xl font-medium whitespace-pre-wrap">
                   {visi}
                 </p>
@@ -165,7 +164,7 @@ export default async function ProfilPage() {
           <div className="flex flex-col md:flex-row-reverse divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-slate-200">
             {/* Title */}
             <div className="w-full md:w-1/3 lg:w-1/4 p-12 md:p-16 flex items-center justify-center md:justify-start bg-white/80">
-              <FadeIn direction="left" delay={0.2}>
+              <FadeIn direction="up">
                 <h3 className="text-4xl font-bold text-slate-900 tracking-widest uppercase">
                   Misi
                 </h3>
@@ -173,20 +172,23 @@ export default async function ProfilPage() {
             </div>
             {/* Content */}
             <div className="w-full md:w-2/3 lg:w-3/4 p-12 md:p-16 lg:p-24 flex items-center justify-end text-left bg-white/80">
-              <FadeIn direction="right" delay={0.2} className="w-full max-w-2xl">
-                <div className="flex flex-col gap-6">
-                  {misiList.map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-4">
-                      <span className="text-primary font-bold text-xl font-mono shrink-0 pt-0.5">
-                        {String(idx + 1).padStart(2, '0')}
-                      </span>
-                      <p className="text-slate-600 text-lg md:text-xl leading-relaxed whitespace-pre-wrap">
-                        {item}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </FadeIn>
+              <div className="w-full max-w-2xl flex flex-col gap-6">
+                {misiList.map((item, idx) => (
+                  <FadeIn 
+                    key={idx} 
+                    direction="up" 
+                    delay={0.2 + (idx * 0.05)} 
+                    className="flex items-start gap-4"
+                  >
+                    <span className="text-primary font-bold text-xl font-mono shrink-0 pt-0.5">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <p className="text-slate-600 text-lg md:text-xl leading-relaxed whitespace-pre-wrap">
+                      {item}
+                    </p>
+                  </FadeIn>
+                ))}
+              </div>
             </div>
           </div>
           

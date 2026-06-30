@@ -70,6 +70,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
                 alt={highlightItem.title}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, 65vw"
                 priority
               />
             </div>
@@ -98,7 +99,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
       )}
 
       {/* Search and Year Filter Bar */}
-      <div className="flex flex-col lg:flex-row items-center gap-3 w-full mb-12 md:mb-16 pb-8 border-b border-slate-200">
+      <FadeIn direction="up" delay={0.1} className="flex flex-col lg:flex-row items-center gap-3 w-full mb-12 md:mb-16 pb-8 border-b border-slate-200">
         <div className="flex w-full lg:flex-1 items-center gap-2">
           <div className="relative w-full lg:max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
@@ -139,7 +140,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
 
           {/* Year Filter */}
           <Select value={activeYear} onValueChange={(val) => { setActiveYear(val || "Semua Tahun"); setCurrentPage(1); }}>
-            <SelectTrigger className="h-14 w-full lg:w-[220px] bg-white shadow-sm border-slate-200 text-base relative overflow-visible">
+            <SelectTrigger className="h-14 w-full lg:w-[220px] cursor-pointer bg-white shadow-sm border-slate-200 text-base relative overflow-visible">
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Calendar className="h-5 w-5 text-slate-400 shrink-0" />
@@ -163,7 +164,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </FadeIn>
 
       {/* Main Split Layout */}
       <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
@@ -182,7 +183,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
           {currentListItems.length > 0 ? (
             <div className="flex flex-col gap-10">
               {currentListItems.map((item, index) => (
-                <FadeIn key={item.id} direction="up" delay={index * 0.1}>
+                <FadeIn key={item.id} direction="up" delay={Math.min(index * 0.05, 0.2)}>
                   <Link href={`/berita/${item.id}`} className="group flex flex-col sm:flex-row gap-6 items-start pb-10 border-b border-slate-100">
                     <div className="w-full sm:w-[40%] aspect-[4/3] relative overflow-hidden bg-slate-100 flex-shrink-0">
                       <Image 
@@ -190,6 +191,8 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
                         alt={item.title}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, 40vw"
+                        priority={index < 2}
                       />
                     </div>
                     <div className="w-full sm:w-[60%] flex flex-col py-2">
@@ -310,7 +313,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
         <div className="w-full lg:w-[30%] flex flex-col gap-12 order-1 lg:order-2">
           
           {/* Categories */}
-          <div>
+          <FadeIn direction="up" delay={0.2}>
             <h4 className="text-lg font-bold text-slate-900 mb-6 uppercase tracking-wider pb-2 border-b-2 border-primary inline-block">Kategori</h4>
             <ul className="flex flex-col">
               <li 
@@ -331,16 +334,16 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
                 </li>
               ))}
             </ul>
-          </div>
+          </FadeIn>
 
           {/* Popular News */}
-          <div>
+          <FadeIn direction="up" delay={0.3}>
             <h4 className="text-lg font-bold text-slate-900 mb-6 uppercase tracking-wider pb-2 border-b-2 border-primary inline-block">Berita Terbaru</h4>
             <div className="flex flex-col gap-6">
               {popularItems.map((item) => (
                 <Link href={`/berita/${item.id}`} key={`pop-${item.id}`} className="group flex gap-4 items-start">
                   <div className="w-24 h-24 relative overflow-hidden bg-slate-100 flex-shrink-0">
-                    <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="96px" />
                   </div>
                   <div className="flex flex-col">
                     <h5 className="font-bold text-slate-900 leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2">
@@ -354,7 +357,7 @@ export function BeritaLayout({ items, categories }: BeritaLayoutProps) {
                 </Link>
               ))}
             </div>
-          </div>
+          </FadeIn>
           
         </div>
       </div>

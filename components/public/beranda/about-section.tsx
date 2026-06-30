@@ -1,10 +1,10 @@
 "use client";
 
-import { motion, useInView, animate } from "framer-motion";
-import { useRef, useEffect } from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { FadeIn } from "@/components/ui/fade-in";
+import { animate, motion, useInView } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef } from "react";
 
 function Counter({ from = 0, to, duration = 2 }: { from?: number; to: number; duration?: number }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
@@ -48,17 +48,18 @@ export function AboutSection({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.02,
+        staggerChildren: 0.2,
         delayChildren: 0.2,
       },
     },
   };
 
-  const letterVariants = {
-    hidden: { color: "#94a3b8" },
+  const wordVariants = {
+    hidden: { color: "#cbd5e1", opacity: 0.3 },
     visible: {
       color: "#1e293b",
-      transition: { duration: 0.1 },
+      opacity: 1,
+      transition: { duration: 0.4 },
     },
   };
 
@@ -96,16 +97,19 @@ export function AboutSection({
                 initial="hidden"
                 animate={isInView ? "visible" : "hidden"}
               >
-                {trailingText.split("").map((char, index) => (
-                  <motion.span key={index} variants={letterVariants}>
-                    {char}
-                  </motion.span>
+                {trailingText.split(" ").map((word, index) => (
+                  <span key={index}>
+                    <motion.span variants={wordVariants} className="inline-block">
+                      {word}
+                    </motion.span>
+                    {" "}
+                  </span>
                 ))}
               </motion.span>
             </p>
           </div>
 
-          <FadeIn direction="left" delay={0.4} className="lg:col-span-4 flex flex-col gap-6 lg:gap-10 lg:border-l lg:border-slate-200 lg:pl-16">
+          <FadeIn direction="up" delay={0.4} className="lg:col-span-4 flex flex-col gap-6 lg:gap-10 lg:border-l lg:border-slate-200 lg:pl-16">
             <div className="flex flex-col border-y border-slate-200 py-6 lg:border-none lg:py-0">
               <div className="text-4xl md:text-6xl font-bold text-primary mb-2">
                 <Counter to={totalPenduduk} />+

@@ -116,7 +116,7 @@ export function GaleriSection({ initialSlides }: GaleriSectionProps) {
       ))}
 
       {/* Section Indicator Badge */}
-      <FadeIn direction="down" className="absolute top-28 md:top-36 left-0 w-full z-20 pointer-events-none">
+      <div className="absolute top-28 md:top-36 left-0 w-full z-20 pointer-events-none">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end">
             <div className="inline-flex flex-col gap-3">
@@ -130,14 +130,14 @@ export function GaleriSection({ initialSlides }: GaleriSectionProps) {
             </Link>
           </div>
         </div>
-      </FadeIn>
+      </div>
 
       {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 h-full flex flex-col justify-center">
         <div className="grid md:grid-cols-2 gap-8 items-center h-full pt-20 md:pt-0">
           
           {/* Left Side: Title & Description */}
-          <FadeIn direction="left" delay={0.2} className="flex flex-col text-white relative min-h-[300px] justify-center mt-32 md:mt-0">
+          <FadeIn direction="up" delay={0.2} className="flex flex-col text-white relative min-h-[300px] justify-center mt-32 md:mt-0">
             {slides.length > 0 && slides.map((slide, index) => (
               <div
                 key={`text-${slide.id}`}
@@ -163,7 +163,7 @@ export function GaleriSection({ initialSlides }: GaleriSectionProps) {
           </FadeIn>
 
           {/* Right Side: Cards Carousel & Controls */}
-          <FadeIn direction="right" delay={0.4} className="flex flex-col justify-end items-end h-full pb-8 md:pb-16 w-full overflow-hidden pointer-events-none md:pointer-events-auto">
+          <div className="flex flex-col justify-end items-end h-full pb-8 md:pb-16 w-full overflow-hidden pointer-events-none md:pointer-events-auto">
             
             {/* Cards Carousel (Hidden on mobile) */}
             <div className="hidden md:block w-full pointer-events-auto">
@@ -243,7 +243,7 @@ export function GaleriSection({ initialSlides }: GaleriSectionProps) {
               </div>
             </div>
 
-          </FadeIn>
+          </div>
 
         </div>
       </div>

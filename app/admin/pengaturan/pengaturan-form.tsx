@@ -57,10 +57,7 @@ export function PengaturanForm({ initialUsername }: PengaturanFormProps) {
       const res = await fetch("/api/auth/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          newUsername: initialUsername,
-          ...payload
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -113,7 +110,7 @@ export function PengaturanForm({ initialUsername }: PengaturanFormProps) {
     }
 
     await submitUpdate(
-      { oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword },
+      { newUsername: initialUsername, oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword },
       setIsPasswordLoading
     );
   };

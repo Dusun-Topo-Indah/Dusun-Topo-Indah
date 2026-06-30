@@ -186,7 +186,7 @@ export function PengaturanProfilForm({
                     <div className="relative group mt-1">
                       <label 
                         htmlFor={`foto-${section.id}`} 
-                        className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-md cursor-pointer overflow-hidden transition-all ${
+                        className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-md cursor-pointer overflow-hidden transition-all ${
                           draggingSectionId === section.id 
                             ? "border-primary bg-primary/5" 
                             : "border-slate-300 bg-white hover:border-slate-400/80 hover:bg-slate-50"
@@ -209,6 +209,7 @@ export function PengaturanProfilForm({
                               fill 
                               className="object-cover opacity-40 group-hover:opacity-20 transition-opacity" 
                               sizes="400px" 
+                              priority
                             />
                             <div className="relative z-10 flex flex-col items-center justify-center">
                               <ImagePlus className="w-8 h-8 text-foreground mb-2" />

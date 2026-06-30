@@ -1,5 +1,6 @@
 import { verifyAdminSession } from "@/lib/auth";
-import { updateGlobalConfig } from "@/lib/google-sheets";
+import { deleteFromCloudinary } from "@/lib/cloudinary";
+import { getGlobalConfig, updateGlobalConfig } from "@/lib/google-sheets";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
@@ -34,7 +35,52 @@ export async function POST(request: Request) {
     }
     
     if (Object.keys(updates).length > 0) {
+      const urlsToDelete: string[] = [];
+      if (updates["beranda_hero_slides"]) {
+        const oldConfig = await getGlobalConfig();
+        const oldSlidesJson = oldConfig["beranda_hero_slides"];
+        
+        if (oldSlidesJson) {
+          try {
+            const oldSlides = JSON.parse(oldSlidesJson);
+            const newSlides = JSON.parse(updates["beranda_hero_slides"]);
+            
+            const oldUrls = new Set<string>();
+            const newUrls = new Set<string>();
+            
+            if (Array.isArray(oldSlides)) {
+              oldSlides.forEach((slide: { image?: string }) => {
+                if (slide.image && slide.image.includes("cloudinary.com")) {
+                  oldUrls.add(slide.image);
+                }
+              });
+            }
+            
+            if (Array.isArray(newSlides)) {
+              newSlides.forEach((slide: { image?: string }) => {
+                if (slide.image && slide.image.includes("cloudinary.com")) {
+                  newUrls.add(slide.image);
+                }
+              });
+            }
+            
+            oldUrls.forEach((url) => {
+              if (!newUrls.has(url)) {
+                urlsToDelete.push(url);
+              }
+            });
+          } catch (e) {
+            console.error("Failed to parse hero slides for cleanup:", e);
+          }
+        }
+      }
+
       await updateGlobalConfig(updates);
+      
+      if (urlsToDelete.length > 0) {
+        await Promise.allSettled(urlsToDelete.map(url => deleteFromCloudinary(url)));
+      }
+      
       revalidateTag("global-config", "max");
       revalidateTag("galeri", "max"); 
     }

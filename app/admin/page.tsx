@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { StorageManagement } from "./pengaturan/storage-management";
+import { RefreshStorageButton } from "@/components/admin/refresh-storage-button";
 
 export default async function AdminDashboardPage() {
   const [totalBerita, totalGaleri, storageBytes] = await Promise.all([
@@ -71,7 +72,10 @@ export default async function AdminDashboardPage() {
             <Database className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">{formattedStorage}</div>
+            <div className="text-2xl font-bold text-primary flex items-center justify-between">
+              <span>{formattedStorage}</span>
+              <RefreshStorageButton />
+            </div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
               <span>Batas Kapasitas: 15 GB</span>
               <span className="font-semibold">{percentUsed}% Terpakai</span>

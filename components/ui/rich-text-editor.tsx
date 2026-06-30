@@ -234,7 +234,7 @@ export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAsse
               </TabsList>
               
               <TabsContent value="upload" className="flex-1 mt-4">
-                <div className="flex flex-col items-center justify-center h-[300px] border-2 border-dashed border-slate-200 rounded-md bg-slate-50">
+                <div className="flex flex-col items-center justify-center min-h-[250px] h-full border-2 border-dashed border-slate-200 rounded-md bg-slate-50">
                   {isUploading ? (
                     <div className="flex flex-col items-center text-slate-500">
                       <Loader2 className="w-8 h-8 animate-spin mb-4" />
@@ -243,9 +243,9 @@ export function RichTextEditor({ value, onChange, mediaAssets = [], setMediaAsse
                   ) : (
                     <div className="flex flex-col items-center">
                       <UploadCloud className="w-12 h-12 text-slate-300 mb-4" />
-                      <p className="text-sm text-slate-600 font-medium">Geser & lepas file atau klik tombol di bawah</p>
-                      <p className="text-xs text-slate-500 mt-1 mb-6">Maksimal 5 gambar per berita ({5 - mediaAssets.length} tersisa).</p>
-                      <label className={`cursor-pointer bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors ${mediaAssets.length >= 5 ? "opacity-50 pointer-events-none" : ""}`}>
+                      <p className="text-sm text-slate-600 font-medium text-center px-4">Geser & lepas file atau klik tombol di bawah</p>
+                      <p className="text-xs text-slate-500 mt-1 mb-6 text-center px-4">Maksimal 5 gambar per berita ({5 - mediaAssets.length} tersisa).</p>
+                      <label className={`cursor-pointer bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors ${mediaAssets.length >= 5 ? "opacity-50 pointer-events-none" : ""}`}>
                         Pilih Gambar Baru
                         <Input 
                           type="file" 

@@ -65,11 +65,12 @@ export function Navbar() {
   const safePathname = pathname || "/";
   const isHomePage = safePathname === "/";
   
-  const useDarkTheme = !mounted ? !isHomePage : (!isHomePage || isScrolled);
+  const useDarkTheme = !isHomePage || isScrolled;
 
   return (
     <>
       <nav
+        key={mounted ? "nav-client" : "nav-server"}
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b-[0.5px] ${
           useDarkTheme
             ? "bg-white/90 backdrop-blur-md border-black/10"
@@ -127,6 +128,7 @@ export function Navbar() {
 
       {/* Mobile Menu Overlay */}
       <div
+        key={mounted ? "mobile-client" : "mobile-server"}
         className={`fixed inset-0 z-50 bg-white transition-transform duration-500 ease-in-out md:hidden flex flex-col ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}

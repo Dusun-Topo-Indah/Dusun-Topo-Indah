@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { CopyrightYear } from "./copyright-year";
-import { getGlobalConfig } from "@/lib/google-sheets";
+import { getGlobalConfig } from "@/lib/db/queries";
 
 export async function Footer() {
   const globalConfig = await getGlobalConfig();

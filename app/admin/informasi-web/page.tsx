@@ -1,6 +1,6 @@
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { InformasiWebForm } from "@/components/admin/pengaturan/informasi-web-form";
-import { getGlobalConfig } from "@/lib/google-sheets";
+import { getGlobalConfig } from "@/lib/db/queries";
 
 export const metadata = {
   title: "Pengaturan Informasi Web — Admin Dusun Topo Indah",

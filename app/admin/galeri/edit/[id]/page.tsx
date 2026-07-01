@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getGaleriList } from "@/lib/google-sheets";
+import { getGaleriById, getGaleriList } from "@/lib/db/queries";
 import { GaleriFormFields } from "@/components/admin/galeri/galeri-form-fields";
 import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
@@ -11,7 +11,7 @@ export const metadata = {
 export default async function EditGaleriPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const galeriList = await getGaleriList();
-  const galeri = galeriList.find((item) => item.id === id);
+  const galeri = await getGaleriById(id);
 
   if (!galeri) {
     notFound();

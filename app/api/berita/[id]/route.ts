@@ -1,6 +1,6 @@
 import { verifyAdminSession } from "@/lib/auth";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
-import { deleteBeritaById, getBeritaList, updateBeritaById } from "@/lib/google-sheets";
+import { deleteBeritaById, getBeritaById, updateBeritaById } from "@/lib/db/queries";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
@@ -42,8 +42,7 @@ export async function PUT(
       );
     }
 
-    const beritaList = await getBeritaList();
-    const oldBerita = beritaList.find((b) => b.id === id);
+    const oldBerita = await getBeritaById(id);
 
     if (!oldBerita) {
       return NextResponse.json(
@@ -119,8 +118,7 @@ export async function DELETE(
       );
     }
 
-    const beritaList = await getBeritaList();
-    const berita = beritaList.find((b) => b.id === id);
+    const berita = await getBeritaById(id);
 
     if (!berita) {
       return NextResponse.json(

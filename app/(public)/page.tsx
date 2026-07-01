@@ -2,7 +2,7 @@ import { AboutSection } from "@/components/public/beranda/about-section";
 import { GaleriSection } from "@/components/public/galeri/galeri-section";
 import { HeroBanner } from "@/components/public/beranda/hero-banner";
 import { NewsSection } from "@/components/public/beranda/news-section";
-import { getGaleriList, getGlobalConfig, getRecentBerita } from "@/lib/google-sheets";
+import { getGaleriList, getGlobalConfig, getRecentBerita } from "@/lib/db/queries";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { PlusCircle, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBeritaListing } from "@/lib/google-sheets";
+import { getBeritaListing } from "@/lib/db/queries";
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { EmptyState } from "@/components/admin/common/empty-state";
 import { ListingToolbar } from "@/components/admin/common/listing-toolbar";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { appendGaleri } from "@/lib/google-sheets";
+import { appendGaleri } from "@/lib/db/queries";
 import { revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 

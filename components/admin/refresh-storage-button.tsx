@@ -20,10 +20,10 @@ export function RefreshStorageButton() {
   };
 
   return (
-    <button 
+    <button
       onClick={handleRefresh}
       disabled={isPending}
-      title="Refresh Kapasitas" 
+      title="Refresh Kapasitas"
       className="text-muted-foreground hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-1 disabled:opacity-50"
     >
       <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin text-primary' : ''}`} />

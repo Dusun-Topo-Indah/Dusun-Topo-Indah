@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/public/common/page-header";
 import { FadeIn } from "@/components/ui/fade-in";
-import { getGlobalConfig } from "@/lib/google-sheets";
+import { getGlobalConfig } from "@/lib/db/queries";
 import Image from "next/image";
 
 export const metadata = {

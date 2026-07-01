@@ -1,7 +1,7 @@
 import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
 import { GaleriFormFields } from "@/components/admin/galeri/galeri-form-fields";
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
-import { getGaleriList } from "@/lib/google-sheets";
+import { getGaleriList } from "@/lib/db/queries";
 
 export const metadata = {
   title: "Unggah Galeri — Dusun Topo Indah",

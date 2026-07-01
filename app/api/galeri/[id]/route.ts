@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { deleteGaleriById, getGaleriList, updateGaleriById } from "@/lib/google-sheets";
+import { deleteGaleriById, getGaleriById, updateGaleriById } from "@/lib/db/queries";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
 import { revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
@@ -44,8 +44,7 @@ export async function PUT(
       );
     }
 
-    const galeriList = await getGaleriList();
-    const oldItem = galeriList.find((item) => item.id === id);
+    const oldItem = await getGaleriById(id);
 
     if (!oldItem) {
       return NextResponse.json(
@@ -98,8 +97,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     const { id } = await params;
     
-    const galeriList = await getGaleriList();
-    const item = galeriList.find(g => g.id === id);
+    const item = await getGaleriById(id);
     
     if (!item) {
       return NextResponse.json(

@@ -1,5 +1,5 @@
 import { verifyAdminSession } from "@/lib/auth";
-import { updateGlobalConfig } from "@/lib/google-sheets";
+import { updateGlobalConfig } from "@/lib/db/queries";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 

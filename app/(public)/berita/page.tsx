@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/public/common/page-header";
 import { BeritaLayout, BeritaItem } from "@/components/public/berita/berita-layout";
-import { getGlobalConfig, getBeritaList } from "@/lib/google-sheets";
+import { getGlobalConfig, getBeritaList } from "@/lib/db/queries";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = {

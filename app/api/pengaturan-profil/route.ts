@@ -1,6 +1,6 @@
 import { verifyAdminSession } from "@/lib/auth";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
-import { getGlobalConfig, updateGlobalConfig } from "@/lib/google-sheets";
+import { getGlobalConfig, updateGlobalConfig } from "@/lib/db/queries";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 

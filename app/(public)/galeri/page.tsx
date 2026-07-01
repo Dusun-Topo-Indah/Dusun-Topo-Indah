@@ -1,7 +1,7 @@
 import { type GalleryItem } from "@/components/public/beranda/bento-gallery";
 import { PageHeader } from "@/components/public/common/page-header";
 import { PaginatedGallery } from "@/components/public/galeri/paginated-gallery";
-import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
+import { getGaleriList, getGlobalConfig } from "@/lib/db/queries";
 
 export const metadata = {
   title: "Galeri — Dusun Topo Indah",

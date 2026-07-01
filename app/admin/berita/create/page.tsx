@@ -1,7 +1,7 @@
 import { BeritaForm } from "@/components/admin/berita/berita-form";
 import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
-import { getBeritaList } from "@/lib/google-sheets";
+import { getBeritaList } from "@/lib/db/queries";
 
 export const metadata = {
   title: "Tulis Berita Baru — Dusun Topo Indah",

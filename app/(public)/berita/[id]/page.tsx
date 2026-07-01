@@ -1,15 +1,14 @@
 import { BeritaDetail } from "@/components/public/berita/berita-detail";
 
-import { getBeritaList } from "@/lib/google-sheets";
+import { getBeritaById, getBeritaList } from "@/lib/db/queries";
 import { notFound } from "next/navigation";
 import { stripHtml } from "@/lib/listing";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const list = await getBeritaList();
-  const berita = list.find((b) => b.id === id && (b.status_publikasi === "Publik" || !b.status_publikasi));
+  const berita = await getBeritaById(id);
   
-  if (!berita) {
+  if (!berita || (berita.status_publikasi !== "Publik" && berita.status_publikasi)) {
     return {
       title: "Berita Tidak Ditemukan — SIG-Dusun Topo Indah",
     };
@@ -34,10 +33,9 @@ export async function generateStaticParams() {
 
 export default async function BeritaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const list = await getBeritaList();
-  const beritaData = list.find((b) => b.id === id && (b.status_publikasi === "Publik" || !b.status_publikasi));
+  const beritaData = await getBeritaById(id);
 
-  if (!beritaData) {
+  if (!beritaData || (beritaData.status_publikasi !== "Publik" && beritaData.status_publikasi)) {
     notFound();
   }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGoogleSheetsInstance, SPREADSHEET_ID } from "@/lib/google-sheets";
+import { getAdminByUsername, updateAdminCredentials } from "@/lib/db/queries";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
@@ -36,32 +36,16 @@ export async function POST(request: Request) {
 
     const currentUsername = payload.username as string;
 
-    const sheets = await getGoogleSheetsInstance();
-    
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Admin_Auth!A:B",
-    });
+    const adminRow = await getAdminByUsername(currentUsername);
 
-    const rows = response.data.values;
-
-    if (!rows || rows.length === 0) {
-      return NextResponse.json(
-        { message: "Data admin kosong" },
-        { status: 500 }
-      );
-    }
-
-    const rowIndex = rows.findIndex((row) => row[0] === currentUsername);
-
-    if (rowIndex === -1) {
+    if (!adminRow) {
       return NextResponse.json(
         { message: "User tidak ditemukan" },
         { status: 404 }
       );
     }
 
-    const storedHashedPassword = rows[rowIndex][1];
+    const storedHashedPassword = adminRow.password;
     const isPasswordValid = await bcrypt.compare(oldPassword, storedHashedPassword);
 
     if (!isPasswordValid) {
@@ -75,15 +59,8 @@ export async function POST(request: Request) {
       ? await bcrypt.hash(newPassword, 10) 
       : storedHashedPassword;
 
-    const sheetRowNumber = rowIndex + 1;
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `Admin_Auth!A${sheetRowNumber}:B${sheetRowNumber}`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [[newUsername, finalPassword]],
-      },
-    });
+    await updateAdminCredentials(currentUsername, newUsername, finalPassword);
+    
     cookieStore.delete("admin_session");
 
     return NextResponse.json({ success: true, message: "Pengaturan akun berhasil diperbarui. Silakan login kembali." });

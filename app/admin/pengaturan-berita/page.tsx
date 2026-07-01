@@ -1,6 +1,6 @@
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { PengaturanBeritaForm } from "@/components/admin/pengaturan/pengaturan-berita-form";
-import { getGlobalConfig } from "@/lib/google-sheets";
+import { getGlobalConfig } from "@/lib/db/queries";
 
 export const metadata = {
   title: "Pengaturan Berita — SIG-Dusun Topo Indah",

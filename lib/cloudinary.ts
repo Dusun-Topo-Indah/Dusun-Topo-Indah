@@ -116,7 +116,8 @@ export async function getStorageUsage(): Promise<number> {
       headers: {
         Authorization: authHeader,
       },
-      next: { revalidate: 3600, tags: ["cloudinary-storage"] }
+      next: { revalidate: 3600, tags: ["cloudinary-storage"] },
+      signal: AbortSignal.timeout(1500),
     });
 
     if (!res.ok) {

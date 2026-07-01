@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGoogleSheetsInstance, SPREADSHEET_ID } from "@/lib/google-sheets";
+import { getAdminByUsername } from "@/lib/db/queries";
 import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
@@ -19,23 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const sheets = await getGoogleSheetsInstance();
-    
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Admin_Auth!A:B",
-    });
-
-    const rows = response.data.values;
-
-    if (!rows || rows.length === 0) {
-      return NextResponse.json(
-        { message: "Data admin kosong, silakan hubungi developer." },
-        { status: 401 }
-      );
-    }
-
-    const adminRow = rows.find((row) => row[0] === username);
+    const adminRow = await getAdminByUsername(username);
 
     if (!adminRow) {
       return NextResponse.json(
@@ -44,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const storedHashedPassword = adminRow[1];
+    const storedHashedPassword = adminRow.password;
     const isPasswordValid = await bcrypt.compare(password, storedHashedPassword);
 
     if (!isPasswordValid) {

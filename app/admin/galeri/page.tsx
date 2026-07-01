@@ -1,4 +1,4 @@
-import { getGaleriListing } from "@/lib/google-sheets";
+import { getGaleriListing } from "@/lib/db/queries";
 import { cookies } from "next/headers";
 
 import { EmptyState } from "@/components/admin/common/empty-state";

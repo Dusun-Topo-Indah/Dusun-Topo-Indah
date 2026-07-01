@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { appendBerita } from "@/lib/google-sheets";
+import { appendBerita } from "@/lib/db/queries";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";

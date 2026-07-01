@@ -1,6 +1,6 @@
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { PengaturanProfilForm } from "@/components/admin/pengaturan/pengaturan-profil-form";
-import { getGlobalConfig } from "@/lib/google-sheets";
+import { getGlobalConfig } from "@/lib/db/queries";
 
 export const metadata = {
   title: "Pengaturan Profil — SIG-Dusun Topo Indah",

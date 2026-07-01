@@ -2,7 +2,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStorageUsage } from "@/lib/cloudinary";
-import { getTotalBerita, getTotalGaleri } from "@/lib/google-sheets";
+import { getTotalBerita, getTotalGaleri } from "@/lib/db/queries";
 import {
   BadgeInfo,
   Database,
@@ -16,10 +16,15 @@ import { StorageManagement } from "./pengaturan/storage-management";
 import { RefreshStorageButton } from "@/components/admin/refresh-storage-button";
 
 export default async function AdminDashboardPage() {
-  const [totalBerita, totalGaleri, storageBytes] = await Promise.all([
+  const [totalBerita, totalGaleri] = await Promise.all([
     getTotalBerita(),
     getTotalGaleri(),
+  ]);
+
+  // Non-blocking: jangan biarkan Cloudinary timeout memblokir seluruh dashboard
+  const storageBytes = await Promise.race([
     getStorageUsage(),
+    new Promise<number>((resolve) => setTimeout(() => resolve(0), 2000)),
   ]);
 
   const formatBytes = (bytes: number) => {

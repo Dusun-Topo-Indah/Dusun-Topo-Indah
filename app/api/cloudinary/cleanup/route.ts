@@ -1,6 +1,7 @@
 import { verifyAdminSession } from "@/lib/auth";
 import { deleteFromCloudinary, getCloudinaryResources } from "@/lib/cloudinary";
-import { getBeritaList, getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
+import { db } from "@/lib/db";
+import { beritaDusun, galeriDusun, globalConfig } from "@/lib/db/schema";
 import { NextResponse } from "next/server";
 
 export async function POST() {
@@ -11,13 +12,21 @@ export async function POST() {
 
     const startTime = Date.now();
     
-    // 1. Concurrent Fetch: Google Sheets and Cloudinary
-    const [beritaList, galeriList, globalConfig, cloudinaryResources] = await Promise.all([
-      getBeritaList(),
-      getGaleriList(),
-      getGlobalConfig(),
+    // 1. Concurrent Fetch: Turso DB and Cloudinary
+    // Menggunakan kueri langsung (bukan DAL) agar jika Turso timeout/error, fungsi ini langsung melempar error
+    // dan masuk ke block catch, mencegah penghapusan media yatim piatu secara tak sengaja.
+    const [beritaList, galeriList, configRows, cloudinaryResources] = await Promise.all([
+      db.select().from(beritaDusun),
+      db.select().from(galeriDusun),
+      db.select().from(globalConfig),
       getCloudinaryResources(),
     ]);
+    
+    // Build config map
+    const gConfig: Record<string, string> = {};
+    for (const row of configRows) {
+      gConfig[row.key] = row.value || "";
+    }
 
     // 2. Build Set of Used URLs (O(1) lookup)
     const usedUrls = new Set<string>();
@@ -47,9 +56,9 @@ export async function POST() {
     });
 
     // Parse Hero Slides (Global Config)
-    if (globalConfig["beranda_hero_slides"]) {
+    if (gConfig["beranda_hero_slides"]) {
       try {
-        const slides = JSON.parse(globalConfig["beranda_hero_slides"]);
+        const slides = JSON.parse(gConfig["beranda_hero_slides"]);
         if (Array.isArray(slides)) {
           slides.forEach((slide: { image?: string; currentFotoUrl?: string }) => {
             if (slide.image) usedUrls.add(slide.image);
@@ -62,9 +71,9 @@ export async function POST() {
     }
 
     // Parse Profil Sections (Global Config)
-    if (globalConfig["profil_sections"]) {
+    if (gConfig["profil_sections"]) {
       try {
-        const sections = JSON.parse(globalConfig["profil_sections"]);
+        const sections = JSON.parse(gConfig["profil_sections"]);
         if (Array.isArray(sections)) {
           sections.forEach((sec: { image?: string }) => {
             if (sec.image) usedUrls.add(sec.image);

@@ -1,6 +1,6 @@
 # Sistem Informasi Geografis & Profil Dusun Topo Indah
 
-Ini adalah web profil dan dashboard CMS untuk Dusun Topo Indah. Dibangun dengan pendekatan Zero-Cost menggunakan Next.js (App Router), Google Sheets API (Headless CMS), dan Cloudinary (Media Storage).
+Ini adalah web profil dan dashboard CMS untuk Dusun Topo Indah. Dibangun dengan Next.js (App Router), Turso (libSQL) Edge Database dengan Drizzle ORM, dan Cloudinary (Media Storage).
 
 ## 🚀 Getting Started (Local Development)
 
@@ -67,7 +67,7 @@ Proyek ini memiliki 3 tahapan (environments) yang terpusat di Vercel:
 ## 🛠️ Stack & Panduan Lengkap
 
 - **Frontend**: Next.js 16 (App Router), Tailwind CSS, shadcn/ui.
-- **Backend / CMS**: Google Sheets API, Route Handlers.
+- **Backend / CMS**: Turso DB (libSQL), Drizzle ORM, Route Handlers.
 - **Media**: Cloudinary.
 
 Baca [Dokumentasi Proyek Lengkap (PRD)](md/prd.MD) dan peraturan pada file [AGENTS.md](AGENTS.md) untuk detail arsitektur, tipe data, serta aturan kode yang disepakati.

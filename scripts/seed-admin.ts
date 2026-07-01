@@ -1,10 +1,12 @@
 import { loadEnvConfig } from "@next/env";
 loadEnvConfig(process.cwd());
 
-import { getGoogleSheetsInstance } from "../lib/google-sheets";
-import bcrypt from "bcryptjs";
-
 async function main() {
+  const { db } = await import("../lib/db");
+  const { adminAuth } = await import("../lib/db/schema");
+  const bcrypt = (await import("bcryptjs")).default;
+  const { sql } = await import("drizzle-orm");
+
   const args = process.argv.slice(2);
   const username = args[0] || process.env.ADMIN_USERNAME;
   const password = args[1] || process.env.ADMIN_PASSWORD;
@@ -20,26 +22,19 @@ async function main() {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const sheets = await getGoogleSheetsInstance();
-    
-    console.log("Menghubungkan ke Google Sheets...");
+    console.log("Menghubungkan ke Turso DB...");
 
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: "Admin_Auth!A1:B2",
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [
-          ["Username", "Password"],
-          [username, hashedPassword],
-        ],
-      },
-    });
+    await db.insert(adminAuth)
+      .values({ username, password: hashedPassword })
+      .onConflictDoUpdate({
+        target: adminAuth.username,
+        set: { password: sql`excluded.password` }
+      });
 
-    console.log("✅ Berhasil menyimpan kredensial (hashed) ke Google Sheets!");
+    console.log("✅ Berhasil menyimpan kredensial (hashed) ke Turso DB!");
     console.log(`Silakan gunakan password "${password}" untuk login.`);
   } catch (error) {
-    console.error("❌ Gagal menyimpan ke Google Sheets:", error);
+    console.error("❌ Gagal menyimpan ke Turso DB:", error);
   }
 }
 

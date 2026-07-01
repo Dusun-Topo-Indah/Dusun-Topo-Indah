@@ -66,7 +66,15 @@ export async function appendGaleri(data: GaleriRow): Promise<void> {
 }
 
 export async function updateGaleriById(id: string, updatedData: Partial<GaleriRow>): Promise<boolean> {
-  const result = await db.update(galeriDusun).set(updatedData).where(eq(galeriDusun.id, id));
+  const { id: _id, ...rest } = updatedData;
+  const cleanData: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (value !== undefined) {
+      cleanData[key] = value;
+    }
+  }
+  if (Object.keys(cleanData).length === 0) return false;
+  const result = await db.update(galeriDusun).set(cleanData).where(eq(galeriDusun.id, id));
   return result.rowsAffected > 0;
 }
 

@@ -103,8 +103,17 @@ export async function appendBerita(data: BeritaRow): Promise<void> {
 }
 
 export async function updateBeritaById(id: string, updatedData: Partial<BeritaRow>): Promise<boolean> {
+  const { id: _id, ...rest } = updatedData;
+  const cleanData: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (value !== undefined) {
+      cleanData[key] = value;
+    }
+  }
+  if (Object.keys(cleanData).length === 0) return false;
+  
   const result = await db.update(beritaDusun).set({
-    ...updatedData,
+    ...cleanData,
     updated_at: new Date().toISOString(),
   }).where(eq(beritaDusun.id, id));
   return result.rowsAffected > 0;

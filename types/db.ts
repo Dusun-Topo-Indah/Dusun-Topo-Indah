@@ -33,15 +33,15 @@ export interface FasilitasRow {
   id: string;
   nama_fasum: string;
   kategori_ikon: string;
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
   deskripsi: string;
   url_foto: string;
 }
 
 export interface PerangkatRow {
   id: string;
-  urutan: string;
+  urutan: number;
   nama: string;
   jabatan: string;
   url_foto: string;

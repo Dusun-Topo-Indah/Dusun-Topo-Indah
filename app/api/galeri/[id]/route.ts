@@ -106,22 +106,21 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       );
     }
 
-    if (item.url_foto) {
-      const deleted = await deleteFromCloudinary(item.url_foto);
-      if (!deleted) {
-        return NextResponse.json(
-          { success: false, message: "Gagal menghapus foto dari Cloudinary." },
-          { status: 500 }
-        );
-      }
-    }
-
     const success = await deleteGaleriById(id);
     if (!success) {
-      throw new Error("Gagal menghapus baris di Google Sheets.");
+      return NextResponse.json(
+        { success: false, message: "Gagal menghapus data galeri dari database." },
+        { status: 500 }
+      );
     }
 
     revalidateTag("galeri", "max");
+
+    if (item.url_foto && item.url_foto.includes("cloudinary.com")) {
+      deleteFromCloudinary(item.url_foto).catch(err => {
+        console.error("Failed to cleanup Cloudinary on galeri delete:", err);
+      });
+    }
 
     return NextResponse.json({ success: true, message: "Foto galeri berhasil dihapus." });
   } catch (error) {

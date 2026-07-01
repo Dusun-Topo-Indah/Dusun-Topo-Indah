@@ -62,7 +62,7 @@ export function DeleteBeritaButton({ id, judul, triggerClassName, triggerVariant
         <AlertDialogHeader>
           <AlertDialogTitle>Hapus Berita Ini?</AlertDialogTitle>
           <AlertDialogDescription>
-            Tindakan ini tidak dapat dibatalkan. Berita berjudul <strong>&quot;{judul}&quot;</strong> akan dihapus secara permanen dari sistem dan Google Sheets.
+            Tindakan ini tidak dapat dibatalkan. Berita berjudul <strong>&quot;{judul}&quot;</strong> akan dihapus secara permanen dari sistem.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

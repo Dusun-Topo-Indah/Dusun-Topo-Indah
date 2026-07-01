@@ -53,15 +53,17 @@ export async function PUT(
 
     const cleanHtml = sanitizeHtml(isi_berita);
 
-    const success = await updateBeritaById(id, {
+    const updatePayload: Record<string, any> = {
       judul,
       ringkasan,
       isi_berita: cleanHtml,
-      url_foto: url_foto !== undefined ? url_foto : undefined,
       kategori,
-      media_assets: media_assets !== undefined ? media_assets : undefined,
-      status_publikasi: status_publikasi !== undefined ? status_publikasi : undefined,
-    });
+    };
+    if (url_foto !== undefined) updatePayload.url_foto = url_foto;
+    if (media_assets !== undefined) updatePayload.media_assets = media_assets;
+    if (status_publikasi !== undefined) updatePayload.status_publikasi = status_publikasi;
+
+    const success = await updateBeritaById(id, updatePayload);
 
     if (!success) {
       return NextResponse.json(
@@ -72,15 +74,35 @@ export async function PUT(
 
     revalidateTag("berita", "max");
 
-    // Cascading delete for URL Foto
+    // Cascading delete for URL Foto and Media Assets
     const oldUrls = new Set<string>();
     if (oldBerita.url_foto && oldBerita.url_foto.includes("cloudinary.com")) {
       oldUrls.add(oldBerita.url_foto);
+    }
+    if (oldBerita.media_assets) {
+      try {
+        const assets = JSON.parse(oldBerita.media_assets);
+        if (Array.isArray(assets)) {
+          assets.forEach((url: string) => {
+            if (url && url.includes("cloudinary.com")) oldUrls.add(url);
+          });
+        }
+      } catch (e) { /* ignore */ }
     }
     
     const newUrls = new Set<string>();
     if (url_foto && url_foto.includes("cloudinary.com")) {
       newUrls.add(url_foto);
+    }
+    if (media_assets) {
+      try {
+        const assets = JSON.parse(media_assets);
+        if (Array.isArray(assets)) {
+          assets.forEach((url: string) => {
+            if (url && url.includes("cloudinary.com")) newUrls.add(url);
+          });
+        }
+      } catch (e) { /* ignore */ }
     }
     
     const urlsToDelete = Array.from(oldUrls).filter((oldUrl) => !newUrls.has(oldUrl));

@@ -1,3 +1,5 @@
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { StatusUpdaterDetail } from "@/components/admin/pengaduan/status-updater-detail";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +10,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SetBreadcrumb } from "@/components/admin/layout/breadcrumb-context";
-import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 
 export const metadata = {
   title: "Detail Pengaduan — Admin Dusun Topo Indah",
@@ -57,8 +58,8 @@ export default async function DetailPengaduanPage({ params }: PageProps) {
       
       <div className="flex items-center gap-4">
         <Link href="/admin/pengaduan">
-          <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 bg-white">
-            <ArrowLeft className="h-5 w-5 text-slate-600" />
+          <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 bg-white border-none">
+            <ArrowLeft className="h-5 w-5 text-primary" />
           </Button>
         </Link>
         <DashboardHeader 
@@ -164,6 +165,8 @@ export default async function DetailPengaduanPage({ params }: PageProps) {
           </AccordionItem>
           
         </Accordion>
+
+        <StatusUpdaterDetail id={pengaduan.id} currentStatus={pengaduan.status} />
       </div>
     </div>
   );

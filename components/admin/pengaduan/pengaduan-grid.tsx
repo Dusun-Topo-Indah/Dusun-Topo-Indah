@@ -3,10 +3,14 @@
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { PengaduanRow } from "@/types/sheets"
-import { CalendarDays, Eye, FileText, User } from "lucide-react"
+import { CalendarDays, Eye, FileText, User, MoreHorizontal, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import * as React from "react"
+import { useState } from "react"
+import { toast } from "sonner"
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -21,6 +25,62 @@ function getStatusColor(status: string) {
     default:
       return "bg-gray-100 text-gray-800 border-gray-200";
   }
+}
+
+function GridStatusAction({ pengaduan }: { pengaduan: PengaduanRow }) {
+  const router = useRouter();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (newStatus === pengaduan.status) return;
+    
+    setIsUpdating(true);
+    toast.loading(`Mengubah status menjadi ${newStatus}...`, { id: "updating" });
+
+    try {
+      const res = await fetch(`/api/pengaduan?id=${pengaduan.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const result = await res.json();
+      toast.dismiss("updating");
+
+      if (result.success) {
+        toast.success("Status berhasil diperbarui");
+        router.refresh();
+      } else {
+        toast.error(result.message || "Gagal memperbarui status");
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      toast.dismiss("updating");
+      toast.error("Terjadi kesalahan jaringan.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white pl-2">
+      <Badge variant="outline" className={`text-[10px] px-2 py-0.5 leading-none font-medium ${getStatusColor(pengaduan.status)}`}>
+        {isUpdating && <Loader2 className="w-3 h-3 animate-spin mr-1 inline-block" />}
+        {pengaduan.status}
+      </Badge>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="h-6 w-6 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
+          <MoreHorizontal className="h-4 w-4 text-slate-500" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-36 rounded-md">
+          <DropdownMenuItem onClick={() => handleStatusChange("Menunggu")} className="text-xs font-medium cursor-pointer">Menunggu</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleStatusChange("Diproses")} className="text-xs font-medium cursor-pointer">Diproses</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleStatusChange("Selesai")} className="text-xs font-medium cursor-pointer">Selesai</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleStatusChange("Ditolak")} className="text-xs font-medium cursor-pointer">Ditolak</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
 }
 
 interface PengaduanGridProps {
@@ -38,11 +98,9 @@ export function PengaduanGrid({ data, emptyState }: PengaduanGridProps) {
       {data.map((pengaduan) => (
         <Card key={pengaduan.id} className="flex flex-col overflow-hidden h-full border-border/60 shadow-sm hover:shadow-md transition-all bg-white rounded-none p-0 gap-0">
           <CardContent className="flex flex-col flex-1 px-5 py-4 justify-start items-start text-left relative">
-            <Badge variant="outline" className={`absolute top-4 right-4 text-[10px] px-2 py-0.5 leading-none font-medium ${getStatusColor(pengaduan.status)}`}>
-              {pengaduan.status}
-            </Badge>
+            <GridStatusAction pengaduan={pengaduan} />
             
-            <div className="text-xs font-semibold mb-2 uppercase tracking-wider pr-20">
+            <div className="text-xs font-semibold mb-2 uppercase tracking-wider pr-20 mt-1">
               {pengaduan.kategori}
             </div>
             
@@ -73,7 +131,7 @@ export function PengaduanGrid({ data, emptyState }: PengaduanGridProps) {
           <div className="grid grid-cols-1 border-t bg-white shrink-0">
             <Link 
               href={`/admin/pengaduan/${pengaduan.id}`}
-              className={buttonVariants({ variant: "ghost", className: "h-11 rounded-none text-primary hover:text-blue-700 hover:bg-slate-50 font-semibold text-xs uppercase tracking-wide" })}
+              className={buttonVariants({ variant: "ghost", className: "h-11 rounded-none text-primary hover:text-white hover:bg-primary font-semibold text-xs uppercase tracking-wide" })}
               title="Detail Pengaduan"
             >
               <Eye className="h-4 w-4 mr-2" />

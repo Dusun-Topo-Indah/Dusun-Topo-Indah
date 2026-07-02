@@ -11,11 +11,16 @@ export async function getPengaduanList(): Promise<PengaduanRow[]> {
   cacheTag("pengaduan");
   cacheLife("hours");
   
-  return db
-    .select()
-    .from(pengaduanWarga)
-    .orderBy(desc(pengaduanWarga.created_at))
-    .all();
+  try {
+    return await db
+      .select()
+      .from(pengaduanWarga)
+      .orderBy(desc(pengaduanWarga.created_at))
+      .all();
+  } catch (error) {
+    console.error("Failed to fetch pengaduan:", error);
+    return [];
+  }
 }
 
 export async function getPengaduanById(id: string): Promise<PengaduanRow | undefined> {
@@ -23,14 +28,19 @@ export async function getPengaduanById(id: string): Promise<PengaduanRow | undef
   cacheTag("pengaduan", `pengaduan-${id}`);
   cacheLife("hours");
   
-  const result = await db
-    .select()
-    .from(pengaduanWarga)
-    .where(eq(pengaduanWarga.id, id))
-    .limit(1)
-    .all();
-    
-  return result[0];
+  try {
+    const result = await db
+      .select()
+      .from(pengaduanWarga)
+      .where(eq(pengaduanWarga.id, id))
+      .limit(1)
+      .all();
+      
+    return result[0];
+  } catch (error) {
+    console.error("Failed to fetch pengaduan by id:", error);
+    return undefined;
+  }
 }
 
 export async function insertPengaduan(data: InsertPengaduan): Promise<void> {

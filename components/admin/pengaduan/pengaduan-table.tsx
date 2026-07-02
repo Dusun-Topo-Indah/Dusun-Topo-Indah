@@ -1,16 +1,16 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/admin/common/data-table";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PengaduanRow } from "@/types/sheets";
 import { ColumnDef } from "@tanstack/react-table";
-import { CalendarDays, ImageIcon, MoreHorizontal, FileText } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { toast } from "sonner";
+import { CalendarDays, Eye, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -27,12 +27,15 @@ function getStatusColor(status: string) {
   }
 }
 
-function ActionCell({ row }: { row: { original: PengaduanRow } }) {
+function StatusCell({ row }: { row: { original: PengaduanRow } }) {
   const router = useRouter();
   const item = row.original;
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string | null) => {
+    if (!newStatus) return;
+    if (newStatus === item.status) return;
+    
     setIsUpdating(true);
     toast.loading(`Mengubah status menjadi ${newStatus}...`, { id: "updating" });
 
@@ -64,68 +67,37 @@ function ActionCell({ row }: { row: { original: PengaduanRow } }) {
   };
 
   return (
-    <div className="flex items-center justify-end gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger className="h-8 w-8 p-0 inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-slate-100 disabled:opacity-50 disabled:pointer-events-none" disabled={isUpdating}>
-          <span className="sr-only">Buka menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => handleStatusChange("Menunggu")}>
-            Tandai &quot;Menunggu&quot;
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleStatusChange("Diproses")}>
-            Tandai &quot;Diproses&quot;
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleStatusChange("Selesai")}>
-            Tandai &quot;Selesai&quot;
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleStatusChange("Ditolak")} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-            Tandai &quot;Ditolak&quot;
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <div className="flex items-center">
+      {isUpdating ? (
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+      ) : null}
+      <Select 
+        defaultValue={item.status} 
+        onValueChange={handleStatusChange} 
+        disabled={isUpdating}
+      >
+        <SelectTrigger className={`h-8 border-none text-xs font-semibold ring-0 focus:ring-0 cursor-pointer ${getStatusColor(item.status)}`}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="Menunggu">Menunggu</SelectItem>
+          <SelectItem value="Diproses">Diproses</SelectItem>
+          <SelectItem value="Selesai">Selesai</SelectItem>
+          <SelectItem value="Ditolak">Ditolak</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
 
 export const columns: ColumnDef<PengaduanRow>[] = [
   {
-    accessorKey: "url_foto",
-    header: "Bukti Foto",
-    cell: ({ row }) => {
-      const url = row.original.url_foto;
-      return url ? (
-        <a href={url} target="_blank" rel="noreferrer" className="block relative w-16 h-12 rounded overflow-hidden border shrink-0 bg-muted">
-          <Image src={url} alt="Cover" fill className="object-cover" sizes="64px" />
-        </a>
-      ) : (
-        <div className="flex h-12 w-16 items-center justify-center rounded bg-muted/50 text-muted-foreground shrink-0 border">
-          <ImageIcon className="h-4 w-4 opacity-40" />
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: "nama_lengkap",
     header: "Pelapor",
     cell: ({ row }) => (
-      <div>
-        <div className="font-semibold text-sm text-foreground flex items-center gap-2 mb-0.5">
-          {row.original.nama_lengkap}
-          {row.original.status_warga === "Warga Lokal" ? (
-             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 leading-none bg-blue-50 text-blue-600 border-blue-200 font-medium">Warga Lokal</Badge>
-          ) : (
-             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 leading-none bg-orange-50 text-orange-600 border-orange-200 font-medium">Bukan Warga</Badge>
-          )}
-        </div>
-        <span className="text-xs text-muted-foreground block">{row.original.nik || "Tidak ada NIK"}</span>
-        {row.original.no_hp && (
-          <a href={`https://wa.me/${row.original.no_hp.replace(/^0/, '62').replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline block mt-1 font-medium">
-            {row.original.no_hp}
-          </a>
-        )}
-      </div>
+      <span className="font-medium text-sm text-foreground">
+        {row.original.nama_lengkap}
+      </span>
     ),
   },
   {
@@ -138,19 +110,9 @@ export const columns: ColumnDef<PengaduanRow>[] = [
     ),
   },
   {
-    accessorKey: "isi_laporan",
-    header: "Laporan",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm line-clamp-2 max-w-[250px]" title={row.original.isi_laporan}>
-        <FileText className="w-3 h-3 inline-block mr-1 opacity-50" />
-        {row.original.isi_laporan}
-      </span>
-    ),
-  },
-  {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <Badge className={getStatusColor(row.original.status)} variant="outline">{row.original.status}</Badge>
+    cell: StatusCell
   },
   {
     accessorKey: "tanggal",
@@ -169,7 +131,15 @@ export const columns: ColumnDef<PengaduanRow>[] = [
   {
     id: "actions",
     header: () => <div className="text-right">Aksi</div>,
-    cell: ActionCell,
+    cell: ({ row }) => (
+      <div className="text-right flex justify-end">
+        <Link href={`/admin/pengaduan/${row.original.id}`}>
+          <Button variant="outline" size="sm" className="h-8 border-primary hover:bg-primary/10 text-primary hover:text-primary">
+            <Eye className="w-4 h-4 mr-1.5" /> Detail
+          </Button>
+        </Link>
+      </div>
+    ),
   },
 ];
 

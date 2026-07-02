@@ -690,6 +690,21 @@ export async function getPengaduanList(): Promise<PengaduanRow[]> {
   }
 }
 
+export async function getPengaduanById(id: string): Promise<PengaduanRow | null> {
+  "use cache";
+  cacheTag("pengaduan");
+  cacheLife("max");
+  
+  try {
+    const list = await getPengaduanList();
+    const item = list.find((p) => p.id === id);
+    return item || null;
+  } catch (error) {
+    console.error("Failed to fetch pengaduan by id:", error);
+    return null;
+  }
+}
+
 export async function appendPengaduan(data: PengaduanRow): Promise<boolean> {
   const values = [
     data.id, data.nama_lengkap, data.nik, data.status_warga, data.no_hp, data.kategori, data.isi_laporan, data.url_foto, data.status, data.tanggal

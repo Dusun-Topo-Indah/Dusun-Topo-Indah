@@ -1,11 +1,13 @@
+import { EmptyState } from "@/components/admin/common/empty-state";
+import { ListingPagination } from "@/components/admin/common/listing-pagination";
+import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
+import { PengaduanGrid } from "@/components/admin/pengaduan/pengaduan-grid";
 import { PengaduanTable } from "@/components/admin/pengaduan/pengaduan-table";
 import { getPengaduanListing } from "@/lib/google-sheets";
-import { Inbox, MessageSquareWarning } from "lucide-react";
-import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
-import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
-import { ListingPagination } from "@/components/admin/common/listing-pagination";
-import { EmptyState } from "@/components/admin/common/empty-state";
 import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
+import { Inbox } from "lucide-react";
+import { cookies } from "next/headers";
 
 export const metadata = {
   title: "Kelola Pengaduan Warga — Admin Dusun Topo Indah",
@@ -20,6 +22,10 @@ export default async function AdminPengaduanPage({ searchParams }: PengaduanPage
   const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
   const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
   const status = typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : "all";
+  
+  const cookieStore = await cookies();
+  const viewPref = cookieStore.get("admin_view_preference")?.value;
+  const view = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : (viewPref === "grid" || viewPref === "list" ? viewPref : "list");
   
   const page = toPositiveInteger(
     typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : undefined,
@@ -51,11 +57,7 @@ export default async function AdminPengaduanPage({ searchParams }: PengaduanPage
       <DashboardHeader 
         title="Pengaduan Warga" 
         description="Kelola laporan dan keluhan yang masuk dari warga desa."
-      >
-        <div className="p-3 bg-primary/10 rounded-xl text-primary">
-          <MessageSquareWarning className="h-6 w-6" />
-        </div>
-      </DashboardHeader>
+      />
 
       <ListingToolbar
         searchPlaceholder="Cari nama, NIK, atau isi laporan..."
@@ -78,9 +80,14 @@ export default async function AdminPengaduanPage({ searchParams }: PengaduanPage
         ]}
         currentLimit={limit}
         currentPage={pengaduanResult.page}
+        currentView={view as "list" | "grid"}
       />
 
-      <PengaduanTable data={pengaduanResult.items} emptyState={emptyState} />
+      {view === "grid" ? (
+        <PengaduanGrid data={pengaduanResult.items} emptyState={emptyState} />
+      ) : (
+        <PengaduanTable data={pengaduanResult.items} emptyState={emptyState} />
+      )}
 
       <ListingPagination
         pathname="/admin/pengaduan"

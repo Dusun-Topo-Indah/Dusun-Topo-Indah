@@ -1,36 +1,41 @@
 import { PageHeader } from "@/components/public/common/page-header";
 import { PengaduanForm } from "@/components/public/pengaduan/pengaduan-form";
-import { ShieldCheck, Zap, Info } from "lucide-react";
+import { Info, ShieldCheck, Zap, Users } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Pengaduan Warga — Dusun Topo Indah",
-  description: "Layanan pengaduan masyarakat Dusun Topo Indah yang terintegrasi langsung dengan Telegram perangkat dusun.",
+  description:
+    "Layanan pengaduan masyarakat Dusun Topo Indah yang terintegrasi langsung dengan sistem notifikasi perangkat dusun.",
 };
 
 export default function PengaduanPage() {
   return (
     <main className="w-full bg-white min-h-screen pb-20">
-      <PageHeader 
+      <PageHeader
         title="Layanan Pengaduan Warga"
         description="Sampaikan laporan, keluhan, atau aspirasi Anda. Setiap laporan yang masuk akan langsung dikirimkan secara real-time ke ponsel cerdas Perangkat Dusun Topo Indah."
       />
 
       <div className="w-full max-w-7xl mx-auto px-6 mt-12 md:mt-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-          
           <div className="lg:col-span-5 lg:sticky lg:top-32 space-y-10">
             <div>
-              <h3 className="text-2xl font-bold tracking-tight text-slate-900 mb-6">Kenapa Melapor di Sini?</h3>
+              <h3 className="text-2xl font-bold tracking-tight text-slate-900 mb-6">
+                Informasi Layanan
+              </h3>
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="mt-1">
                     <Zap className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">Respon Cepat (Real-time)</h4>
+                    <h4 className="font-semibold text-slate-900 mb-1">
+                      Respon Cepat (Real-time)
+                    </h4>
                     <p className="text-sm text-slate-500 leading-relaxed">
-                      Laporan Anda langsung masuk sebagai notifikasi Telegram ke grup Admin Dusun.
+                      Laporan Anda akan langsung terkirim sebagai notifikasi ke
+                      perangkat komunikasi cerdas Perangkat Dusun saat itu juga.
                     </p>
                   </div>
                 </div>
@@ -39,9 +44,27 @@ export default function PengaduanPage() {
                     <ShieldCheck className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">Transparan & Terpantau</h4>
+                    <h4 className="font-semibold text-slate-900 mb-1">
+                      Transparan & Terpantau
+                    </h4>
                     <p className="text-sm text-slate-500 leading-relaxed">
-                      Laporan tercatat otomatis dalam Database untuk dievaluasi setiap bulan.
+                      Laporan tercatat otomatis dalam sistem administrasi desa
+                      untuk dipantau dan dievaluasi penyelesaiannya.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="mt-1">
+                    <Users className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 mb-1">
+                      Terbuka Untuk Semua
+                    </h4>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      Baik Warga Lokal maupun Pengunjung (wisatawan/tamu) dari
+                      luar daerah dipersilakan untuk melapor jika menemukan
+                      masalah atau memiliki keluhan di Dusun Topo Indah.
                     </p>
                   </div>
                 </div>
@@ -52,7 +75,9 @@ export default function PengaduanPage() {
               <div className="flex gap-3">
                 <Info className="w-5 h-5 text-slate-400 shrink-0" />
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  <strong className="text-slate-900">Privasi Terjaga:</strong> Data NIK Anda hanya dapat dilihat oleh Perangkat Dusun dan tidak akan dipublikasikan ke publik.
+                  <strong className="text-slate-900">Privasi Terjaga:</strong>{" "}
+                  Data NIK dan Nomor Telepon Anda hanya dapat dilihat oleh
+                  internal Perangkat Dusun dan dijamin kerahasiaannya.
                 </p>
               </div>
             </div>
@@ -61,7 +86,6 @@ export default function PengaduanPage() {
           <div className="lg:col-span-7">
             <PengaduanForm />
           </div>
-          
         </div>
       </div>
     </main>

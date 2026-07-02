@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { compressImage } from "@/lib/image-compression";
 import { Loader2, UploadCloud } from "lucide-react";
@@ -41,35 +47,6 @@ export function PengaduanForm() {
     }
   };
 
-  const uploadToCloudinary = async (fileToUpload: File): Promise<string | null> => {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-      console.error("Missing Cloudinary env vars");
-      return null;
-    }
-
-    const formData = new FormData();
-    formData.append("file", fileToUpload);
-    formData.append("upload_preset", uploadPreset);
-
-    try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Upload failed");
-      
-      const data = await response.json();
-      return data.secure_url;
-    } catch (error) {
-      console.error("Cloudinary upload error:", error);
-      return null;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -77,48 +54,59 @@ export function PengaduanForm() {
     try {
       const formData = new FormData(e.currentTarget);
       const nama_lengkap = formData.get("nama_lengkap") as string;
-      const nik = formData.get("nik") as string;
       const status_warga = formData.get("status_warga") as string;
       const no_hp = formData.get("no_hp") as string;
       const kategori = formData.get("kategori") as string;
       const isi_laporan = formData.get("isi_laporan") as string;
 
-      if (!nama_lengkap || !status_warga || !no_hp || !kategori || !isi_laporan) {
+      if (
+        !nama_lengkap ||
+        !status_warga ||
+        !no_hp ||
+        !kategori ||
+        !isi_laporan
+      ) {
         toast.error("Mohon lengkapi semua kolom yang wajib diisi.");
         setIsLoading(false);
         return;
       }
 
-      let url_foto = "";
+      if (nama_lengkap.length < 3) {
+        toast.error("Nama lengkap minimal 3 karakter.");
+        setIsLoading(false);
+        return;
+      }
+
+      const nikStr = formData.get("nik") as string;
+      if (nikStr && !/^\d{16}$/.test(nikStr)) {
+        toast.error("NIK harus terdiri dari 16 digit angka.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!/^(\+62|62|0)8[1-9][0-9]{6,11}$/.test(no_hp)) {
+        toast.error(
+          "Nomor HP tidak valid. Pastikan format benar (contoh: 0812...).",
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      if (isi_laporan.length < 10) {
+        toast.error("Isi laporan terlalu singkat, minimal 10 karakter.");
+        setIsLoading(false);
+        return;
+      }
+
       if (file) {
-        toast.loading("Mengunggah foto bukti...", { id: "uploading" });
-        const uploadedUrl = await uploadToCloudinary(file);
-        if (!uploadedUrl) {
-          toast.dismiss("uploading");
-          toast.error("Gagal mengunggah foto. Pastikan koneksi internet Anda stabil.");
-          setIsLoading(false);
-          return;
-        }
-        url_foto = uploadedUrl;
-        toast.dismiss("uploading");
+        formData.append("file", file);
       }
 
       toast.loading("Mengirim laporan ke server...", { id: "sending" });
 
       const res = await fetch("/api/pengaduan", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nama_lengkap,
-          nik,
-          status_warga,
-          no_hp,
-          kategori,
-          isi_laporan,
-          url_foto,
-        }),
+        body: formData,
       });
 
       const result = await res.json();
@@ -147,60 +135,138 @@ export function PengaduanForm() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="nama_lengkap">Nama Lengkap <span className="text-red-500">*</span></Label>
-            <Input id="nama_lengkap" name="nama_lengkap" placeholder="John Doe" required disabled={isLoading} />
+            <Label htmlFor="nama_lengkap">
+              Nama Lengkap <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="nama_lengkap"
+              name="nama_lengkap"
+              placeholder="Tulis nama lengkap anda..."
+              minLength={3}
+              maxLength={100}
+              required
+              disabled={isLoading}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="nik">NIK (Opsional)</Label>
-            <Input id="nik" name="nik" placeholder="320..." disabled={isLoading} />
+            <Input
+              id="nik"
+              name="nik"
+              placeholder="16 digit angka..."
+              minLength={16}
+              maxLength={16}
+              pattern="\d{16}"
+              title="NIK harus terdiri dari 16 digit angka"
+              inputMode="numeric"
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(
+                  /\D/g,
+                  "",
+                );
+              }}
+              disabled={isLoading}
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <Label>Status Warga <span className="text-red-500">*</span></Label>
-            <RadioGroup defaultValue="Warga Lokal" name="status_warga" required disabled={isLoading} className="flex flex-col gap-4">
+            <Label>
+              Status Warga <span className="text-red-500">*</span>
+            </Label>
+            <RadioGroup
+              defaultValue="Warga Lokal"
+              name="status_warga"
+              required
+              disabled={isLoading}
+              className="flex flex-col gap-4"
+            >
               <div className="flex items-center space-x-2 cursor-pointer">
                 <RadioGroupItem value="Warga Lokal" id="warga_lokal" />
-                <Label htmlFor="warga_lokal" className="font-normal cursor-pointer">Warga Lokal</Label>
+                <Label
+                  htmlFor="warga_lokal"
+                  className="font-normal cursor-pointer"
+                >
+                  Warga Lokal
+                </Label>
               </div>
               <div className="flex items-center space-x-2 cursor-pointer">
                 <RadioGroupItem value="Bukan Warga Lokal" id="bukan_warga" />
-                <Label htmlFor="bukan_warga" className="font-normal cursor-pointer">Pengunjung</Label>
+                <Label
+                  htmlFor="bukan_warga"
+                  className="font-normal cursor-pointer"
+                >
+                  Pengunjung
+                </Label>
               </div>
             </RadioGroup>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="no_hp">No. HP / WhatsApp <span className="text-red-500">*</span></Label>
-            <Input id="no_hp" name="no_hp" type="tel" placeholder="0812..." required disabled={isLoading} />
+            <Label htmlFor="no_hp">
+              No. HP / WhatsApp <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="no_hp"
+              name="no_hp"
+              type="tel"
+              placeholder="0812..."
+              minLength={10}
+              maxLength={15}
+              pattern="^(\+62|62|0)8[1-9][0-9]{6,11}$"
+              title="Format valid: 08xxx atau +628xxx (10-15 digit)"
+              inputMode="tel"
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(
+                  /[^\d+]/g,
+                  "",
+                );
+              }}
+              required
+              disabled={isLoading}
+            />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="kategori">Kategori Pengaduan <span className="text-red-500">*</span></Label>
+          <Label htmlFor="kategori">
+            Kategori Pengaduan <span className="text-red-500">*</span>
+          </Label>
           <Select name="kategori" required disabled={isLoading}>
             <SelectTrigger className="cursor-pointer">
               <SelectValue placeholder="Pilih kategori laporan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Infrastruktur & Pembangunan">Infrastruktur & Pembangunan</SelectItem>
-              <SelectItem value="Pelayanan Masyarakat">Pelayanan Masyarakat</SelectItem>
-              <SelectItem value="Kebersihan & Lingkungan">Kebersihan & Lingkungan</SelectItem>
-              <SelectItem value="Keamanan & Ketertiban">Keamanan & Ketertiban</SelectItem>
+              <SelectItem value="Infrastruktur & Pembangunan">
+                Infrastruktur & Pembangunan
+              </SelectItem>
+              <SelectItem value="Pelayanan Masyarakat">
+                Pelayanan Masyarakat
+              </SelectItem>
+              <SelectItem value="Kebersihan & Lingkungan">
+                Kebersihan & Lingkungan
+              </SelectItem>
+              <SelectItem value="Keamanan & Ketertiban">
+                Keamanan & Ketertiban
+              </SelectItem>
               <SelectItem value="Lainnya">Lainnya</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="isi_laporan">Isi Laporan <span className="text-red-500">*</span></Label>
-          <Textarea 
-            id="isi_laporan" 
-            name="isi_laporan" 
-            placeholder="Jelaskan secara detail mengenai laporan atau keluhan Anda..." 
+          <Label htmlFor="isi_laporan">
+            Isi Laporan <span className="text-red-500">*</span>
+          </Label>
+          <Textarea
+            id="isi_laporan"
+            name="isi_laporan"
+            placeholder="Jelaskan secara detail mengenai laporan atau keluhan Anda..."
             className="min-h-[120px]"
-            required 
-            disabled={isLoading} 
+            minLength={10}
+            maxLength={2000}
+            required
+            disabled={isLoading}
           />
         </div>
 
@@ -214,10 +280,15 @@ export function PengaduanForm() {
               onChange={handleImageChange}
               disabled={isLoading}
             />
-            
+
             {preview ? (
               <div className="relative w-full aspect-video rounded-md overflow-hidden">
-                <Image src={preview} alt="Preview" fill className="object-cover" />
+                <Image
+                  src={preview}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <p className="text-white font-medium text-sm flex items-center gap-2">
                     <UploadCloud className="w-4 h-4" /> Ganti Foto
@@ -227,8 +298,12 @@ export function PengaduanForm() {
             ) : (
               <div className="py-8 flex flex-col items-center justify-center text-muted-foreground">
                 <UploadCloud className="w-10 h-10 mb-2 opacity-50" />
-                <p className="text-sm font-medium">Klik atau Tarik Foto Kesini</p>
-                <p className="text-xs mt-1 opacity-75">Maksimal akan dikompres otomatis &lt; 500KB</p>
+                <p className="text-sm font-medium">
+                  Klik atau Tarik Foto Kesini
+                </p>
+                <p className="text-xs mt-1 opacity-75">
+                  Maksimal akan dikompres otomatis &lt; 500KB
+                </p>
               </div>
             )}
           </div>

@@ -1,13 +1,20 @@
 import { appendPengaduan, updatePengaduanStatus } from "@/lib/google-sheets";
-import { sendTelegramMessage, sendTelegramPhotoByUrl } from "@/lib/telegram";
+import { sendTelegramMessage, sendTelegramPhoto } from "@/lib/telegram";
 import { generateId } from "@/lib/utils";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { nama_lengkap, nik, status_warga, no_hp, kategori, isi_laporan, url_foto } = data;
+    const formData = await request.formData();
+    
+    const nama_lengkap = formData.get("nama_lengkap") as string;
+    const nik = formData.get("nik") as string;
+    const status_warga = formData.get("status_warga") as string;
+    const no_hp = formData.get("no_hp") as string;
+    const kategori = formData.get("kategori") as string;
+    const isi_laporan = formData.get("isi_laporan") as string;
+    const file = formData.get("file") as File | null;
 
     if (!nama_lengkap || !status_warga || !no_hp || !kategori || !isi_laporan) {
       return NextResponse.json(
@@ -21,16 +28,14 @@ export async function POST(request: Request) {
     const status = "Menunggu";
 
     // 1. Send to Telegram
-    const isWargaLokal = status_warga === "Warga Lokal";
+    const isWargaLokal = status_warga === "Warga Lokal" || status_warga === "Warga"; // Note: we changed label to "Pengunjung" but value is "Bukan Warga Lokal"
     const wargaIcon = isWargaLokal ? "🏡" : "🧳";
     
     const caption = `🚨 <b>LAPORAN BARU DARI WARGA</b>\n\n👤 <b>Nama:</b> ${nama_lengkap}\n📝 <b>NIK:</b> ${nik || "-"}\n${wargaIcon} <b>Status:</b> ${status_warga}\n📞 <b>No HP/WA:</b> <a href="https://wa.me/${no_hp.replace(/^0/, '62').replace(/\D/g, '')}">${no_hp}</a>\n🏷 <b>Kategori:</b> ${kategori}\n\n💬 <b>Isi Laporan:</b>\n<i>"${isi_laporan}"</i>\n\n📅 <b>Tanggal:</b> ${new Date().toLocaleString("id-ID")}\n🆔 <b>ID:</b> ${id}`;
 
-    // If there is an image URL from Cloudinary, send as Photo.
-    // If not, maybe we should just send text, but for now we require photo or we send a placeholder?
-    // Actually, we'll try to send the photo. If it fails or no photo, we could fallback, but let's assume photo is required or optional.
-    if (url_foto) {
-      await sendTelegramPhotoByUrl(url_foto, caption);
+    if (file) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await sendTelegramPhoto(buffer, file.name, file.type, caption);
     } else {
       await sendTelegramMessage(caption);
     }
@@ -44,7 +49,7 @@ export async function POST(request: Request) {
       no_hp,
       kategori,
       isi_laporan,
-      url_foto: url_foto || "",
+      url_foto: "",
       status,
       tanggal,
     });

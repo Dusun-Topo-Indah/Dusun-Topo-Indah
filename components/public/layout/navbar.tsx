@@ -111,7 +111,7 @@ export function Navbar() {
             <Link href="/pengaduan">
               <Button 
                 variant={useDarkTheme ? "default" : "secondary"} 
-                className={`font-semibold rounded-full px-5 ${!useDarkTheme ? "bg-white text-primary hover:bg-white/90" : "shadow-md shadow-primary/20"}`}
+                className={`font-semibold rounded-none px-5 ${!useDarkTheme ? "border border-primary bg-transparent text-primary hover:bg-white/90" : "shadow-md shadow-primary/20"}`}
               >
                 Lapor
               </Button>
@@ -181,11 +181,11 @@ export function Navbar() {
           <Link
             href="/pengaduan"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="mt-8"
+            className={`text-4xl py-10 border-b border-slate-200/60 last:border-0 font-bold tracking-tight transition-colors ${
+              safePathname.startsWith("/pengaduan") ? "text-primary" : "text-slate-900 hover:text-slate-600"
+            }`}
           >
-            <Button size="lg" className="w-full h-14 rounded-full text-lg shadow-lg shadow-primary/25">
-              Lapor / Pengaduan
-            </Button>
+            Lapor
           </Link>
         </div>
       </div>

@@ -4,6 +4,10 @@ import { generateId } from "@/lib/utils";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
+// Global In-Memory Rate Limiter Map
+const rateLimitMap = new Map<string, { count: number; firstRequestTime: number }>();
+
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -15,6 +19,58 @@ export async function POST(request: Request) {
     const kategori = formData.get("kategori") as string;
     const isi_laporan = formData.get("isi_laporan") as string;
     const file = formData.get("file") as File | null;
+
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    if (ip !== "unknown") {
+      const now = Date.now();
+      const windowMs = 10 * 1000; 
+      const maxRequests = 5;
+
+      const record = rateLimitMap.get(ip);
+      if (!record) {
+        rateLimitMap.set(ip, { count: 1, firstRequestTime: now });
+      } else {
+        if (now - record.firstRequestTime > windowMs) {
+          rateLimitMap.set(ip, { count: 1, firstRequestTime: now });
+        } else {
+          record.count += 1;
+          if (record.count > maxRequests) {
+            return NextResponse.json(
+              { success: false, message: "Terlalu banyak permintaan. Mohon tunggu 10 detik sebelum mencoba lagi." },
+              { status: 429 }
+            );
+          }
+        }
+      }
+    }
+
+    const honeypot = formData.get("website_url") as string;
+    if (honeypot) {
+      return NextResponse.json({
+        success: true,
+        message: "Laporan berhasil dikirim.",
+        data: { id: `PGD-${Date.now()}` },
+      });
+    }
+
+    const formLoadTimeEncoded = formData.get("form_load_time") as string;
+    if (formLoadTimeEncoded) {
+      try {
+        const loadTimeStr = Buffer.from(formLoadTimeEncoded, "base64").toString("ascii");
+        const loadTime = parseInt(loadTimeStr, 10);
+        if (!isNaN(loadTime)) {
+          const elapsed = Date.now() - loadTime;
+          if (elapsed < 3000) {
+            return NextResponse.json(
+              { success: false, message: "Pengisian form terlalu cepat. Sistem mengidentifikasi indikasi bot spam." },
+              { status: 400 }
+            );
+          }
+        }
+      } catch (e) {
+        console.error("Gagal membaca token waktu:", e);
+      }
+    }
 
     if (!nama_lengkap || !status_warga || !no_hp || !kategori || !isi_laporan) {
       return NextResponse.json(

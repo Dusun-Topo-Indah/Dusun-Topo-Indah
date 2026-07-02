@@ -15,13 +15,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { compressImage } from "@/lib/image-compression";
 import { Loader2, UploadCloud } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function PengaduanForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const formLoadTimeRef = useRef<string>("");
+
+  useEffect(() => {
+    formLoadTimeRef.current = btoa(Date.now().toString());
+  }, []);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -53,6 +58,11 @@ export function PengaduanForm() {
 
     try {
       const formData = new FormData(e.currentTarget);
+      
+      if (formLoadTimeRef.current) {
+        formData.append("form_load_time", formLoadTimeRef.current);
+      }
+
       const nama_lengkap = formData.get("nama_lengkap") as string;
       const status_warga = formData.get("status_warga") as string;
       const no_hp = formData.get("no_hp") as string;
@@ -132,6 +142,12 @@ export function PengaduanForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl w-full">
+      {/* Zero-Cost Anti-Spam Fields */}
+      <div className="opacity-0 absolute -z-10 w-0 h-0 overflow-hidden" aria-hidden="true">
+        <label htmlFor="website_url">Website URL</label>
+        <input type="text" id="website_url" name="website_url" tabIndex={-1} autoComplete="off" />
+      </div>
+
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">

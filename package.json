@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--no-warnings' next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "NODE_OPTIONS='--no-warnings --dns-result-order=ipv4first' next dev",
+    "build": "NODE_OPTIONS='--dns-result-order=ipv4first' next build",
+    "start": "NODE_OPTIONS='--dns-result-order=ipv4first' next start",
     "lint": "eslint",
     "seed:admin": "tsx scripts/seed-admin.ts",
     "env:pull": "vercel env pull .env.local"
@@ -26,6 +26,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "dotenv": "^17.4.2",

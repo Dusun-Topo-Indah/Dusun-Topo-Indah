@@ -108,6 +108,14 @@ export function Navbar() {
                 </Link>
               );
             })}
+            <Link href="/pengaduan">
+              <Button 
+                variant={useDarkTheme ? "default" : "secondary"} 
+                className={`font-semibold rounded-none px-5 ${!useDarkTheme ? "border border-primary bg-transparent text-primary hover:bg-white/90" : "shadow-md shadow-primary/20"}`}
+              >
+                Lapor
+              </Button>
+            </Link>
           </div>
 
           {/* Action Button & Mobile Toggle */}
@@ -170,6 +178,15 @@ export function Navbar() {
               </Link>
             );
           })}
+          <Link
+            href="/pengaduan"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`text-4xl py-10 border-b border-slate-200/60 last:border-0 font-bold tracking-tight transition-colors ${
+              safePathname.startsWith("/pengaduan") ? "text-primary" : "text-slate-900 hover:text-slate-600"
+            }`}
+          >
+            Lapor
+          </Link>
         </div>
       </div>
     </>

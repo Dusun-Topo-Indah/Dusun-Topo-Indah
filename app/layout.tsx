@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +14,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Sistem Informasi Geografis Dusun Topo Indah",
   description: "Web profil desa dan sistem informasi geografis Dusun Topo Indah",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Topo Indah",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0ea5e9",
 };
 
 export default function RootLayout({

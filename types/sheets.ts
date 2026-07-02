@@ -21,12 +21,15 @@ export interface GaleriRow {
 
 export interface PengaduanRow {
   id: string;
-  tanggal: string;
-  nama: string;
+  nama_lengkap: string;
+  nik: string;
+  status_warga: string;
   no_hp: string;
   kategori: string;
-  isi_pesan: string;
+  isi_laporan: string;
+  url_foto: string;
   status: string;
+  tanggal: string;
 }
 
 export interface FasilitasRow {

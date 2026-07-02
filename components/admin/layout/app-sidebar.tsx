@@ -5,6 +5,7 @@ import {
   Home,
   Image as ImageIcon,
   LogOut,
+  MessageSquare,
   Newspaper,
   PanelTop,
   Settings
@@ -40,6 +41,7 @@ const menuGroups = [
     items: [
       { title: "Berita", icon: Newspaper, href: "/admin/berita" },
       { title: "Galeri", icon: ImageIcon, href: "/admin/galeri" },
+      { title: "Pengaduan", icon: MessageSquare, href: "/admin/pengaduan" },
       { title: "Informasi Web", icon: BadgeInfo, href: "/admin/informasi-web" },
     ],
   },

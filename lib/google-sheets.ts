@@ -1,7 +1,10 @@
 import { normalizeText, paginateItems, stripHtml } from "@/lib/listing";
-import type { BeritaRow, GaleriRow } from "@/types";
+import type { BeritaRow, FasilitasRow, GaleriRow, PengaduanRow, PerangkatRow } from "@/types";
 import type { sheets_v4 } from "googleapis";
 import { google } from "googleapis";
+
+let globalConfigCache: Record<string, string> | null = null;
+let globalConfigCacheTime = 0;
 
 let sheetsInstance: sheets_v4.Sheets | null = null;
 
@@ -33,75 +36,131 @@ import { cacheLife, cacheTag } from "next/cache";
 export async function getBeritaList(): Promise<BeritaRow[]> {
   "use cache";
   cacheTag("berita");
-  cacheLife("hours");
+  cacheLife("max");
   
-  const sheets = await getGoogleSheetsInstance();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:I",
-  });
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Berita_Dusun!A:I",
+    });
 
-  const rows = res.data.values;
-  if (!rows || rows.length === 0) return [];
-  const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "judul";
-  const dataRows = isHeader ? rows.slice(1) : rows;
+    const rows = res.data.values;
+    if (!rows || rows.length === 0) return [];
+    const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "judul";
+    const dataRows = isHeader ? rows.slice(1) : rows;
 
-  if (dataRows.length === 0) return [];
+    if (dataRows.length === 0) return [];
 
-  return dataRows.map((row) => ({
-    id: row[0] || "",
-    judul: row[1] || "",
-    tanggal: row[2] || "",
-    ringkasan: row[3] || "",
-    isi_berita: row[4] || "",
-    url_foto: row[5] || "",
-    kategori: row[6] || "",
-    media_assets: row[7] || "",
-    status_publikasi: row[8] || "Publik",
-  })).reverse(); 
+    return dataRows.map((row) => ({
+      id: row[0] || "",
+      judul: row[1] || "",
+      tanggal: row[2] || "",
+      ringkasan: row[3] || "",
+      isi_berita: row[4] || "",
+      url_foto: row[5] || "",
+      kategori: row[6] || "",
+      media_assets: row[7] || "",
+      status_publikasi: row[8] || "Publik",
+    }));
+  } catch (error) {
+    console.error("Failed to fetch berita list:", error);
+    return [];
+  }
 }
 
 export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
   "use cache";
   cacheTag("berita", "berita-recent");
-  cacheLife("hours");
+  cacheLife("max");
   
   const allBerita = await getBeritaList();
   const publicBerita = allBerita.filter(b => b.status_publikasi === "Publik" || !b.status_publikasi);
   return publicBerita.slice(0, limit);
 }
 
-export async function getTotalBerita(): Promise<number> {
+export async function getDashboardStats(): Promise<{ totalBerita: number; totalGaleri: number }> {
   "use cache";
-  cacheTag("berita", "berita-total");
-  cacheLife("hours");
+  cacheTag("dashboard-stats", "berita-total", "galeri-total");
+  cacheLife("max");
   try {
     const sheets = await getGoogleSheetsInstance();
-    const idRes = await sheets.spreadsheets.values.get({
+    const res = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Berita_Dusun!A:A",
+      ranges: ["Berita_Dusun!A:A", "Galeri_Dusun!A:A"],
     });
-    const total = idRes.data.values?.length || 0;
-    return total > 1 ? total - 1 : 0;
-  } catch {
-    return 0;
+
+    const valueRanges = res.data.valueRanges;
+    if (!valueRanges || valueRanges.length < 2) return { totalBerita: 0, totalGaleri: 0 };
+
+    const beritaTotal = valueRanges[0].values?.length || 0;
+    const galeriTotal = valueRanges[1].values?.length || 0;
+
+    return {
+      totalBerita: beritaTotal > 1 ? beritaTotal - 1 : 0,
+      totalGaleri: galeriTotal > 1 ? galeriTotal - 1 : 0,
+    };
+  } catch (error) {
+    console.error("Failed to fetch dashboard stats:", error);
+    return { totalBerita: 0, totalGaleri: 0 };
   }
 }
 
-export async function getTotalGaleri(): Promise<number> {
+export async function getHomepageData(): Promise<{ 
+  globalConfig: Record<string, string>;
+  galeriList: GaleriRow[];
+  beritaList: BeritaRow[];
+}> {
   "use cache";
-  cacheTag("galeri", "galeri-total");
-  cacheLife("hours");
+  cacheTag("homepage-data", "global-config", "berita", "galeri");
+  cacheLife("max");
+
   try {
     const sheets = await getGoogleSheetsInstance();
-    const idRes = await sheets.spreadsheets.values.get({
+    const res = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Galeri_Dusun!A:A",
+      ranges: ["Global_Config!A:B", "Galeri_Dusun!A:F", "Berita_Dusun!A:I"],
     });
-    const total = idRes.data.values?.length || 0;
-    return total > 1 ? total - 1 : 0;
-  } catch {
-    return 0;
+
+    const valueRanges = res.data.valueRanges;
+    if (!valueRanges || valueRanges.length < 3) return { globalConfig: {}, galeriList: [], beritaList: [] };
+
+    const configRows = valueRanges[0].values || [];
+    const configDataRows = (configRows[0]?.[0]?.toLowerCase() === "key" || configRows[0]?.[1]?.toLowerCase() === "value") ? configRows.slice(1) : configRows;
+    const globalConfig: Record<string, string> = {};
+    for (const row of configDataRows) {
+      if (row[0]) globalConfig[row[0]] = row[1] || "";
+    }
+
+    const galeriRows = valueRanges[1].values || [];
+    const galeriDataRows = (galeriRows[0]?.[0]?.toLowerCase() === "id" || galeriRows[0]?.[1]?.toLowerCase() === "judul") ? galeriRows.slice(1) : galeriRows;
+    const galeriList = galeriDataRows.map((row) => ({
+      id: row[0] || "",
+      judul: row[1] || "",
+      kategori: row[2] || "",
+      deskripsi: row[3] || "",
+      tanggal_upload: row[4] || "",
+      url_foto: row[5] || "",
+    }));
+
+    const beritaRows = valueRanges[2].values || [];
+    const beritaDataRows = (beritaRows[0]?.[0]?.toLowerCase() === "id" || beritaRows[0]?.[1]?.toLowerCase() === "judul") ? beritaRows.slice(1) : beritaRows;
+    const beritaList = beritaDataRows.map((row) => ({
+      id: row[0] || "",
+      judul: row[1] || "",
+      tanggal: row[2] || "",
+      ringkasan: row[3] || "",
+      isi_berita: row[4] || "",
+      url_foto: row[5] || "",
+      kategori: row[6] || "",
+      media_assets: row[7] || "",
+      status_publikasi: row[8] || "Publik",
+    }));
+
+    return { globalConfig, galeriList, beritaList };
+  } catch (error) {
+    console.error("Failed to fetch homepage data:", error);
+    return { globalConfig: {}, galeriList: [], beritaList: [] };
   }
 }
 
@@ -122,16 +181,58 @@ export async function checkSystemStatus(): Promise<{ status: "Online" | "Offline
     return { status: "Offline", message: "Koneksi ke Database Terputus" };
   }
 }
-export async function appendBerita(data: BeritaRow): Promise<void> {
+async function insertRowAtTop(sheetName: string, values: string[]): Promise<void> {
   const sheets = await getGoogleSheetsInstance();
-  await sheets.spreadsheets.values.append({
+  
+  const spreadsheet = await sheets.spreadsheets.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Berita_Dusun!A:I",
-    valueInputOption: "USER_ENTERED",
+  });
+  const sheet = spreadsheet.data.sheets?.find((s: sheets_v4.Schema$Sheet) => s.properties?.title === sheetName);
+  const sheetId = sheet?.properties?.sheetId;
+
+  if (sheetId === undefined) throw new Error(`Sheet ${sheetName} not found`);
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
     requestBody: {
-      values: [[data.id, data.judul, data.tanggal, data.ringkasan, data.isi_berita, data.url_foto, data.kategori, data.media_assets || "", data.status_publikasi || "Publik"]],
+      requests: [
+        {
+          insertDimension: {
+            range: {
+              sheetId: sheetId,
+              dimension: "ROWS",
+              startIndex: 1,
+              endIndex: 2,
+            },
+            inheritFromBefore: false,
+          },
+        },
+      ],
     },
   });
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A2`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [values],
+    },
+  });
+}
+
+export async function appendBerita(data: BeritaRow): Promise<void> {
+  await insertRowAtTop("Berita_Dusun", [
+    data.id, 
+    data.judul, 
+    data.tanggal, 
+    data.ringkasan, 
+    data.isi_berita, 
+    data.url_foto, 
+    data.kategori, 
+    data.media_assets || "", 
+    data.status_publikasi || "Publik"
+  ]);
 }
 export async function deleteBeritaById(id: string): Promise<boolean> {
   const sheets = await getGoogleSheetsInstance();
@@ -219,7 +320,7 @@ export async function updateBeritaById(id: string, updatedData: Partial<BeritaRo
 export async function getGaleriList(): Promise<GaleriRow[]> {
   "use cache";
   cacheTag("galeri");
-  cacheLife("hours");
+  cacheLife("max");
   
   try {
     const sheets = await getGoogleSheetsInstance();
@@ -233,8 +334,6 @@ export async function getGaleriList(): Promise<GaleriRow[]> {
     const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "judul";
     const dataRows = isHeader ? rows.slice(1) : rows;
 
-    if (dataRows.length === 0) return [];
-
     return dataRows.map((row) => ({
       id: row[0] || "",
       judul: row[1] || "",
@@ -242,23 +341,84 @@ export async function getGaleriList(): Promise<GaleriRow[]> {
       deskripsi: row[3] || "",
       tanggal_upload: row[4] || "",
       url_foto: row[5] || "",
-    })).reverse(); 
+    })); 
   } catch (error) {
-    console.error("Failed to fetch GaleriList:", error);
+    console.error("Failed to fetch galeri list:", error);
+    return [];
+  }
+}
+
+export async function getFasilitasList(): Promise<FasilitasRow[]> {
+  "use cache";
+  cacheTag("fasilitas");
+  cacheLife("max");
+  
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Fasilitas_Dusun!A:G",
+    });
+
+    const rows = res.data.values;
+    if (!rows || rows.length === 0) return [];
+    const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "nama_fasum";
+    const dataRows = isHeader ? rows.slice(1) : rows;
+
+    return dataRows.map((row) => ({
+      id: row[0] || "",
+      nama_fasum: row[1] || "",
+      kategori_ikon: row[2] || "",
+      latitude: row[3] || "",
+      longitude: row[4] || "",
+      deskripsi: row[5] || "",
+      url_foto: row[6] || "",
+    }));
+  } catch (error) {
+    console.error("Failed to fetch fasilitas list:", error);
+    return [];
+  }
+}
+
+export async function getPerangkatList(): Promise<PerangkatRow[]> {
+  "use cache";
+  cacheTag("perangkat");
+  cacheLife("max");
+  
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Perangkat_Dusun!A:E",
+    });
+
+    const rows = res.data.values;
+    if (!rows || rows.length === 0) return [];
+    const isHeader = rows[0][0]?.toLowerCase() === "id" || rows[0][1]?.toLowerCase() === "urutan";
+    const dataRows = isHeader ? rows.slice(1) : rows;
+
+    return dataRows.map((row) => ({
+      id: row[0] || "",
+      urutan: row[1] || "",
+      nama: row[2] || "",
+      jabatan: row[3] || "",
+      url_foto: row[4] || "",
+    }));
+  } catch (error) {
+    console.error("Failed to fetch perangkat list:", error);
     return [];
   }
 }
 
 export async function appendGaleri(data: GaleriRow): Promise<void> {
-  const sheets = await getGoogleSheetsInstance();
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SPREADSHEET_ID,
-    range: "Galeri_Dusun!A:F",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [[data.id, data.judul, data.kategori, data.deskripsi, data.tanggal_upload, data.url_foto]],
-    },
-  });
+  await insertRowAtTop("Galeri_Dusun", [
+    data.id, 
+    data.judul, 
+    data.kategori, 
+    data.deskripsi, 
+    data.tanggal_upload, 
+    data.url_foto
+  ]);
 }
 
 export async function updateGaleriById(id: string, updatedData: Partial<GaleriRow>): Promise<boolean> {
@@ -416,7 +576,12 @@ export async function deleteGaleriById(id: string): Promise<boolean> {
 export async function getGlobalConfig(): Promise<Record<string, string>> {
   "use cache";
   cacheTag("global-config");
-  cacheLife("hours");
+  cacheLife("max");
+
+  // Mencegah Spam API Limit di environment development (karena hot-reload / 404 spam)
+  if (process.env.NODE_ENV === "development" && globalConfigCache && Date.now() - globalConfigCacheTime < 60000) {
+    return globalConfigCache;
+  }
   
   try {
     const sheets = await getGoogleSheetsInstance();
@@ -436,6 +601,11 @@ export async function getGlobalConfig(): Promise<Record<string, string>> {
       if (row[0]) {
         config[row[0]] = row[1] || "";
       }
+    }
+    
+    if (process.env.NODE_ENV === "development") {
+      globalConfigCache = config;
+      globalConfigCacheTime = Date.now();
     }
     
     return config;
@@ -483,4 +653,163 @@ export async function updateGlobalConfig(updates: Record<string, string>): Promi
   });
 
   return true;
+}
+
+export async function getPengaduanList(): Promise<PengaduanRow[]> {
+  "use cache";
+  cacheTag("pengaduan");
+  cacheLife("max");
+  
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Pengaduan_Warga!A:J",
+    });
+
+    const rows = res.data.values;
+    if (!rows || rows.length === 0) return [];
+
+    const dataRows = (rows[0]?.[0]?.toLowerCase() === "id" || rows[0]?.[1]?.toLowerCase() === "nama_lengkap") ? rows.slice(1) : rows;
+
+    return dataRows.map((row) => ({
+      id: row[0] || "",
+      nama_lengkap: row[1] || "",
+      nik: row[2] || "",
+      status_warga: row[3] || "",
+      no_hp: row[4] || "",
+      kategori: row[5] || "",
+      isi_laporan: row[6] || "",
+      url_foto: row[7] || "",
+      status: row[8] || "Menunggu",
+      tanggal: row[9] || "",
+    }));
+  } catch (error) {
+    console.error("Failed to fetch pengaduan list:", error);
+    return [];
+  }
+}
+
+export async function getPengaduanById(id: string): Promise<PengaduanRow | null> {
+  "use cache";
+  cacheTag("pengaduan");
+  cacheLife("max");
+  
+  try {
+    const list = await getPengaduanList();
+    const item = list.find((p) => p.id === id);
+    return item || null;
+  } catch (error) {
+    console.error("Failed to fetch pengaduan by id:", error);
+    return null;
+  }
+}
+
+export async function appendPengaduan(data: PengaduanRow): Promise<boolean> {
+  const values = [
+    data.id, data.nama_lengkap, data.nik, data.status_warga, data.no_hp, data.kategori, data.isi_laporan, data.url_foto, data.status, data.tanggal
+  ];
+  try {
+    await insertRowAtTop("Pengaduan_Warga", values);
+    return true;
+  } catch (error) {
+    console.error("Failed to append pengaduan:", error);
+    return false;
+  }
+}
+
+export async function updatePengaduanStatus(id: string, newStatus: string): Promise<boolean> {
+  try {
+    const sheets = await getGoogleSheetsInstance();
+    
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Pengaduan_Warga!A:I",
+    });
+
+    const rows = res.data.values;
+    if (!rows) return false;
+
+    let rowIndex = -1;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i][0] === id) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
+      console.warn("Pengaduan ID not found:", id);
+      return false;
+    }
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Pengaduan_Warga!I${rowIndex}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [[newStatus]],
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Failed to update pengaduan status:", error);
+    return false;
+  }
+}
+
+interface PengaduanListingArgs {
+  q: string;
+  filter: string;
+  status: string;
+  page: number;
+  limit: number;
+}
+
+export async function getPengaduanListing(args: PengaduanListingArgs) {
+  const list = await getPengaduanList();
+  const query = normalizeText(args.q);
+  const filter = normalizeText(args.filter);
+  const statusFilter = normalizeText(args.status);
+  
+  const categories = Array.from(new Set(list.map((item) => item.kategori).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+
+  let filtered = list;
+
+  if (query) {
+    filtered = filtered.filter(
+      (item) =>
+        normalizeText(item.isi_laporan).includes(query) ||
+        normalizeText(item.nama_lengkap).includes(query) ||
+        normalizeText(item.nik).includes(query)
+    );
+  }
+
+  if (filter && filter !== "all") {
+    filtered = filtered.filter((item) => normalizeText(item.kategori) === filter);
+  }
+
+  if (statusFilter && statusFilter !== "all") {
+    filtered = filtered.filter((item) => normalizeText(item.status) === statusFilter);
+  }
+
+  // Sort by newest based on ID (which contains timestamp)
+  filtered.sort((a, b) => {
+    const timeA = parseInt(a.id.split("-")[1] || "0");
+    const timeB = parseInt(b.id.split("-")[1] || "0");
+    return timeB - timeA;
+  });
+
+  const pagination = paginateItems(filtered, args.page, args.limit);
+
+  return {
+    items: pagination.items,
+    totalItems: pagination.totalItems,
+    totalPages: pagination.totalPages,
+    page: pagination.page,
+    categories,
+  };
 }

@@ -2,7 +2,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStorageUsage } from "@/lib/cloudinary";
-import { getTotalBerita, getTotalGaleri } from "@/lib/google-sheets";
+import { getDashboardStats } from "@/lib/google-sheets";
 import {
   BadgeInfo,
   Database,
@@ -14,13 +14,18 @@ import {
 import Link from "next/link";
 import { StorageManagement } from "./pengaturan/storage-management";
 import { RefreshStorageButton } from "@/components/admin/refresh-storage-button";
+import { connection } from "next/server";
 
 export default async function AdminDashboardPage() {
-  const [totalBerita, totalGaleri, storageBytes] = await Promise.all([
-    getTotalBerita(),
-    getTotalGaleri(),
+  await connection();
+  
+  const [stats, storageBytes] = await Promise.all([
+    getDashboardStats(),
     getStorageUsage(),
   ]);
+
+  const totalBerita = stats.totalBerita;
+  const totalGaleri = stats.totalGaleri;
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 MB";

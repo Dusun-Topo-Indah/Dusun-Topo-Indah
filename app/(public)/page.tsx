@@ -2,7 +2,7 @@ import { AboutSection } from "@/components/public/beranda/about-section";
 import { GaleriSection } from "@/components/public/galeri/galeri-section";
 import { HeroBanner } from "@/components/public/beranda/hero-banner";
 import { NewsSection } from "@/components/public/beranda/news-section";
-import { getGaleriList, getGlobalConfig, getRecentBerita } from "@/lib/google-sheets";
+import { getHomepageData } from "@/lib/google-sheets";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = {
@@ -11,9 +11,9 @@ export const metadata = {
 };
 
 export default async function BerandaPage() {
-  const globalConfig = await getGlobalConfig();
-  const galeriList = await getGaleriList();
-  const beritaList = await getRecentBerita(4);
+  const { globalConfig, galeriList, beritaList: allBerita } = await getHomepageData();
+  const publicBerita = allBerita.filter((b) => b.status_publikasi === "Publik" || !b.status_publikasi);
+  const beritaList = publicBerita.slice(0, 4);
   
   const selectedGaleriIdsStr = globalConfig["beranda_galeri_ids"];
   let selectedGaleri = galeriList;

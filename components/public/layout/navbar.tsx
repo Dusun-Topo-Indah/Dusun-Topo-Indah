@@ -108,6 +108,14 @@ export function Navbar() {
                 </Link>
               );
             })}
+            <Link href="/pengaduan">
+              <Button 
+                variant={useDarkTheme ? "default" : "secondary"} 
+                className={`font-semibold rounded-full px-5 ${!useDarkTheme ? "bg-white text-primary hover:bg-white/90" : "shadow-md shadow-primary/20"}`}
+              >
+                Lapor
+              </Button>
+            </Link>
           </div>
 
           {/* Action Button & Mobile Toggle */}
@@ -170,6 +178,15 @@ export function Navbar() {
               </Link>
             );
           })}
+          <Link
+            href="/pengaduan"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="mt-8"
+          >
+            <Button size="lg" className="w-full h-14 rounded-full text-lg shadow-lg shadow-primary/25">
+              Lapor / Pengaduan
+            </Button>
+          </Link>
         </div>
       </div>
     </>

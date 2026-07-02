@@ -1,0 +1,225 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { compressImage } from "@/lib/image-compression";
+import { Loader2, UploadCloud } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
+
+export function PengaduanForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (!selectedFile.type.startsWith("image/")) {
+      toast.error("Harap unggah file berupa gambar (JPG/PNG).");
+      return;
+    }
+
+    try {
+      // Compress immediately for preview and upload
+      const compressed = await compressImage(selectedFile);
+      setFile(compressed);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(compressed);
+    } catch (error) {
+      console.error("Gagal mengompres gambar:", error);
+      toast.error("Gagal memproses gambar. Coba gambar lain.");
+    }
+  };
+
+  const uploadToCloudinary = async (fileToUpload: File): Promise<string | null> => {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      console.error("Missing Cloudinary env vars");
+      return null;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileToUpload);
+    formData.append("upload_preset", uploadPreset);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Upload failed");
+      
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Cloudinary upload error:", error);
+      return null;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const nama_lengkap = formData.get("nama_lengkap") as string;
+      const nik = formData.get("nik") as string;
+      const kategori = formData.get("kategori") as string;
+      const isi_laporan = formData.get("isi_laporan") as string;
+
+      if (!nama_lengkap || !kategori || !isi_laporan) {
+        toast.error("Mohon lengkapi semua kolom yang wajib diisi.");
+        setIsLoading(false);
+        return;
+      }
+
+      let url_foto = "";
+      if (file) {
+        toast.loading("Mengunggah foto bukti...", { id: "uploading" });
+        const uploadedUrl = await uploadToCloudinary(file);
+        if (!uploadedUrl) {
+          toast.dismiss("uploading");
+          toast.error("Gagal mengunggah foto. Pastikan koneksi internet Anda stabil.");
+          setIsLoading(false);
+          return;
+        }
+        url_foto = uploadedUrl;
+        toast.dismiss("uploading");
+      }
+
+      toast.loading("Mengirim laporan ke server...", { id: "sending" });
+
+      const res = await fetch("/api/pengaduan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nama_lengkap,
+          nik,
+          kategori,
+          isi_laporan,
+          url_foto,
+        }),
+      });
+
+      const result = await res.json();
+      toast.dismiss("sending");
+
+      if (result.success) {
+        toast.success("Laporan berhasil dikirim!");
+        // Reset form
+        (e.target as HTMLFormElement).reset();
+        setPreview(null);
+        setFile(null);
+      } else {
+        toast.error(result.message || "Gagal mengirim laporan.");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast.dismiss("sending");
+      toast.error("Terjadi kesalahan jaringan.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl w-full">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="nama_lengkap">Nama Lengkap <span className="text-red-500">*</span></Label>
+            <Input id="nama_lengkap" name="nama_lengkap" placeholder="John Doe" required disabled={isLoading} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nik">NIK (Opsional)</Label>
+            <Input id="nik" name="nik" placeholder="320..." disabled={isLoading} />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="kategori">Kategori Pengaduan <span className="text-red-500">*</span></Label>
+          <Select name="kategori" required disabled={isLoading}>
+            <SelectTrigger>
+              <SelectValue placeholder="Pilih kategori laporan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Infrastruktur & Pembangunan">Infrastruktur & Pembangunan</SelectItem>
+              <SelectItem value="Pelayanan Masyarakat">Pelayanan Masyarakat</SelectItem>
+              <SelectItem value="Kebersihan & Lingkungan">Kebersihan & Lingkungan</SelectItem>
+              <SelectItem value="Keamanan & Ketertiban">Keamanan & Ketertiban</SelectItem>
+              <SelectItem value="Lainnya">Lainnya</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="isi_laporan">Isi Laporan <span className="text-red-500">*</span></Label>
+          <Textarea 
+            id="isi_laporan" 
+            name="isi_laporan" 
+            placeholder="Jelaskan secara detail mengenai laporan atau keluhan Anda..." 
+            className="min-h-[120px]"
+            required 
+            disabled={isLoading} 
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Foto Bukti (Opsional)</Label>
+          <div className="border-2 border-dashed rounded-lg p-4 hover:bg-muted/50 transition-colors text-center cursor-pointer relative overflow-hidden group">
+            <input
+              type="file"
+              accept="image/*"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              onChange={handleImageChange}
+              disabled={isLoading}
+            />
+            
+            {preview ? (
+              <div className="relative w-full aspect-video rounded-md overflow-hidden">
+                <Image src={preview} alt="Preview" fill className="object-cover" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <p className="text-white font-medium text-sm flex items-center gap-2">
+                    <UploadCloud className="w-4 h-4" /> Ganti Foto
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 flex flex-col items-center justify-center text-muted-foreground">
+                <UploadCloud className="w-10 h-10 mb-2 opacity-50" />
+                <p className="text-sm font-medium">Klik atau Tarik Foto Kesini</p>
+                <p className="text-xs mt-1 opacity-75">Maksimal akan dikompres otomatis &lt; 500KB</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Mengirim Laporan...
+          </>
+        ) : (
+          "Kirim Pengaduan"
+        )}
+      </Button>
+    </form>
+  );
+}

@@ -51,6 +51,7 @@ export async function Footer() {
               <li><Link href="/profil" className="hover:text-primary transition-colors">Profil Dusun</Link></li>
               <li><Link href="/berita" className="hover:text-primary transition-colors">Berita & Artikel</Link></li>
               <li><Link href="/galeri" className="hover:text-primary transition-colors">Galeri Foto</Link></li>
+              <li><Link href="/pengaduan" className="hover:text-primary transition-colors">Lapor / Pengaduan</Link></li>
             </ul>
           </div>
 

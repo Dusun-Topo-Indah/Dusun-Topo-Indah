@@ -664,7 +664,7 @@ export async function getPengaduanList(): Promise<PengaduanRow[]> {
     const sheets = await getGoogleSheetsInstance();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Pengaduan_Warga!A:H",
+      range: "Pengaduan_Warga!A:J",
     });
 
     const rows = res.data.values;
@@ -676,11 +676,13 @@ export async function getPengaduanList(): Promise<PengaduanRow[]> {
       id: row[0] || "",
       nama_lengkap: row[1] || "",
       nik: row[2] || "",
-      kategori: row[3] || "",
-      isi_laporan: row[4] || "",
-      url_foto: row[5] || "",
-      status: row[6] || "Menunggu",
-      tanggal: row[7] || "",
+      status_warga: row[3] || "",
+      no_hp: row[4] || "",
+      kategori: row[5] || "",
+      isi_laporan: row[6] || "",
+      url_foto: row[7] || "",
+      status: row[8] || "Menunggu",
+      tanggal: row[9] || "",
     }));
   } catch (error) {
     console.error("Failed to fetch pengaduan list:", error);
@@ -690,7 +692,7 @@ export async function getPengaduanList(): Promise<PengaduanRow[]> {
 
 export async function appendPengaduan(data: PengaduanRow): Promise<boolean> {
   const values = [
-    data.id, data.nama_lengkap, data.nik, data.kategori, data.isi_laporan, data.url_foto, data.status, data.tanggal
+    data.id, data.nama_lengkap, data.nik, data.status_warga, data.no_hp, data.kategori, data.isi_laporan, data.url_foto, data.status, data.tanggal
   ];
   try {
     await insertRowAtTop("Pengaduan_Warga", values);
@@ -707,7 +709,7 @@ export async function updatePengaduanStatus(id: string, newStatus: string): Prom
     
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Pengaduan_Warga!A:G",
+      range: "Pengaduan_Warga!A:I",
     });
 
     const rows = res.data.values;
@@ -728,7 +730,7 @@ export async function updatePengaduanStatus(id: string, newStatus: string): Prom
 
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
-      range: `Pengaduan_Warga!G${rowIndex}`,
+      range: `Pengaduan_Warga!I${rowIndex}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [[newStatus]],

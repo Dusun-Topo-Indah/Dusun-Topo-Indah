@@ -7,9 +7,9 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { nama_lengkap, nik, kategori, isi_laporan, url_foto } = data;
+    const { nama_lengkap, nik, status_warga, no_hp, kategori, isi_laporan, url_foto } = data;
 
-    if (!nama_lengkap || !kategori || !isi_laporan) {
+    if (!nama_lengkap || !status_warga || !no_hp || !kategori || !isi_laporan) {
       return NextResponse.json(
         { success: false, message: "Data pengaduan tidak lengkap." },
         { status: 400 }
@@ -21,7 +21,10 @@ export async function POST(request: Request) {
     const status = "Menunggu";
 
     // 1. Send to Telegram
-    const caption = `🚨 <b>LAPORAN BARU DARI WARGA</b>\n\n👤 <b>Nama:</b> ${nama_lengkap}\n📝 <b>NIK:</b> ${nik || "-"}\n🏷 <b>Kategori:</b> ${kategori}\n\n💬 <b>Isi Laporan:</b>\n<i>"${isi_laporan}"</i>\n\n📅 <b>Tanggal:</b> ${new Date().toLocaleString("id-ID")}\n🆔 <b>ID:</b> ${id}`;
+    const isWargaLokal = status_warga === "Warga Lokal";
+    const wargaIcon = isWargaLokal ? "🏡" : "🧳";
+    
+    const caption = `🚨 <b>LAPORAN BARU DARI WARGA</b>\n\n👤 <b>Nama:</b> ${nama_lengkap}\n📝 <b>NIK:</b> ${nik || "-"}\n${wargaIcon} <b>Status:</b> ${status_warga}\n📞 <b>No HP/WA:</b> <a href="https://wa.me/${no_hp.replace(/^0/, '62').replace(/\D/g, '')}">${no_hp}</a>\n🏷 <b>Kategori:</b> ${kategori}\n\n💬 <b>Isi Laporan:</b>\n<i>"${isi_laporan}"</i>\n\n📅 <b>Tanggal:</b> ${new Date().toLocaleString("id-ID")}\n🆔 <b>ID:</b> ${id}`;
 
     // If there is an image URL from Cloudinary, send as Photo.
     // If not, maybe we should just send text, but for now we require photo or we send a placeholder?
@@ -37,6 +40,8 @@ export async function POST(request: Request) {
       id,
       nama_lengkap,
       nik: nik || "",
+      status_warga,
+      no_hp,
       kategori,
       isi_laporan,
       url_foto: url_foto || "",

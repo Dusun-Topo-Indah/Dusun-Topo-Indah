@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { compressImage } from "@/lib/image-compression";
@@ -77,10 +78,12 @@ export function PengaduanForm() {
       const formData = new FormData(e.currentTarget);
       const nama_lengkap = formData.get("nama_lengkap") as string;
       const nik = formData.get("nik") as string;
+      const status_warga = formData.get("status_warga") as string;
+      const no_hp = formData.get("no_hp") as string;
       const kategori = formData.get("kategori") as string;
       const isi_laporan = formData.get("isi_laporan") as string;
 
-      if (!nama_lengkap || !kategori || !isi_laporan) {
+      if (!nama_lengkap || !status_warga || !no_hp || !kategori || !isi_laporan) {
         toast.error("Mohon lengkapi semua kolom yang wajib diisi.");
         setIsLoading(false);
         return;
@@ -110,6 +113,8 @@ export function PengaduanForm() {
         body: JSON.stringify({
           nama_lengkap,
           nik,
+          status_warga,
+          no_hp,
           kategori,
           isi_laporan,
           url_foto,
@@ -151,10 +156,30 @@ export function PengaduanForm() {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <Label>Status Warga <span className="text-red-500">*</span></Label>
+            <RadioGroup defaultValue="Warga Lokal" name="status_warga" required disabled={isLoading} className="flex flex-col gap-4">
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <RadioGroupItem value="Warga Lokal" id="warga_lokal" />
+                <Label htmlFor="warga_lokal" className="font-normal cursor-pointer">Warga Lokal</Label>
+              </div>
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <RadioGroupItem value="Bukan Warga Lokal" id="bukan_warga" />
+                <Label htmlFor="bukan_warga" className="font-normal cursor-pointer">Pengunjung</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="no_hp">No. HP / WhatsApp <span className="text-red-500">*</span></Label>
+            <Input id="no_hp" name="no_hp" type="tel" placeholder="0812..." required disabled={isLoading} />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="kategori">Kategori Pengaduan <span className="text-red-500">*</span></Label>
           <Select name="kategori" required disabled={isLoading}>
-            <SelectTrigger>
+            <SelectTrigger className="cursor-pointer">
               <SelectValue placeholder="Pilih kategori laporan" />
             </SelectTrigger>
             <SelectContent>

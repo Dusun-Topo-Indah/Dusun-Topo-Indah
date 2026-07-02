@@ -111,8 +111,20 @@ export const columns: ColumnDef<PengaduanRow>[] = [
     header: "Pelapor",
     cell: ({ row }) => (
       <div>
-        <span className="font-semibold block text-sm text-foreground">{row.original.nama_lengkap}</span>
-        <span className="text-xs text-muted-foreground">{row.original.nik || "Tidak ada NIK"}</span>
+        <div className="font-semibold text-sm text-foreground flex items-center gap-2 mb-0.5">
+          {row.original.nama_lengkap}
+          {row.original.status_warga === "Warga Lokal" ? (
+             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 leading-none bg-blue-50 text-blue-600 border-blue-200 font-medium">Warga Lokal</Badge>
+          ) : (
+             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 leading-none bg-orange-50 text-orange-600 border-orange-200 font-medium">Bukan Warga</Badge>
+          )}
+        </div>
+        <span className="text-xs text-muted-foreground block">{row.original.nik || "Tidak ada NIK"}</span>
+        {row.original.no_hp && (
+          <a href={`https://wa.me/${row.original.no_hp.replace(/^0/, '62').replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline block mt-1 font-medium">
+            {row.original.no_hp}
+          </a>
+        )}
       </div>
     ),
   },

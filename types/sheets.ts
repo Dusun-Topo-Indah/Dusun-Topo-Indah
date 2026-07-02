@@ -23,6 +23,8 @@ export interface PengaduanRow {
   id: string;
   nama_lengkap: string;
   nik: string;
+  status_warga: string;
+  no_hp: string;
   kategori: string;
   isi_laporan: string;
   url_foto: string;

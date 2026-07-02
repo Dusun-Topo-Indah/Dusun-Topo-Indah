@@ -49,11 +49,14 @@ export const mapsData = sqliteTable("maps_data", {
 export const pengaduanWarga = sqliteTable("pengaduan_warga", {
   id: text("id").primaryKey(),
   tanggal: text("tanggal").notNull(),
-  nama: text("nama").notNull(),
+  nama_lengkap: text("nama_lengkap").notNull(),
+  nik: text("nik").notNull(),
+  status_warga: text("status_warga").notNull(),
   no_hp: text("no_hp").default(""),
   kategori: text("kategori").default(""),
-  isi_pesan: text("isi_pesan").notNull(),
-  status: text("status").default("Pending"),
+  isi_laporan: text("isi_laporan").notNull(),
+  url_foto: text("url_foto").default(""),
+  status: text("status").default("Menunggu"),
   created_at: text("created_at").default(sql`(datetime('now'))`),
 });
 

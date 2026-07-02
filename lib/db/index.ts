@@ -14,14 +14,25 @@ if (typeof process !== "undefined" && process.release?.name === "node") {
     if (dns && typeof dns.setDefaultResultOrder === "function") {
       dns.setDefaultResultOrder("ipv4first");
     }
-  } catch (e) {
+  } catch {
     // Ignore error in edge runtimes
   }
 }
 
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+const createDb = () => {
+  const client = createClient({
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN!,
+  });
+  return drizzle(client, { schema });
+};
 
-export const db = drizzle(client, { schema });
+const globalForDb = globalThis as unknown as {
+  db: ReturnType<typeof createDb> | undefined;
+};
+
+export const db = globalForDb.db ?? createDb();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForDb.db = db;
+}

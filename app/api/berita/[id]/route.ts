@@ -4,6 +4,7 @@ import { deleteBeritaById, getBeritaById, updateBeritaById } from "@/lib/db/quer
 import { sanitizeHtml } from "@/lib/sanitize";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import type { BeritaRow } from "@/types";
 
 export async function PUT(
   request: Request,
@@ -53,15 +54,15 @@ export async function PUT(
 
     const cleanHtml = sanitizeHtml(isi_berita);
 
-    const updatePayload: Record<string, any> = {
+    const updatePayload: Partial<BeritaRow> = {
       judul,
       ringkasan,
       isi_berita: cleanHtml,
       kategori,
+      url_foto: url_foto !== undefined ? url_foto : undefined,
+      media_assets: media_assets !== undefined ? media_assets : undefined,
+      status_publikasi: status_publikasi !== undefined ? status_publikasi : undefined,
     };
-    if (url_foto !== undefined) updatePayload.url_foto = url_foto;
-    if (media_assets !== undefined) updatePayload.media_assets = media_assets;
-    if (status_publikasi !== undefined) updatePayload.status_publikasi = status_publikasi;
 
     const success = await updateBeritaById(id, updatePayload);
 
@@ -186,8 +187,7 @@ export async function DELETE(
     revalidateTag("berita", "max");
 
     return NextResponse.json({ success: true, message: "Berita dan aset terkait berhasil dihapus." });
-  } catch (error) {
-    console.error("Failed to delete berita:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Terjadi kesalahan sistem saat menghapus berita." },
       { status: 500 }

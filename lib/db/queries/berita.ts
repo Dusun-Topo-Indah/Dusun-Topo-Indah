@@ -1,9 +1,8 @@
+import type { BeritaRow } from "@/types";
+import { and, count, desc, eq, like, or } from "drizzle-orm";
+import { cacheLife, cacheTag } from "next/cache";
 import { db } from "../index";
 import { beritaDusun } from "../schema";
-import { eq, count, desc } from "drizzle-orm";
-import type { BeritaRow } from "@/types";
-import { normalizeText, stripHtml, paginateItems } from "@/lib/listing";
-import { cacheLife, cacheTag } from "next/cache";
 
 export async function getBeritaList(): Promise<BeritaRow[]> {
   "use cache";
@@ -103,10 +102,9 @@ export async function appendBerita(data: BeritaRow): Promise<void> {
 }
 
 export async function updateBeritaById(id: string, updatedData: Partial<BeritaRow>): Promise<boolean> {
-  const { id: _id, ...rest } = updatedData;
   const cleanData: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(rest)) {
-    if (value !== undefined) {
+  for (const [key, value] of Object.entries(updatedData)) {
+    if (value !== undefined && key !== "id") {
       cleanData[key] = value;
     }
   }
@@ -133,38 +131,82 @@ interface BeritaListingArgs {
 }
 
 export async function getBeritaListing(args: BeritaListingArgs) {
-  const allBerita = await getBeritaList();
-  const query = normalizeText(args.q);
-  const categoryFilter = normalizeText(args.filter);
-  const categories = Array.from(new Set(allBerita.map((item) => item.kategori).filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b, "id")
-  );
 
-  const filtered = allBerita.filter((item) => {
-    const searchable = normalizeText(`${item.judul} ${item.ringkasan} ${stripHtml(item.isi_berita)} ${item.kategori}`);
-    const matchesSearch = query === "" || searchable.includes(query);
-    const hasCover = Boolean(item.url_foto);
-    const isSpecialFilter = args.filter === "all" || args.filter === "with-cover" || args.filter === "without-cover";
-    
-    let matchesFilter = true;
-    if (isSpecialFilter) {
-      matchesFilter = 
-        args.filter === "all" ||
-        (args.filter === "with-cover" && hasCover) ||
-        (args.filter === "without-cover" && !hasCover);
-    } else {
-      matchesFilter = normalizeText(item.kategori) === categoryFilter;
+  const categoriesResult = await db
+    .selectDistinct({ kategori: beritaDusun.kategori })
+    .from(beritaDusun);
+  
+  const categories = categoriesResult
+    .map((r) => r.kategori)
+    .filter(Boolean)
+    .sort((a, b) => a!.localeCompare(b!, "id")) as string[];
+
+  const conditions = [];
+  
+  if (args.q) {
+    const searchTerm = `%${args.q}%`;
+    conditions.push(
+      or(
+        like(beritaDusun.judul, searchTerm),
+        like(beritaDusun.ringkasan, searchTerm),
+        like(beritaDusun.kategori, searchTerm)
+      )
+    );
+  }
+
+  const isSpecialFilter = args.filter === "all" || args.filter === "with-cover" || args.filter === "without-cover";
+  if (isSpecialFilter) {
+    if (args.filter === "with-cover") {
+      conditions.push(like(beritaDusun.url_foto, "http%")); // Has a URL
+    } else if (args.filter === "without-cover") {
+      conditions.push(eq(beritaDusun.url_foto, "")); // Empty URL
     }
-    
-    const statusFilter = args.status && args.status !== "all" ? args.status : "all";
-    const matchesStatus = statusFilter === "all" || item.status_publikasi === statusFilter;
-    
-    return matchesSearch && matchesFilter && matchesStatus;
-  });
+  } else if (args.filter) {
+    conditions.push(eq(beritaDusun.kategori, args.filter));
+  }
 
-  const paginated = paginateItems(filtered, args.page, args.limit);
+  const statusFilter = args.status && args.status !== "all" ? args.status : "all";
+  if (statusFilter !== "all") {
+    conditions.push(eq(beritaDusun.status_publikasi, statusFilter));
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  // 3. Get total count matching the filter for pagination
+  const countResult = await db
+    .select({ value: count() })
+    .from(beritaDusun)
+    .where(whereClause);
+  const totalItems = countResult[0].value;
+  const totalPages = Math.ceil(totalItems / args.limit) || 1;
+  const currentPage = Math.max(1, Math.min(args.page, totalPages));
+
+  // 4. Fetch paginated data
+  const data = await db
+    .select()
+    .from(beritaDusun)
+    .where(whereClause)
+    .orderBy(desc(beritaDusun.created_at))
+    .limit(args.limit)
+    .offset((currentPage - 1) * args.limit);
+
+  const mappedData = data.map((r) => ({
+    id: r.id,
+    judul: r.judul,
+    tanggal: r.tanggal,
+    ringkasan: r.ringkasan || "",
+    isi_berita: r.isi_berita,
+    url_foto: r.url_foto || "",
+    kategori: r.kategori || "",
+    media_assets: r.media_assets || "",
+    status_publikasi: r.status_publikasi || "Publik",
+  }));
+
   return {
-    ...paginated,
+    items: mappedData,
+    totalItems,
+    totalPages,
+    page: currentPage,
     categories,
   };
 }

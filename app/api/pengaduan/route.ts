@@ -87,7 +87,12 @@ export async function POST(request: Request) {
     const isWargaLokal = status_warga === "Warga Lokal" || status_warga === "Warga"; // Note: we changed label to "Pengunjung" but value is "Bukan Warga Lokal"
     const wargaIcon = isWargaLokal ? "🏡" : "🧳";
     
-    const caption = `🚨 <b>LAPORAN BARU DARI WARGA</b>\n\n👤 <b>Nama:</b> ${nama_lengkap}\n📝 <b>NIK:</b> ${nik || "-"}\n${wargaIcon} <b>Status:</b> ${status_warga}\n📞 <b>No HP/WA:</b> <a href="https://wa.me/${no_hp.replace(/^0/, '62').replace(/\D/g, '')}">${no_hp}</a>\n🏷 <b>Kategori:</b> ${kategori}\n\n💬 <b>Isi Laporan:</b>\n<i>"${isi_laporan}"</i>\n\n📅 <b>Tanggal:</b> ${new Date().toLocaleString("id-ID")}\n🆔 <b>ID:</b> ${id}`;
+    const MAX_LAPORAN_LENGTH = 500;
+    const truncated_isi_laporan = isi_laporan.length > MAX_LAPORAN_LENGTH 
+      ? isi_laporan.substring(0, MAX_LAPORAN_LENGTH) + "...\n\n(Laporan terlalu panjang, cek selengkapnya di dashboard)"
+      : isi_laporan;
+
+    const caption = `🚨 <b>LAPORAN BARU DARI WARGA</b>\n\n👤 <b>Nama:</b> ${nama_lengkap}\n📝 <b>NIK:</b> ${nik || "-"}\n${wargaIcon} <b>Status:</b> ${status_warga}\n📞 <b>No HP/WA:</b> <a href="https://wa.me/${no_hp.replace(/^0/, '62').replace(/\D/g, '')}">${no_hp}</a>\n🏷 <b>Kategori:</b> ${kategori}\n\n💬 <b>Isi Laporan:</b>\n<i>"${truncated_isi_laporan}"</i>\n\n📅 <b>Tanggal:</b> ${new Date().toLocaleString("id-ID")}\n🆔 <b>ID:</b> ${id}`;
 
     if (file) {
       const buffer = Buffer.from(await file.arrayBuffer());

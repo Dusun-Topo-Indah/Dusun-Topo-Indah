@@ -1,8 +1,10 @@
 export interface ListingQueryParams {
   q: string;
   filter: string;
+  status?: string;
   page: number;
   limit: number;
+  view?: string;
 }
 
 export interface PaginatedResult<T> {

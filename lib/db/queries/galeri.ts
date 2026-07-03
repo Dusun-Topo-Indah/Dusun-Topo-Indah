@@ -4,6 +4,17 @@ import { cacheLife, cacheTag } from "next/cache";
 import { db } from "../index";
 import { galeriDusun } from "../schema";
 
+function mapGaleriRow(r: typeof galeriDusun.$inferSelect): GaleriRow {
+  return {
+    id: r.id,
+    judul: r.judul || "",
+    kategori: r.kategori,
+    deskripsi: r.deskripsi || "",
+    tanggal_upload: r.tanggal_upload,
+    url_foto: r.url_foto,
+  };
+}
+
 export async function getGaleriList(): Promise<GaleriRow[]> {
   "use cache";
   cacheTag("galeri");
@@ -11,14 +22,7 @@ export async function getGaleriList(): Promise<GaleriRow[]> {
 
   try {
     const result = await db.select().from(galeriDusun).orderBy(desc(galeriDusun.created_at));
-    return result.map(r => ({
-      id: r.id,
-      judul: r.judul || "",
-      kategori: r.kategori,
-      deskripsi: r.deskripsi || "",
-      tanggal_upload: r.tanggal_upload,
-      url_foto: r.url_foto,
-    }));
+    return result.map(mapGaleriRow);
   } catch (error) {
     console.error("Failed to fetch galeri:", error);
     return [];
@@ -28,15 +32,7 @@ export async function getGaleriList(): Promise<GaleriRow[]> {
 export async function getGaleriById(id: string): Promise<GaleriRow | undefined> {
   const result = await db.select().from(galeriDusun).where(eq(galeriDusun.id, id));
   if (result.length === 0) return undefined;
-  const r = result[0];
-  return {
-    id: r.id,
-    judul: r.judul || "",
-    kategori: r.kategori,
-    deskripsi: r.deskripsi || "",
-    tanggal_upload: r.tanggal_upload,
-    url_foto: r.url_foto,
-  };
+  return mapGaleriRow(result[0]);
 }
 
 export async function getTotalGaleri(): Promise<number> {
@@ -65,14 +61,15 @@ export async function appendGaleri(data: GaleriRow): Promise<void> {
 }
 
 export async function updateGaleriById(id: string, updatedData: Partial<GaleriRow>): Promise<boolean> {
-  const cleanData: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(updatedData)) {
-    if (value !== undefined && key !== "id") {
-      cleanData[key] = value;
-    }
-  }
-  if (Object.keys(cleanData).length === 0) return false;
-  const result = await db.update(galeriDusun).set(cleanData).where(eq(galeriDusun.id, id));
+  const setData: Partial<typeof galeriDusun.$inferInsert> = {};
+
+  if (updatedData.judul !== undefined) setData.judul = updatedData.judul;
+  if (updatedData.kategori !== undefined) setData.kategori = updatedData.kategori;
+  if (updatedData.deskripsi !== undefined) setData.deskripsi = updatedData.deskripsi;
+  if (updatedData.url_foto !== undefined) setData.url_foto = updatedData.url_foto;
+
+  if (Object.keys(setData).length === 0) return false;
+  const result = await db.update(galeriDusun).set(setData).where(eq(galeriDusun.id, id));
   return result.rowsAffected > 0;
 }
 
@@ -98,7 +95,6 @@ export async function getGaleriListing(args: GaleriListingArgs) {
     .filter(Boolean)
     .sort((a, b) => a!.localeCompare(b!, "id")) as string[];
 
-  // 2. Build WHERE conditions
   const conditions = [];
 
   if (args.q) {
@@ -118,7 +114,6 @@ export async function getGaleriListing(args: GaleriListingArgs) {
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-  // 3. Count total matching items
   const countResult = await db
     .select({ value: count() })
     .from(galeriDusun)
@@ -127,7 +122,6 @@ export async function getGaleriListing(args: GaleriListingArgs) {
   const totalPages = Math.ceil(totalItems / args.limit) || 1;
   const currentPage = Math.max(1, Math.min(args.page, totalPages));
 
-  // 4. Fetch paginated data
   const data = await db
     .select()
     .from(galeriDusun)
@@ -136,17 +130,8 @@ export async function getGaleriListing(args: GaleriListingArgs) {
     .limit(args.limit)
     .offset((currentPage - 1) * args.limit);
 
-  const mappedData = data.map((r) => ({
-    id: r.id,
-    judul: r.judul || "",
-    kategori: r.kategori,
-    deskripsi: r.deskripsi || "",
-    tanggal_upload: r.tanggal_upload,
-    url_foto: r.url_foto,
-  }));
-
   return {
-    items: mappedData,
+    items: data.map(mapGaleriRow),
     totalItems,
     totalPages,
     page: currentPage,

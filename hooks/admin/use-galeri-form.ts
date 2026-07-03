@@ -155,6 +155,7 @@ export function useGaleriForm({ existingCategories, initialData, onSuccess }: Us
       }
 
       onSuccess?.();
+      router.push("/admin/galeri");
       router.refresh();
     } catch (error) {
       console.error(error);

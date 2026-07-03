@@ -4,34 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { db } from "../index";
 import { beritaDusun } from "../schema";
 
-export async function getBeritaList(): Promise<BeritaRow[]> {
-  "use cache";
-  cacheTag("berita");
-  cacheLife("hours");
-
-  try {
-    const result = await db.select().from(beritaDusun).orderBy(desc(beritaDusun.created_at));
-    return result.map(r => ({
-      id: r.id,
-      judul: r.judul,
-      tanggal: r.tanggal,
-      ringkasan: r.ringkasan || "",
-      isi_berita: r.isi_berita,
-      url_foto: r.url_foto || "",
-      kategori: r.kategori || "",
-      media_assets: r.media_assets || "",
-      status_publikasi: r.status_publikasi || "Publik",
-    }));
-  } catch (error) {
-    console.error("Failed to fetch berita:", error);
-    return [];
-  }
-}
-
-export async function getBeritaById(id: string): Promise<BeritaRow | undefined> {
-  const result = await db.select().from(beritaDusun).where(eq(beritaDusun.id, id));
-  if (result.length === 0) return undefined;
-  const r = result[0];
+function mapBeritaRow(r: typeof beritaDusun.$inferSelect): BeritaRow {
   return {
     id: r.id,
     judul: r.judul,
@@ -45,6 +18,26 @@ export async function getBeritaById(id: string): Promise<BeritaRow | undefined> 
   };
 }
 
+export async function getBeritaList(): Promise<BeritaRow[]> {
+  "use cache";
+  cacheTag("berita");
+  cacheLife("hours");
+
+  try {
+    const result = await db.select().from(beritaDusun).orderBy(desc(beritaDusun.created_at));
+    return result.map(mapBeritaRow);
+  } catch (error) {
+    console.error("Failed to fetch berita:", error);
+    return [];
+  }
+}
+
+export async function getBeritaById(id: string): Promise<BeritaRow | undefined> {
+  const result = await db.select().from(beritaDusun).where(eq(beritaDusun.id, id));
+  if (result.length === 0) return undefined;
+  return mapBeritaRow(result[0]);
+}
+
 export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
   "use cache";
   cacheTag("berita", "berita-recent");
@@ -56,17 +49,7 @@ export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
       .where(eq(beritaDusun.status_publikasi, "Publik"))
       .orderBy(desc(beritaDusun.created_at))
       .limit(limit);
-    return result.map(r => ({
-      id: r.id,
-      judul: r.judul,
-      tanggal: r.tanggal,
-      ringkasan: r.ringkasan || "",
-      isi_berita: r.isi_berita,
-      url_foto: r.url_foto || "",
-      kategori: r.kategori || "",
-      media_assets: r.media_assets || "",
-      status_publikasi: r.status_publikasi || "Publik",
-    }));
+    return result.map(mapBeritaRow);
   } catch (error) {
     console.error("Failed to fetch recent berita:", error);
     return [];
@@ -102,18 +85,20 @@ export async function appendBerita(data: BeritaRow): Promise<void> {
 }
 
 export async function updateBeritaById(id: string, updatedData: Partial<BeritaRow>): Promise<boolean> {
-  const cleanData: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(updatedData)) {
-    if (value !== undefined && key !== "id") {
-      cleanData[key] = value;
-    }
-  }
-  if (Object.keys(cleanData).length === 0) return false;
-  
-  const result = await db.update(beritaDusun).set({
-    ...cleanData,
+  const setData: Partial<typeof beritaDusun.$inferInsert> = {
     updated_at: new Date().toISOString(),
-  }).where(eq(beritaDusun.id, id));
+  };
+
+  if (updatedData.judul !== undefined) setData.judul = updatedData.judul;
+  if (updatedData.tanggal !== undefined) setData.tanggal = updatedData.tanggal;
+  if (updatedData.ringkasan !== undefined) setData.ringkasan = updatedData.ringkasan;
+  if (updatedData.isi_berita !== undefined) setData.isi_berita = updatedData.isi_berita;
+  if (updatedData.url_foto !== undefined) setData.url_foto = updatedData.url_foto;
+  if (updatedData.kategori !== undefined) setData.kategori = updatedData.kategori;
+  if (updatedData.media_assets !== undefined) setData.media_assets = updatedData.media_assets;
+  if (updatedData.status_publikasi !== undefined) setData.status_publikasi = updatedData.status_publikasi;
+
+  const result = await db.update(beritaDusun).set(setData).where(eq(beritaDusun.id, id));
   return result.rowsAffected > 0;
 }
 
@@ -157,9 +142,9 @@ export async function getBeritaListing(args: BeritaListingArgs) {
   const isSpecialFilter = args.filter === "all" || args.filter === "with-cover" || args.filter === "without-cover";
   if (isSpecialFilter) {
     if (args.filter === "with-cover") {
-      conditions.push(like(beritaDusun.url_foto, "http%")); // Has a URL
+      conditions.push(like(beritaDusun.url_foto, "http%"));
     } else if (args.filter === "without-cover") {
-      conditions.push(eq(beritaDusun.url_foto, "")); // Empty URL
+      conditions.push(eq(beritaDusun.url_foto, ""));
     }
   } else if (args.filter) {
     conditions.push(eq(beritaDusun.kategori, args.filter));
@@ -172,7 +157,6 @@ export async function getBeritaListing(args: BeritaListingArgs) {
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-  // 3. Get total count matching the filter for pagination
   const countResult = await db
     .select({ value: count() })
     .from(beritaDusun)
@@ -181,7 +165,6 @@ export async function getBeritaListing(args: BeritaListingArgs) {
   const totalPages = Math.ceil(totalItems / args.limit) || 1;
   const currentPage = Math.max(1, Math.min(args.page, totalPages));
 
-  // 4. Fetch paginated data
   const data = await db
     .select()
     .from(beritaDusun)
@@ -190,20 +173,8 @@ export async function getBeritaListing(args: BeritaListingArgs) {
     .limit(args.limit)
     .offset((currentPage - 1) * args.limit);
 
-  const mappedData = data.map((r) => ({
-    id: r.id,
-    judul: r.judul,
-    tanggal: r.tanggal,
-    ringkasan: r.ringkasan || "",
-    isi_berita: r.isi_berita,
-    url_foto: r.url_foto || "",
-    kategori: r.kategori || "",
-    media_assets: r.media_assets || "",
-    status_publikasi: r.status_publikasi || "Publik",
-  }));
-
   return {
-    items: mappedData,
+    items: data.map(mapBeritaRow),
     totalItems,
     totalPages,
     page: currentPage,

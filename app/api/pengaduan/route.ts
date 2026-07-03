@@ -1,3 +1,4 @@
+import { verifyAdminSession } from "@/lib/auth";
 import { insertPengaduan, updatePengaduanStatus } from "@/lib/db/queries/pengaduan";
 import { sendTelegramMessage, sendTelegramPhoto } from "@/lib/telegram";
 import { generateId } from "@/lib/utils";
@@ -141,6 +142,13 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    if (!(await verifyAdminSession())) {
+      return NextResponse.json(
+        { success: false, message: "Sesi admin tidak valid." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const data = await request.json();

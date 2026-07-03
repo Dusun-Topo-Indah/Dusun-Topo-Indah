@@ -1,4 +1,6 @@
-import type { PaginatedResult } from "@/types";
+import type { PaginatedResult, ListingQueryParams } from "@/types";
+
+export type { ListingQueryParams };
 
 export const DEFAULT_PAGE_LIMITS = {
   berita: 10,
@@ -41,15 +43,6 @@ export function paginateItems<T>(items: T[], page: number, limit: number): Pagin
     startIndex,
     endIndex,
   };
-}
-
-export interface ListingQueryParams {
-  q: string;
-  filter: string;
-  status?: string;
-  page: number;
-  limit: number;
-  view?: string;
 }
 
 export function buildListingQueryParams(

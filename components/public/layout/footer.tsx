@@ -1,7 +1,8 @@
-import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { CopyrightYear } from "./copyright-year";
 import { getGlobalConfig } from "@/lib/google-sheets";
+import { Mail, MapPin, Phone } from "lucide-react";
+import Link from "next/link";
+import { CopyrightYear } from "./copyright-year";
+import { FooterNav } from "./footer-nav";
 
 export async function Footer() {
   const globalConfig = await getGlobalConfig();
@@ -44,16 +45,7 @@ export async function Footer() {
           </div>
 
           {/* Navigasi */}
-          <div className="lg:col-span-3 lg:col-start-7">
-            <h4 className="font-bold text-slate-900 mb-6">Platform</h4>
-            <ul className="space-y-4 text-sm font-medium text-slate-500">
-              <li><Link href="/" className="hover:text-primary transition-colors">Beranda</Link></li>
-              <li><Link href="/profil" className="hover:text-primary transition-colors">Profil Dusun</Link></li>
-              <li><Link href="/berita" className="hover:text-primary transition-colors">Berita & Artikel</Link></li>
-              <li><Link href="/galeri" className="hover:text-primary transition-colors">Galeri Foto</Link></li>
-              <li><Link href="/pengaduan" className="hover:text-primary transition-colors">Lapor / Pengaduan</Link></li>
-            </ul>
-          </div>
+          <FooterNav />
 
           {/* Kontak */}
           <div className="lg:col-span-3 lg:col-start-10">

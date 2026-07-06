@@ -65,7 +65,7 @@ export default function LoginPage() {
       />
 
       {/* Main Container */}
-      <div className="w-full h-full md:h-auto min-h-dvh md:min-h-[550px] md:max-w-4xl bg-white md:rounded-2xl md:shadow-xl flex flex-col md:flex-row overflow-hidden relative z-10 border border-slate-100">
+      <div className="w-full h-full md:h-auto min-h-dvh md:min-h-[550px] md:max-w-4xl bg-white flex flex-col md:flex-row overflow-hidden relative z-10 border border-slate-100">
         
         {/* Left Side: Branding / Illustration (Hidden on Mobile) */}
         <div className="hidden md:flex md:w-[45%] bg-primary relative items-center justify-center p-12 overflow-hidden">

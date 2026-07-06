@@ -4,20 +4,27 @@ import { getBeritaList } from '@/lib/google-sheets';
 const baseUrl = 'https://dusun-topoindah.my.id';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Get all news for dynamic routes
-  const beritaList = await getBeritaList();
+  let beritaUrls: MetadataRoute.Sitemap = [];
   
-  // Filter for public news
-  const publicBerita = beritaList.filter(
-    (b) => b.status_publikasi === 'Publik' || !b.status_publikasi
-  );
+  try {
+    // Get all news for dynamic routes
+    const beritaList = await getBeritaList();
+    
+    // Filter for public news
+    const publicBerita = beritaList.filter(
+      (b) => b.status_publikasi === 'Publik' || !b.status_publikasi
+    );
 
-  const beritaUrls: MetadataRoute.Sitemap = publicBerita.map((berita) => ({
-    url: `${baseUrl}/berita/${berita.id}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
+    beritaUrls = publicBerita.map((berita) => ({
+      url: `${baseUrl}/berita/${berita.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.error("Gagal mengambil data berita untuk sitemap:", error);
+    // Continue with static urls if dynamic fetching fails
+  }
 
   const staticUrls: MetadataRoute.Sitemap = [
     {

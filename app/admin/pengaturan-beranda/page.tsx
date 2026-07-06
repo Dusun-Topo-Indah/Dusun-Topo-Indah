@@ -1,9 +1,9 @@
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { PengaturanBerandaForm } from "@/components/admin/pengaturan/pengaturan-beranda-form";
-import { getGlobalConfig, getGaleriList } from "@/lib/google-sheets";
+import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
 
 export const metadata = {
-  title: "Pengaturan Beranda — SIG-Dusun Topo Indah",
+  title: "Pengaturan Beranda — Dusun Topo Indah",
 };
 
 export default async function PengaturanBerandaPage() {

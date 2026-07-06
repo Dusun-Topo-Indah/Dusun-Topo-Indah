@@ -1,8 +1,8 @@
 import { BeritaDetail } from "@/components/public/berita/berita-detail";
 
 import { getBeritaList } from "@/lib/google-sheets";
-import { notFound } from "next/navigation";
 import { stripHtml } from "@/lib/listing";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -11,12 +11,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   
   if (!berita) {
     return {
-      title: "Berita Tidak Ditemukan — SIG-Dusun Topo Indah",
+      title: "Berita Tidak Ditemukan — Dusun Topo Indah",
     };
   }
 
   return {
-    title: `${berita.judul} — SIG-Dusun Topo Indah`,
+    title: `${berita.judul} | Dusun Topo Indah`,
     description: stripHtml(berita.ringkasan || berita.isi_berita).substring(0, 150) + "...",
   };
 }

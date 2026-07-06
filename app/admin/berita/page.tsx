@@ -1,18 +1,18 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
-import { PlusCircle, Inbox } from "lucide-react";
+import { EmptyState } from "@/components/admin/common/empty-state";
+import { ListingPagination } from "@/components/admin/common/listing-pagination";
+import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
+import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { Button } from "@/components/ui/button";
 import { getBeritaListing } from "@/lib/google-sheets";
-import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
-import { EmptyState } from "@/components/admin/common/empty-state";
-import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
-import { ListingPagination } from "@/components/admin/common/listing-pagination";
 import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
-import { BeritaTable } from "./berita-table";
+import { Inbox, PlusCircle } from "lucide-react";
+import { cookies } from "next/headers";
+import Link from "next/link";
 import { BeritaGrid } from "./berita-grid";
+import { BeritaTable } from "./berita-table";
 
 export const metadata = {
-  title: "Manajemen Berita — SIG-Dusun Topo Indah",
+  title: "Manajemen Berita — Dusun Topo Indah",
 };
 
 interface BeritaPageProps {

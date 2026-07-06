@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Informasi Geografis Dusun Topo Indah",
-  description: "Web profil desa dan sistem informasi geografis Dusun Topo Indah",
+  title: "Dusun Topo Indah",
+  description: "Web profil dusun dan informasi terkini Dusun Topo Indah",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

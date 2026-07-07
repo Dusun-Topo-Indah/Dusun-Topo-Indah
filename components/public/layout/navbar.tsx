@@ -205,7 +205,7 @@ export function Navbar() {
               safePathname.startsWith("/login") ? "text-primary" : "text-slate-900 hover:text-slate-600"
             }`}
           >
-            Login
+            Masuk
           </Link>
         </div>
       </div>

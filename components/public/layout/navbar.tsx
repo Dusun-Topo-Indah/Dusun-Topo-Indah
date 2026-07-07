@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { LogIn, Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -80,10 +81,11 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link
             href="/"
-            className={`font-bold text-xl transition-colors duration-300 ${
+            className={`font-bold text-xl transition-colors duration-300 flex items-center ${
               useDarkTheme ? "text-[#0D0D0D]" : "text-white"
             }`}
           >
+            <Image src="/globe.svg" alt="Logo" width={32} height={32} className="mr-2" />
             Dusun Topo Indah
           </Link>
 

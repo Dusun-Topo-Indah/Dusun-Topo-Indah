@@ -28,6 +28,7 @@ import {
   SidebarSeparator,
   useSidebar
 } from "@/components/ui/sidebar";
+import Image from "next/image";
 
 const menuGroups = [
   {
@@ -86,11 +87,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/admin" onClick={() => setOpenMobile(false)} />}>
               <div className="flex aspect-square size-8 items-center justify-center bg-transparent">
-                <div className="grid grid-cols-2 gap-0.5">
-                  <span className="w-2.5 h-2.5 bg-primary rounded-full"></span>
-                  <span className="w-2.5 h-2.5 bg-primary/70 rounded-full"></span>
-                  <span className="w-2.5 h-2.5 bg-primary/50 rounded-full col-span-2 mx-auto"></span>
-                </div>
+                <Image src={'/globe.svg'} alt="Logo" width={30} height={30}/>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-bold text-slate-900 tracking-tight text-lg">TOPO INDAH</span>

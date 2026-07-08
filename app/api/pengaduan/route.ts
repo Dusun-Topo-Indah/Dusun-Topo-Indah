@@ -139,8 +139,17 @@ export async function POST(request: Request) {
   }
 }
 
+import { verifyAdminSession } from "@/lib/auth";
+
 export async function PATCH(request: Request) {
   try {
+    if (!(await verifyAdminSession())) {
+      return NextResponse.json(
+        { success: false, message: "Sesi admin tidak valid." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const data = await request.json();

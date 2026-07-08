@@ -4,10 +4,14 @@ import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default_secret_key_for_dev_only"
-);
-
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not defined in environment variables.");
+  }
+  return new TextEncoder().encode(secret);
+};
+const JWT_SECRET = getJwtSecret();
 export async function POST(request: Request) {
   try {
     const { newUsername, oldPassword, newPassword } = await request.json();

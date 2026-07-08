@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface BeritaDetailProps {
   berita: {
@@ -23,16 +23,24 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
   const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
   const [activeId, setActiveId] = useState<string>("");
 
+  const contentWithIds = useMemo(() => {
+    if (!berita.content) return "";
+    let count = 0;
+    return berita.content.replace(
+      /<(h[23])([^>]*)>([\s\S]*?)<\/\1>/gi,
+      (match, tag, attrs, innerHtml) => {
+        if (attrs.includes("id=")) return match;
+        return `<${tag} id="heading-${count++}"${attrs}>${innerHtml}</${tag}>`;
+      }
+    );
+  }, [berita.content]);
+
   useEffect(() => {
     const article = document.getElementById("berita-content");
     if (!article) return;
 
     const elements = Array.from(article.querySelectorAll("h2, h3"));
-    const headingData = elements.map((el, index) => {
-      // Add ID if not present
-      if (!el.id) {
-        el.id = `heading-${index}`;
-      }
+    const headingData = elements.map((el) => {
       return {
         id: el.id,
         text: el.textContent || "",
@@ -173,7 +181,7 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
                          prose-img:my-8 prose-img:border prose-img:border-slate-200
                          prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-6 prose-li:mb-2
                          prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
-              dangerouslySetInnerHTML={{ __html: berita.content }}
+              dangerouslySetInnerHTML={{ __html: contentWithIds }}
             />
           </div>
           

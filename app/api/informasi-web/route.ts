@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateGlobalConfig } from "@/lib/google-sheets";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     if (Object.keys(updates).length > 0) {
       await updateGlobalConfig(updates);
       revalidateTag("global-config", "max");
+      revalidatePath("/");
     }
     
     return NextResponse.json({ success: true, message: "Informasi web berhasil diperbarui" });

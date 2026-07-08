@@ -1,7 +1,7 @@
 import { appendPengaduan, updatePengaduanStatus } from "@/lib/google-sheets";
 import { sendTelegramMessage, sendTelegramPhoto } from "@/lib/telegram";
 import { generateId } from "@/lib/utils";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 // Global In-Memory Rate Limiter Map
@@ -123,6 +123,7 @@ export async function POST(request: Request) {
     }
 
     revalidateTag("pengaduan", "max");
+    revalidatePath("/admin/pengaduan");
 
     return NextResponse.json({
       success: true,
@@ -162,6 +163,7 @@ export async function PATCH(request: Request) {
     }
 
     revalidateTag("pengaduan", "max");
+    revalidatePath("/admin/pengaduan");
 
     return NextResponse.json({
       success: true,

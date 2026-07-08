@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { appendBerita } from "@/lib/google-sheets";
 import { sanitizeHtml } from "@/lib/sanitize";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -45,6 +45,8 @@ export async function POST(request: Request) {
       status_publikasi: status_publikasi || "Publik",
     });
     revalidateTag("berita", "max");
+    revalidatePath("/berita");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, message: "Berita berhasil diterbitkan." });
   } catch (error) {

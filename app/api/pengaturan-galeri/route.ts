@@ -1,6 +1,6 @@
 import { verifyAdminSession } from "@/lib/auth";
 import { updateGlobalConfig } from "@/lib/google-sheets";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     if (Object.keys(updates).length > 0) {
       await updateGlobalConfig(updates);
       revalidateTag("global-config", "max");
+      revalidatePath("/galeri");
     }
     
     return NextResponse.json({ success: true, message: "Pengaturan galeri berhasil diperbarui" });

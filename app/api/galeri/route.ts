@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { appendGaleri } from "@/lib/google-sheets";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     });
     
     revalidateTag("galeri", "max");
+    revalidatePath("/galeri");
 
     return NextResponse.json({ success: true, message: "Foto berhasil diunggah ke galeri." });
   } catch (error) {

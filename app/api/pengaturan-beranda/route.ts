@@ -1,7 +1,7 @@
 import { verifyAdminSession } from "@/lib/auth";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
 import { getGlobalConfig, updateGlobalConfig } from "@/lib/google-sheets";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -82,7 +82,8 @@ export async function POST(request: Request) {
       }
       
       revalidateTag("global-config", "max");
-      revalidateTag("galeri", "max"); 
+      revalidateTag("galeri", "max");
+      revalidatePath("/"); 
     }
     
     return NextResponse.json({ success: true, message: "Pengaturan beranda berhasil diperbarui" });

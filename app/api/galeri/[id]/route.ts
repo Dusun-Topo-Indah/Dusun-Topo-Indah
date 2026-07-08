@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { deleteGaleriById, getGaleriList, updateGaleriById } from "@/lib/google-sheets";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 
 interface GaleriPayload {
@@ -69,6 +69,8 @@ export async function PUT(
     }
 
     revalidateTag("galeri", "max");
+    revalidatePath("/galeri");
+    revalidatePath("/");
 
     if (oldItem.url_foto && oldItem.url_foto !== url_foto) {
       const deleted = await deleteFromCloudinary(oldItem.url_foto);
@@ -124,6 +126,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     }
 
     revalidateTag("galeri", "max");
+    revalidatePath("/galeri");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, message: "Foto galeri berhasil dihapus." });
   } catch (error) {

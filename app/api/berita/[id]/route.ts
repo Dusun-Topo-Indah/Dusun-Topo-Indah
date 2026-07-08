@@ -2,7 +2,7 @@ import { verifyAdminSession } from "@/lib/auth";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
 import { deleteBeritaById, getBeritaList, updateBeritaById } from "@/lib/google-sheets";
 import { sanitizeHtml } from "@/lib/sanitize";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PUT(
@@ -72,6 +72,8 @@ export async function PUT(
     }
 
     revalidateTag("berita", "max");
+    revalidatePath("/berita");
+    revalidatePath("/");
 
     // Cascading delete for URL Foto
     const oldUrls = new Set<string>();
@@ -164,6 +166,8 @@ export async function DELETE(
 
     // Invalidate cache
     revalidateTag("berita", "max");
+    revalidatePath("/berita");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, message: "Berita dan aset terkait berhasil dihapus." });
   } catch (error) {

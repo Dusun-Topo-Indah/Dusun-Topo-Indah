@@ -15,9 +15,35 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   }
 
+  const title = `${berita.judul} | Dusun Topo Indah`;
+  const description = stripHtml(berita.ringkasan || berita.isi_berita).substring(0, 150) + "...";
+  const image = berita.url_foto || "/images/hero_bg_desa.png";
+  const url = `https://www.dusun-topoindah.my.id/berita/${id}`;
+
   return {
-    title: `${berita.judul} | Dusun Topo Indah`,
-    description: stripHtml(berita.ringkasan || berita.isi_berita).substring(0, 150) + "...",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Dusun Topo Indah",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: berita.judul,
+        },
+      ],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 

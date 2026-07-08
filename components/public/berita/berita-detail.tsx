@@ -1,12 +1,14 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/ui/fade-in";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/utils";
-import { ArrowLeft, Calendar, User } from "lucide-react";
+import { ArrowLeft, Calendar, Share2, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface BeritaDetailProps {
   berita: {
@@ -82,6 +84,30 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [berita.content]);
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: berita.title,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.log("Gagal membagikan:", err);
+      }
+    } else {
+      copyLink();
+    }
+  };
+
+  const copyLink = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Tautan berhasil disalin!");
+    }
+  };
 
   const scrollToHeading = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -165,6 +191,16 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
               ) : (
                 <p className="text-slate-500 text-sm italic">Tidak ada daftar isi.</p>
               )}
+            </div>
+
+            <div className="mt-12">
+              <Button 
+                onClick={handleShare} 
+                className={'w-full rounded-none'}
+              >
+                <Share2 className="w-4 h-4" />
+                Bagikan Artikel
+              </Button>
             </div>
           </div>
 

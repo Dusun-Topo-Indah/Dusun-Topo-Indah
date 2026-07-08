@@ -1,5 +1,6 @@
 import { getGlobalConfig } from "@/lib/google-sheets";
 import { Mail, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { CopyrightYear } from "./copyright-year";
 import { FooterNav } from "./footer-nav";
@@ -32,11 +33,7 @@ export async function Footer() {
           {/* Brand/Typography */}
           <div className="lg:col-span-5 lg:pr-12">
             <div className="flex items-center gap-1.5 mb-4">
-              <div className="grid grid-cols-2 gap-0.5">
-                <span className="w-2.5 h-2.5 bg-primary rounded-full"></span>
-                <span className="w-2.5 h-2.5 bg-primary/70 rounded-full"></span>
-                <span className="w-2.5 h-2.5 bg-primary/50 rounded-full col-span-2 mx-auto"></span>
-              </div>
+              <Image src="/globe.svg" alt="Logo" width={32} height={32} className="mr-2" />
               <span className="text-xl font-bold tracking-tight text-slate-900">TOPO INDAH</span>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">

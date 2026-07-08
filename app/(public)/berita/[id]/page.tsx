@@ -17,7 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const title = `${berita.judul} | Dusun Topo Indah`;
   const description = stripHtml(berita.ringkasan || berita.isi_berita).substring(0, 150) + "...";
-  const image = berita.url_foto || "/images/hero_bg_desa.png";
+  let image = berita.url_foto || "/images/hero_bg_desa.png";
+  
+  if (image.includes('res.cloudinary.com') && image.includes('/upload/')) {
+    image = image.replace('/upload/', '/upload/c_fill,w_1200,h_630,q_80,f_jpg/');
+  }
+
   const url = `https://www.dusun-topoindah.my.id/berita/${id}`;
 
   return {

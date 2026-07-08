@@ -12,6 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.dusun-topoindah.my.id"),
   title: "Dusun Topo Indah",
   description: "Web profil dusun dan informasi terkini Dusun Topo Indah",
   manifest: "/manifest.json",

@@ -2,6 +2,7 @@
 
 import { FadeIn } from "@/components/ui/fade-in";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate } from "@/lib/utils";
 import { ArrowLeft, Calendar, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -115,7 +116,7 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
             <div className="flex flex-wrap items-center gap-6 text-slate-300 text-sm font-medium">
               <span className="flex items-center">
                 <Calendar className="w-4 h-4 mr-2 text-primary" />
-                {berita.date}
+                {formatDate(berita.date)}
               </span>
               <span className="flex items-center">
                 <User className="w-4 h-4 mr-2 text-primary" />

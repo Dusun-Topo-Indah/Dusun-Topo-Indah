@@ -26,14 +26,6 @@ export const metadata: Metadata = {
     description: "Web profil dusun dan informasi terkini Dusun Topo Indah",
     url: "https://www.dusun-topoindah.my.id",
     siteName: "Dusun Topo Indah",
-    images: [
-      {
-        url: "/images/hero_bg_desa.png",
-        width: 1200,
-        height: 630,
-        alt: "Dusun Topo Indah",
-      },
-    ],
     locale: "id_ID",
     type: "website",
   },
@@ -41,7 +33,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Dusun Topo Indah",
     description: "Web profil dusun dan informasi terkini Dusun Topo Indah",
-    images: ["/images/hero_bg_desa.png"],
   },
 };
 

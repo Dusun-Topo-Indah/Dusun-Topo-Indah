@@ -3,9 +3,21 @@ import { PageHeader } from "@/components/public/common/page-header";
 import { PaginatedGallery } from "@/components/public/galeri/paginated-gallery";
 import { getGaleriList, getGlobalConfig } from "@/lib/google-sheets";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Galeri — Dusun Topo Indah",
   description: "Koleksi foto dan dokumentasi kegiatan di Dusun Topo Indah.",
+  openGraph: {
+    title: "Galeri — Dusun Topo Indah",
+    description: "Koleksi foto dan dokumentasi kegiatan di Dusun Topo Indah.",
+    url: "https://www.dusun-topoindah.my.id/galeri",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Galeri — Dusun Topo Indah",
+    description: "Koleksi foto dan dokumentasi kegiatan di Dusun Topo Indah.",
+  },
 };
 
 export default async function GaleriPage() {

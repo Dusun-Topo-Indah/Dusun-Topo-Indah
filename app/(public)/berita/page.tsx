@@ -3,9 +3,21 @@ import { BeritaLayout, BeritaItem } from "@/components/public/berita/berita-layo
 import { getGlobalConfig, getBeritaList } from "@/lib/google-sheets";
 import { formatDate } from "@/lib/utils";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Berita — Dusun Topo Indah",
   description: "Kumpulan berita, pengumuman, dan artikel terbaru seputar kegiatan di Dusun Topo Indah.",
+  openGraph: {
+    title: "Berita — Dusun Topo Indah",
+    description: "Kumpulan berita, pengumuman, dan artikel terbaru seputar kegiatan di Dusun Topo Indah.",
+    url: "https://www.dusun-topoindah.my.id/berita",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Berita — Dusun Topo Indah",
+    description: "Kumpulan berita, pengumuman, dan artikel terbaru seputar kegiatan di Dusun Topo Indah.",
+  },
 };
 
 export default async function BeritaPage() {

@@ -17,12 +17,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const title = `${berita.judul} | Dusun Topo Indah`;
   const description = stripHtml(berita.ringkasan || berita.isi_berita).substring(0, 150) + "...";
-  let image = berita.url_foto || "/images/hero_bg_desa.png";
-  
-  if (image.includes('res.cloudinary.com') && image.includes('/upload/')) {
-    image = image.replace('/upload/', '/upload/c_fill,w_1200,h_630,q_80,f_jpg/');
-  }
-
   const url = `https://www.dusun-topoindah.my.id/berita/${id}`;
 
   return {
@@ -33,21 +27,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       description,
       url,
       siteName: "Dusun Topo Indah",
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: berita.judul,
-        },
-      ],
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [image],
     },
   };
 }

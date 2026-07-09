@@ -3,9 +3,21 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { getGlobalConfig } from "@/lib/google-sheets";
 import Image from "next/image";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Profil — Dusun Topo Indah",
   description: "Profil, sejarah, dan potensi Dusun Topo Indah.",
+  openGraph: {
+    title: "Profil — Dusun Topo Indah",
+    description: "Profil, sejarah, dan potensi Dusun Topo Indah.",
+    url: "https://www.dusun-topoindah.my.id/profil",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Profil — Dusun Topo Indah",
+    description: "Profil, sejarah, dan potensi Dusun Topo Indah.",
+  },
 };
 
 const profileSections = [

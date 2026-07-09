@@ -7,6 +7,18 @@ export const metadata: Metadata = {
   title: "Pengaduan Warga — Dusun Topo Indah",
   description:
     "Layanan pengaduan masyarakat Dusun Topo Indah yang terintegrasi langsung dengan sistem notifikasi perangkat dusun.",
+  openGraph: {
+    title: "Pengaduan Warga — Dusun Topo Indah",
+    description:
+      "Layanan pengaduan masyarakat Dusun Topo Indah yang terintegrasi langsung dengan sistem notifikasi perangkat dusun.",
+    url: "https://www.dusun-topoindah.my.id/pengaduan",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pengaduan Warga — Dusun Topo Indah",
+    description:
+      "Layanan pengaduan masyarakat Dusun Topo Indah yang terintegrasi langsung dengan sistem notifikasi perangkat dusun.",
+  },
 };
 
 export default function PengaduanPage() {

@@ -5,10 +5,23 @@ import { NewsSection } from "@/components/public/beranda/news-section";
 import { getHomepageData } from "@/lib/google-sheets";
 import { formatDate } from "@/lib/utils";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Beranda — Dusun Topo Indah",
   description: "Selamat datang di portal informasi resmi Dusun Topo Indah.",
+  openGraph: {
+    title: "Beranda — Dusun Topo Indah",
+    description: "Selamat datang di portal informasi resmi Dusun Topo Indah.",
+    url: "https://www.dusun-topoindah.my.id",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Beranda — Dusun Topo Indah",
+    description: "Selamat datang di portal informasi resmi Dusun Topo Indah.",
+  },
 };
+
 
 export default async function BerandaPage() {
   const { globalConfig, galeriList, beritaList: allBerita } = await getHomepageData();

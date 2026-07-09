@@ -34,7 +34,7 @@ export async function Footer() {
           <div className="lg:col-span-5 lg:pr-12">
             <div className="flex items-center gap-1.5 mb-4">
               <Image src="/globe.svg" alt="Logo" width={32} height={32} className="mr-2" />
-              <span className="text-xl font-bold tracking-tight text-slate-900">TOPO INDAH</span>
+              <span className="text-xl font-bold tracking-tight text-slate-900">Dusun Topo Indah</span>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
               {deskripsi}

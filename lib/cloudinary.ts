@@ -120,6 +120,11 @@ export async function getStorageUsage(): Promise<number> {
     });
 
     if (!res.ok) {
+      if (res.status === 429) {
+        console.warn("Cloudinary API Rate Limited (429). Returning 0 for storage usage.");
+      } else {
+        console.warn(`Cloudinary API Error: ${res.statusText}`);
+      }
       return 0;
     }
 

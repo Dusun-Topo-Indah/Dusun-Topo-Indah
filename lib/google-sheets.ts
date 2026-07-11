@@ -813,3 +813,94 @@ export async function getPengaduanListing(args: PengaduanListingArgs) {
     categories,
   };
 }
+
+export async function appendFasilitas(data: FasilitasRow): Promise<void> {
+  await insertRowAtTop("Fasilitas_Dusun", [
+    data.id,
+    data.nama_fasum,
+    data.kategori_ikon,
+    data.latitude,
+    data.longitude,
+    data.deskripsi,
+    data.url_foto,
+  ]);
+}
+
+export async function updateFasilitasById(id: string, updatedData: Partial<FasilitasRow>): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Fasilitas_Dusun!A:G",
+  });
+
+  const rows = res.data.values;
+  if (!rows) return false;
+
+  const rowIndex = rows.findIndex((row) => row[0] === id);
+  if (rowIndex === -1) return false;
+
+  const existingRow = rows[rowIndex];
+  const newRow = [
+    existingRow[0] || "",
+    updatedData.nama_fasum !== undefined ? updatedData.nama_fasum : (existingRow[1] || ""),
+    updatedData.kategori_ikon !== undefined ? updatedData.kategori_ikon : (existingRow[2] || ""),
+    updatedData.latitude !== undefined ? updatedData.latitude : (existingRow[3] || ""),
+    updatedData.longitude !== undefined ? updatedData.longitude : (existingRow[4] || ""),
+    updatedData.deskripsi !== undefined ? updatedData.deskripsi : (existingRow[5] || ""),
+    updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[6] || ""),
+  ];
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `Fasilitas_Dusun!A${rowIndex + 1}:G${rowIndex + 1}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [newRow],
+    },
+  });
+
+  return true;
+}
+
+export async function deleteFasilitasById(id: string): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Fasilitas_Dusun!A:A",
+  });
+  const rows = res.data.values;
+  if (!rows) return false;
+
+  const rowIndex = rows.findIndex((row) => row[0] === id);
+  if (rowIndex === -1) return false;
+
+  const spreadsheet = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+  });
+  const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title === "Fasilitas_Dusun");
+  const sheetId = sheet?.properties?.sheetId;
+
+  if (sheetId === undefined) return false;
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: sheetId,
+              dimension: "ROWS",
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1,
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  return true;
+}

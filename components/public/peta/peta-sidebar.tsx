@@ -2,6 +2,7 @@
 
 import { getAllCategories, getCategoryConfig } from "@/constants/peta";
 import type { FasilitasRow } from "@/types";
+import { Input } from "@/components/ui/input";
 import {
   ChevronUp,
   MapPin,
@@ -9,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface PetaSidebarProps {
   fasilitas: FasilitasRow[];
@@ -31,7 +32,18 @@ export function PetaSidebar({
   onSelectFasilitas,
 }: PetaSidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState(searchQuery);
   const categories = getAllCategories();
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      onSearchChange(localSearch);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [localSearch, onSearchChange]);
 
   const filteredFasilitas = useMemo(() => {
     let items = fasilitas;
@@ -56,20 +68,25 @@ export function PetaSidebar({
   const sidebarContent = (
     <>
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-        <input
+      <div className="relative w-full">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+        <Input
           type="text"
           placeholder="Cari fasilitas..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full h-10 pl-10 pr-10 rounded-lg bg-slate-100 border-0 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+          className="w-full pl-11 pr-12 h-14 bg-white shadow-sm border-slate-200 text-base"
           id="peta-search-input"
         />
-        {searchQuery && (
+        {localSearch && (
           <button
-            onClick={() => onSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            type="button"
+            onClick={() => {
+              setLocalSearch("");
+              onSearchChange("");
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+            title="Hapus pencarian"
           >
             <X className="h-4 w-4" />
           </button>

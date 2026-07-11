@@ -319,8 +319,7 @@ export function PetaFormFields({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      step="any"
+                      type="text"
                       placeholder="Contoh: 0.45612"
                       {...field}
                       onChange={(e) => {
@@ -348,8 +347,7 @@ export function PetaFormFields({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      step="any"
+                      type="text"
                       placeholder="Contoh: 117.51320"
                       {...field}
                       onChange={(e) => {

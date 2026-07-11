@@ -1,11 +1,11 @@
 "use client";
 
+import { getAllCategories, getCategoryConfig } from "@/constants/peta";
 import type { FasilitasRow } from "@/types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import { createCustomDropPinIcon, createMarkerIcon } from "./peta-marker-icon";
-import { getCategoryConfig, getAllCategories } from "@/constants/peta";
 
 const MAP_CONFIG = {
   center: [0.4561266992562788, 117.5132045097694] as [number, number],
@@ -62,6 +62,14 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
 
     mapRef.current = map;
 
+    const handleRemovePin = () => {
+      if (dropPinRef.current) {
+        dropPinRef.current.remove();
+        dropPinRef.current = null;
+      }
+    };
+    document.addEventListener("remove-drop-pin", handleRemovePin);
+
     // Handle map click for custom dropped pin
     map.on("click", (e) => {
       const latLng = e.latlng;
@@ -71,6 +79,10 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
         dropPinRef.current = L.marker(latLng, {
           icon: createCustomDropPinIcon(),
         }).addTo(map);
+
+        dropPinRef.current.on("popupclose", () => {
+          document.dispatchEvent(new CustomEvent("remove-drop-pin"));
+        });
       } else {
         dropPinRef.current.setLatLng(latLng);
       }
@@ -111,6 +123,7 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
     });
 
     return () => {
+      document.removeEventListener("remove-drop-pin", handleRemovePin);
       map.remove();
       mapRef.current = null;
     };

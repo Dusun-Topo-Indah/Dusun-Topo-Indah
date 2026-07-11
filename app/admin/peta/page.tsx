@@ -6,10 +6,12 @@ import { ListingPagination } from "@/components/admin/common/listing-pagination"
 import { ListingToolbar } from "@/components/admin/common/listing-toolbar";
 import { DashboardHeader } from "@/components/admin/layout/dashboard-header";
 import { PetaTable } from "@/components/admin/peta/peta-table";
+import { PetaGrid } from "@/components/admin/peta/peta-grid";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_PAGE_LIMITS, toPositiveInteger } from "@/lib/listing";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 export const metadata = {
   title: "Peta — Dusun Topo Indah",
@@ -23,6 +25,10 @@ export default async function AdminPetaPage({ searchParams }: PetaPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const q = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : "";
   const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+  
+  const cookieStore = await cookies();
+  const viewPref = cookieStore.get("admin_view_preference")?.value;
+  const view = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : (viewPref === "grid" || viewPref === "list" ? viewPref : "list");
   
   const page = toPositiveInteger(
     typeof resolvedSearchParams.page === "string" ? resolvedSearchParams.page : undefined,
@@ -39,6 +45,15 @@ export default async function AdminPetaPage({ searchParams }: PetaPageProps) {
     page,
     limit,
   });
+
+  const emptyState = (
+    <EmptyState 
+      icon={MapPin}
+      title="Tidak Ada Fasilitas"
+      description="Belum ada fasilitas di peta. Klik &quot;Tambah Fasilitas&quot; untuk menambahkan data."
+      className="border border-dashed rounded-lg bg-muted/20"
+    />
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,19 +77,20 @@ export default async function AdminPetaPage({ searchParams }: PetaPageProps) {
         ]}
         currentLimit={limit}
         currentPage={petaResult.page}
+        currentView={view as "list" | "grid"}
       />
 
-      <PetaTable 
-        data={petaResult.items} 
-        emptyState={
-          <EmptyState 
-            icon={MapPin}
-            title="Tidak Ada Fasilitas"
-            description="Belum ada fasilitas di peta. Klik &quot;Tambah Fasilitas&quot; untuk menambahkan data."
-            className="border border-dashed rounded-lg bg-muted/20"
-          />
-        } 
-      />
+      {view === "grid" ? (
+        <PetaGrid 
+          data={petaResult.items} 
+          emptyState={emptyState} 
+        />
+      ) : (
+        <PetaTable 
+          data={petaResult.items} 
+          emptyState={emptyState} 
+        />
+      )}
 
       <ListingPagination
         pathname="/admin/peta"

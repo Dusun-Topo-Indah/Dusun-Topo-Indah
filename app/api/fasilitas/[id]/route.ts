@@ -29,8 +29,8 @@ export async function PUT(
     const success = await updateFasilitasById(id, {
       nama_fasum,
       kategori_ikon,
-      latitude: String(latitude),
-      longitude: String(longitude),
+      latitude: `'${String(latitude)}`,
+      longitude: `'${String(longitude)}`,
       deskripsi: deskripsi || "",
       url_foto: url_foto || "",
       warna_pin: warna_pin || "",

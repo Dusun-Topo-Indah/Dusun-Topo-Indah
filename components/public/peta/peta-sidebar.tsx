@@ -1,5 +1,6 @@
 "use client";
 
+import { getAllCategories, getCategoryConfig } from "@/constants/peta";
 import type { FasilitasRow } from "@/types";
 import {
   ChevronUp,
@@ -7,8 +8,8 @@ import {
   Search,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useState } from "react";
-import { getAllCategories, getCategoryConfig } from "@/constants/peta";
 
 interface PetaSidebarProps {
   fasilitas: FasilitasRow[];
@@ -76,13 +77,13 @@ export function PetaSidebar({
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2 pb-2">
         <button
           onClick={() => onCategoryChange(null)}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+          className={`px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
             activeCategory === null
-              ? "bg-primary text-slate-800 shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              ? "bg-primary text-white border-primary shadow-sm"
+              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
           }`}
         >
           Semua
@@ -96,23 +97,23 @@ export function PetaSidebar({
               onClick={() =>
                 onCategoryChange(activeCategory === cat ? null : cat)
               }
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-1.5 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap border ${
                 activeCategory === cat
                   ? "text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
               }`}
               style={
                 activeCategory === cat
-                  ? { background: config.color }
+                  ? { background: config.color, borderColor: config.color }
                   : undefined
               }
             >
               <span
                 className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ background: config.color }}
+                style={{ background: activeCategory === cat ? 'white' : config.color }}
               />
               {config.label}
-              <span className="opacity-60">({count})</span>
+              <span className={activeCategory === cat ? "opacity-90" : "text-slate-400 font-semibold"}>({count})</span>
             </button>
           );
         })}
@@ -142,31 +143,40 @@ export function PetaSidebar({
                   onSelectFasilitas(item.id);
                   setIsMobileOpen(false);
                 }}
-                className={`w-full text-left p-3 rounded-xl transition-all group cursor-pointer ${
+                className={`w-full text-left p-2 transition-colors group cursor-pointer border-b border-slate-100 last:border-b-0 ${
                   isSelected
-                    ? "bg-primary/10 ring-1 ring-primary/30"
-                    : "hover:bg-slate-50"
+                    ? "bg-slate-50/80"
+                    : "bg-white hover:bg-slate-50/50"
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: `${config.color}20` }}
-                  >
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ background: config.color }}
-                    />
-                  </div>
+                <div className="flex gap-4 items-center">
+                  {item.url_foto ? (
+                    <div className="relative w-12 h-12 rounded flex-shrink-0 overflow-hidden">
+                      <Image
+                        src={item.url_foto}
+                        alt={item.nama_fasum}
+                        fill
+                        className="object-cover"
+                        sizes="48px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-7 h-7" style={{ color: config.color }} strokeWidth={2} />
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-semibold text-slate-900 truncate leading-tight">
+                    <h4 className={`text-[15px] font-bold truncate leading-tight mb-1 transition-colors ${isSelected ? "text-slate-800" : "text-slate-700 group-hover:text-primary"}`}>
                       {item.nama_fasum}
                     </h4>
-                    <p className="text-[11px] font-medium mt-0.5" style={{ color: config.color }}>
+                    <span 
+                      className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase"
+                      style={{ background: `${config.color}15`, color: config.color }}
+                    >
                       {config.label}
-                    </p>
+                    </span>
                     {item.deskripsi && (
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-snug">
                         {item.deskripsi}
                       </p>
                     )}
@@ -228,17 +238,19 @@ export function PetaSidebar({
           <div className="flex items-center justify-center py-3">
             <div className="w-10 h-1 rounded-full bg-slate-300" />
           </div>
-          <div className="flex flex-col gap-3 px-4 pb-6 overflow-hidden flex-1 min-h-0">
+          <div className="flex flex-col gap-4 px-5 pb-6 pt-2 overflow-hidden flex-1 min-h-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                <h2 className="text-base font-bold text-slate-900">Fasilitas Dusun</h2>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <h2 className="text-lg font-bold text-slate-900">Fasilitas Dusun</h2>
               </div>
               <button
                 onClick={() => setIsMobileOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100"
+                className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
               >
-                <X className="h-5 w-5 text-slate-500" />
+                <X className="h-5 w-5 text-slate-600" />
               </button>
             </div>
             {sidebarContent}

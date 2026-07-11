@@ -8,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { getAllCategories, getCategoryConfig } from "./peta-marker-icon";
+import { getAllCategories, getCategoryConfig } from "@/constants/peta";
 
 interface PetaSidebarProps {
   fasilitas: FasilitasRow[];
@@ -79,9 +79,9 @@ export function PetaSidebar({
       <div className="flex flex-wrap gap-1.5">
         <button
           onClick={() => onCategoryChange(null)}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
             activeCategory === null
-              ? "bg-slate-900 text-white shadow-sm"
+              ? "bg-primary text-slate-800 shadow-sm"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           }`}
         >
@@ -96,7 +96,7 @@ export function PetaSidebar({
               onClick={() =>
                 onCategoryChange(activeCategory === cat ? null : cat)
               }
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeCategory === cat
                   ? "text-white shadow-sm"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -142,7 +142,7 @@ export function PetaSidebar({
                   onSelectFasilitas(item.id);
                   setIsMobileOpen(false);
                 }}
-                className={`w-full text-left p-3 rounded-xl transition-all group ${
+                className={`w-full text-left p-3 rounded-xl transition-all group cursor-pointer ${
                   isSelected
                     ? "bg-primary/10 ring-1 ring-primary/30"
                     : "hover:bg-slate-50"
@@ -183,10 +183,10 @@ export function PetaSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col absolute top-4 left-4 bottom-4 z-10 w-[340px] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/50 p-4 gap-3 overflow-hidden">
-        <div className="flex items-center gap-2 pb-1">
-          <MapPin className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-bold text-slate-900">Fasilitas Dusun</h2>
+      <aside className="hidden md:flex flex-col absolute top-0 left-0 bottom-0 z-10 w-[450px] bg-white/95 backdrop-blur-md shadow-2xl border-r border-slate-200/50 p-5 gap-3 overflow-hidden">
+        <div className="flex items-center gap-2 pb-2">
+          <MapPin className="h-7 w-7 text-primary" />
+          <h2 className="text-2xl font-bold text-slate-900">Fasilitas Dusun</h2>
         </div>
         {sidebarContent}
       </aside>

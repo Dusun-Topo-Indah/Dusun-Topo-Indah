@@ -44,7 +44,7 @@ const menuGroups = [
       { title: "Berita", icon: Newspaper, href: "/admin/berita" },
       { title: "Galeri", icon: ImageIcon, href: "/admin/galeri" },
       { title: "Pengaduan", icon: MessageSquare, href: "/admin/pengaduan" },
-      { title: "Peta & GIS", icon: MapPin, href: "/admin/peta" },
+      { title: "Peta", icon: MapPin, href: "/admin/peta" },
       { title: "Informasi Web", icon: BadgeInfo, href: "/admin/informasi-web" },
     ],
   },

@@ -17,7 +17,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { nama_fasum, kategori_ikon, latitude, longitude, deskripsi, url_foto } = body;
+    const { nama_fasum, kategori_ikon, latitude, longitude, deskripsi, url_foto, warna_pin } = body;
 
     if (!nama_fasum || !kategori_ikon || !latitude || !longitude) {
       return NextResponse.json(
@@ -33,6 +33,7 @@ export async function PUT(
       longitude: String(longitude),
       deskripsi: deskripsi || "",
       url_foto: url_foto || "",
+      warna_pin: warna_pin || "",
     });
 
     if (!success) {
@@ -48,7 +49,7 @@ export async function PUT(
   } catch (error) {
     console.error("Failed to update fasilitas:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal memperbarui fasilitas." },
+      { success: false, message: `Gagal memperbarui fasilitas: ${error instanceof Error ? error.message : "Error tidak diketahui"}` },
       { status: 500 }
     );
   }

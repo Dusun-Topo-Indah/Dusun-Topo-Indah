@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { nama_fasum, kategori_ikon, latitude, longitude, deskripsi, url_foto } = body;
+    const { nama_fasum, kategori_ikon, latitude, longitude, deskripsi, url_foto, warna_pin } = body;
 
     if (!nama_fasum || !kategori_ikon || !latitude || !longitude) {
       return NextResponse.json(
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       longitude: String(longitude),
       deskripsi: deskripsi || "",
       url_foto: url_foto || "",
+      warna_pin: warna_pin || "",
     });
 
     revalidateTag("fasilitas", "max");
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Failed to append fasilitas:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal menyimpan fasilitas ke database." },
+      { success: false, message: `Gagal menyimpan fasilitas: ${error instanceof Error ? error.message : "Error tidak diketahui"}` },
       { status: 500 }
     );
   }

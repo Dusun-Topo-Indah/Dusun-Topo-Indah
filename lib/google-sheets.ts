@@ -357,7 +357,7 @@ export async function getFasilitasList(): Promise<FasilitasRow[]> {
     const sheets = await getGoogleSheetsInstance();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Fasilitas_Dusun!A:G",
+      range: "Fasilitas_Dusun!A:H",
     });
 
     const rows = res.data.values;
@@ -373,9 +373,17 @@ export async function getFasilitasList(): Promise<FasilitasRow[]> {
       longitude: row[4] || "",
       deskripsi: row[5] || "",
       url_foto: row[6] || "",
-    }));
+      warna_pin: row[7] || "",
+    })).filter((item) => {
+      const lat = parseFloat(item.latitude);
+      const lng = parseFloat(item.longitude);
+      return !isNaN(lat) && !isNaN(lng);
+    });
   } catch (error) {
     console.error("Failed to fetch fasilitas list:", error);
+    if (error instanceof Error && error.message.includes("Unable to parse range")) {
+      console.warn("Sheet 'Fasilitas_Dusun' belum dibuat di Google Sheets.");
+    }
     return [];
   }
 }
@@ -456,6 +464,7 @@ export async function updateGaleriById(id: string, updatedData: Partial<GaleriRo
 
   return true;
 }
+
 
 interface BeritaListingArgs {
   q: string;
@@ -823,6 +832,7 @@ export async function appendFasilitas(data: FasilitasRow): Promise<void> {
     data.longitude,
     data.deskripsi,
     data.url_foto,
+    data.warna_pin || "",
   ]);
 }
 
@@ -831,7 +841,7 @@ export async function updateFasilitasById(id: string, updatedData: Partial<Fasil
 
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: "Fasilitas_Dusun!A:G",
+    range: "Fasilitas_Dusun!A:H",
   });
 
   const rows = res.data.values;
@@ -903,4 +913,33 @@ export async function deleteFasilitasById(id: string): Promise<boolean> {
   });
 
   return true;
+}
+
+interface FasilitasListingArgs {
+  q: string;
+  filter: string;
+  page: number;
+  limit: number;
+}
+
+export async function getPetaListing(args: FasilitasListingArgs) {
+  const fasilitas = await getFasilitasList();
+  const query = normalizeText(args.q);
+  const categoryFilter = normalizeText(args.filter);
+  const categories = Array.from(new Set(fasilitas.map((item) => item.kategori_ikon).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+
+  const filtered = fasilitas.filter((item) => {
+    const searchable = normalizeText(`${item.nama_fasum} ${item.kategori_ikon} ${item.deskripsi}`);
+    const matchesSearch = query === "" || searchable.includes(query);
+    const matchesFilter = categoryFilter === "all" || normalizeText(item.kategori_ikon) === categoryFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const paginated = paginateItems(filtered, args.page, args.limit);
+  return {
+    ...paginated,
+    categories,
+  };
 }

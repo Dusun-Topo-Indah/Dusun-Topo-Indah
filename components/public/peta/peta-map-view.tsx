@@ -4,9 +4,9 @@ import type { FasilitasRow } from "@/types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
-import { createMarkerIcon, getCategoryConfig } from "./peta-marker-icon";
+import { createCustomDropPinIcon, createMarkerIcon } from "./peta-marker-icon";
+import { getCategoryConfig, getAllCategories } from "@/constants/peta";
 
-// Map configuration
 const MAP_CONFIG = {
   center: [0.4561266992562788, 117.5132045097694] as [number, number],
   zoom: 15,
@@ -28,6 +28,7 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const dropPinRef = useRef<L.Marker | null>(null);
 
   // Initialize map
   useEffect(() => {
@@ -61,6 +62,54 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
 
     mapRef.current = map;
 
+    // Handle map click for custom dropped pin
+    map.on("click", (e) => {
+      const latLng = e.latlng;
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${latLng.lat},${latLng.lng}`;
+
+      if (!dropPinRef.current) {
+        dropPinRef.current = L.marker(latLng, {
+          icon: createCustomDropPinIcon(),
+        }).addTo(map);
+      } else {
+        dropPinRef.current.setLatLng(latLng);
+      }
+
+      const popupContent = `
+        <div style="min-width: 220px; font-family: system-ui, -apple-system, sans-serif;">
+          <h3 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #0f172a;">Titik Dipilih</h3>
+          <p style="margin: 0 0 12px 0; font-size: 12px; color: #64748b; font-family: monospace;">
+            ${latLng.lat.toFixed(6)}, ${latLng.lng.toFixed(6)}
+          </p>
+          <a href="${url}" target="_blank" rel="noopener noreferrer" style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #a5e00a;
+            color: #0f172a;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
+          ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            Rute ke Sini
+          </a>
+        </div>
+      `;
+
+      dropPinRef.current
+        .bindPopup(popupContent, {
+          closeButton: true,
+          className: "custom-popup",
+          offset: [0, -4],
+        })
+        .openPopup();
+    });
+
     return () => {
       map.remove();
       mapRef.current = null;
@@ -81,10 +130,14 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
       const lng = parseFloat(item.longitude);
       if (isNaN(lat) || isNaN(lng)) return;
 
-      const icon = createMarkerIcon(item.kategori_ikon);
+      const icon = createMarkerIcon(item.kategori_ikon, item.warna_pin);
       const config = getCategoryConfig(item.kategori_ikon);
+      const isCustomCategory = !getAllCategories().includes(item.kategori_ikon);
+      const dotColor = (isCustomCategory && item.warna_pin) ? item.warna_pin : config.color;
 
       const marker = L.marker([lat, lng], { icon }).addTo(map);
+
+      const routingUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
       const popupContent = `
         <div style="min-width: 220px; max-width: 280px; font-family: system-ui, -apple-system, sans-serif;">
@@ -99,7 +152,7 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
               width: 10px;
               height: 10px;
               border-radius: 50%;
-              background: ${config.color};
+              background: ${dotColor};
               flex-shrink: 0;
             "></span>
             <span style="font-size: 11px; color: #64748b; font-weight: 500;">${config.label}</span>
@@ -107,9 +160,26 @@ export function PetaMapView({ fasilitas, selectedId, onMarkerClick }: PetaMapVie
           <h3 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.3;">${item.nama_fasum}</h3>
           ${
             item.deskripsi
-              ? `<p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.5;">${item.deskripsi}</p>`
-              : ""
+              ? `<p style="margin: 0 0 12px 0; font-size: 13px; color: #64748b; line-height: 1.5;">${item.deskripsi}</p>`
+              : '<div style="margin-bottom: 12px;"></div>'
           }
+          <a href="${routingUrl}" target="_blank" rel="noopener noreferrer" style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #a5e00a;
+            color: #0f172a;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: opacity 0.2s;
+          " onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            Rute ke Sini
+          </a>
         </div>
       `;
 

@@ -40,6 +40,7 @@ export interface FasilitasRow {
   longitude: string;
   deskripsi: string;
   url_foto: string;
+  warna_pin?: string;
 }
 
 export interface PerangkatRow {

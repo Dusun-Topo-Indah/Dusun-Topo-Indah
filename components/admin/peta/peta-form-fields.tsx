@@ -7,9 +7,8 @@ import {
   ChevronsUpDown,
   Image as ImageIcon,
   Loader2,
-  ChevronUp,
-  X,
-  Plus
+  Plus,
+  X
 } from "lucide-react";
 import Image from "next/image";
 
@@ -37,8 +36,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { getAllCategories as getDefaultCategories } from "@/constants/peta";
+import { cn } from "@/lib/utils";
 
 import { usePetaForm } from "@/hooks/admin/use-peta-form";
 

@@ -12,7 +12,7 @@ const navItems = [
   { label: "Profil", href: "/profil" },
   { label: "Berita", href: "/berita" },
   { label: "Galeri", href: "/galeri" },
-  { label: "Peta", href: "#peta" },
+  { label: "Peta", href: "/peta" },
 ];
 
 export function Navbar() {

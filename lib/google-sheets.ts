@@ -357,7 +357,7 @@ export async function getFasilitasList(): Promise<FasilitasRow[]> {
     const sheets = await getGoogleSheetsInstance();
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Fasilitas_Dusun!A:G",
+      range: "Fasilitas_Dusun!A:H",
     });
 
     const rows = res.data.values;
@@ -373,9 +373,17 @@ export async function getFasilitasList(): Promise<FasilitasRow[]> {
       longitude: row[4] || "",
       deskripsi: row[5] || "",
       url_foto: row[6] || "",
-    }));
+      warna_pin: row[7] || "",
+    })).filter((item) => {
+      const lat = parseFloat(item.latitude);
+      const lng = parseFloat(item.longitude);
+      return !isNaN(lat) && !isNaN(lng);
+    });
   } catch (error) {
     console.error("Failed to fetch fasilitas list:", error);
+    if (error instanceof Error && error.message.includes("Unable to parse range")) {
+      console.warn("Sheet 'Fasilitas_Dusun' belum dibuat di Google Sheets.");
+    }
     return [];
   }
 }
@@ -456,6 +464,7 @@ export async function updateGaleriById(id: string, updatedData: Partial<GaleriRo
 
   return true;
 }
+
 
 interface BeritaListingArgs {
   q: string;
@@ -810,6 +819,127 @@ export async function getPengaduanListing(args: PengaduanListingArgs) {
     totalItems: pagination.totalItems,
     totalPages: pagination.totalPages,
     page: pagination.page,
+    categories,
+  };
+}
+
+export async function appendFasilitas(data: FasilitasRow): Promise<void> {
+  await insertRowAtTop("Fasilitas_Dusun", [
+    data.id,
+    data.nama_fasum,
+    data.kategori_ikon,
+    data.latitude,
+    data.longitude,
+    data.deskripsi,
+    data.url_foto,
+    data.warna_pin || "",
+  ]);
+}
+
+export async function updateFasilitasById(id: string, updatedData: Partial<FasilitasRow>): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Fasilitas_Dusun!A:H",
+  });
+
+  const rows = res.data.values;
+  if (!rows) return false;
+
+  const rowIndex = rows.findIndex((row) => row[0] === id);
+  if (rowIndex === -1) return false;
+
+  const existingRow = rows[rowIndex];
+  const newRow = [
+    existingRow[0] || "",
+    updatedData.nama_fasum !== undefined ? updatedData.nama_fasum : (existingRow[1] || ""),
+    updatedData.kategori_ikon !== undefined ? updatedData.kategori_ikon : (existingRow[2] || ""),
+    updatedData.latitude !== undefined ? updatedData.latitude : (existingRow[3] || ""),
+    updatedData.longitude !== undefined ? updatedData.longitude : (existingRow[4] || ""),
+    updatedData.deskripsi !== undefined ? updatedData.deskripsi : (existingRow[5] || ""),
+    updatedData.url_foto !== undefined ? updatedData.url_foto : (existingRow[6] || ""),
+  ];
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `Fasilitas_Dusun!A${rowIndex + 1}:G${rowIndex + 1}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [newRow],
+    },
+  });
+
+  return true;
+}
+
+export async function deleteFasilitasById(id: string): Promise<boolean> {
+  const sheets = await getGoogleSheetsInstance();
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "Fasilitas_Dusun!A:A",
+  });
+  const rows = res.data.values;
+  if (!rows) return false;
+
+  const rowIndex = rows.findIndex((row) => row[0] === id);
+  if (rowIndex === -1) return false;
+
+  const spreadsheet = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+  });
+  const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title === "Fasilitas_Dusun");
+  const sheetId = sheet?.properties?.sheetId;
+
+  if (sheetId === undefined) return false;
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: sheetId,
+              dimension: "ROWS",
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1,
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  return true;
+}
+
+interface FasilitasListingArgs {
+  q: string;
+  filter: string;
+  page: number;
+  limit: number;
+}
+
+export async function getPetaListing(args: FasilitasListingArgs) {
+  const fasilitas = await getFasilitasList();
+  const query = normalizeText(args.q);
+  const categoryFilter = normalizeText(args.filter);
+  const categories = Array.from(new Set(fasilitas.map((item) => item.kategori_ikon).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+
+  const filtered = fasilitas.filter((item) => {
+    const searchable = normalizeText(`${item.nama_fasum} ${item.kategori_ikon} ${item.deskripsi}`);
+    const matchesSearch = query === "" || searchable.includes(query);
+    const matchesFilter = categoryFilter === "all" || normalizeText(item.kategori_ikon) === categoryFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const paginated = paginateItems(filtered, args.page, args.limit);
+  return {
+    ...paginated,
     categories,
   };
 }

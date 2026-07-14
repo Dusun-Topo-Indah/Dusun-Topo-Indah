@@ -15,15 +15,20 @@ function mapGaleriRow(r: typeof galeriDusun.$inferSelect): GaleriRow {
   };
 }
 
+// Pola caching: hasil sukses di-cache "hours", fallback saat Turso error di-cache
+// "minutes" (conditional cacheLife) agar tidak ter-poison lama & self-heal cepat.
+// "minutes" bukan "seconds": profil "seconds" dianggap dinamis saat prerender.
+
 export async function getGaleriList(): Promise<GaleriRow[]> {
   "use cache";
   cacheTag("galeri");
-  cacheLife("hours");
 
   try {
     const result = await db.select().from(galeriDusun).orderBy(desc(galeriDusun.created_at));
+    cacheLife("hours");
     return result.map(mapGaleriRow);
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to fetch galeri:", error);
     return [];
   }
@@ -38,12 +43,13 @@ export async function getGaleriById(id: string): Promise<GaleriRow | undefined> 
 export async function getTotalGaleri(): Promise<number> {
   "use cache";
   cacheTag("galeri", "galeri-total");
-  cacheLife("hours");
 
   try {
     const result = await db.select({ value: count() }).from(galeriDusun);
+    cacheLife("hours");
     return result[0].value;
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to get total galeri:", error);
     return 0;
   }

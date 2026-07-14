@@ -1,11 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/ui/fade-in";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Calendar, User } from "lucide-react";
+import { ArrowLeft, Calendar, Share2, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface BeritaDetailProps {
   berita: {
@@ -83,6 +85,30 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
     }
   };
 
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const copyLink = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Tautan berhasil disalin!");
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: berita.title,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.error("Gagal membagikan:", err);
+      }
+    } else {
+      copyLink();
+    }
+  };
+
   return (
     <div className="w-full bg-white min-h-screen">
       <div className="relative w-full min-h-[60vh] md:min-h-[70vh] flex items-end pt-28 md:pt-32">
@@ -156,6 +182,16 @@ export function BeritaDetail({ berita }: BeritaDetailProps) {
               ) : (
                 <p className="text-slate-500 text-sm italic">Tidak ada daftar isi.</p>
               )}
+            </div>
+
+            <div className="mt-12">
+              <Button
+                onClick={handleShare}
+                className={'w-full rounded-none'}
+              >
+                <Share2 className="w-4 h-4" />
+                Bagikan Artikel
+              </Button>
             </div>
           </div>
 

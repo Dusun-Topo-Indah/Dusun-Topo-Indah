@@ -18,15 +18,22 @@ function mapBeritaRow(r: typeof beritaDusun.$inferSelect): BeritaRow {
   };
 }
 
+// Pola caching: hasil sukses di-cache "hours", tapi jika Turso error hasil
+// fallback di-cache "minutes" (conditional cacheLife) agar cache tidak ter-
+// "poison" berjam-jam dan self-heal cepat. Error tidak dilempar → prerender
+// build tetap aman. Pakai "minutes" (bukan "seconds"): profil "seconds"
+// diperlakukan Next sebagai data dinamis saat prerender di bawah cacheComponents.
+
 export async function getBeritaList(): Promise<BeritaRow[]> {
   "use cache";
   cacheTag("berita");
-  cacheLife("hours");
 
   try {
     const result = await db.select().from(beritaDusun).orderBy(desc(beritaDusun.created_at));
+    cacheLife("hours");
     return result.map(mapBeritaRow);
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to fetch berita:", error);
     return [];
   }
@@ -38,10 +45,28 @@ export async function getBeritaById(id: string): Promise<BeritaRow | undefined> 
   return mapBeritaRow(result[0]);
 }
 
+// Versi cached khusus halaman publik detail berita. Dipisah dari getBeritaById
+// (yang sengaja uncached) karena route admin memakai getBeritaById untuk membaca
+// data terkini sebelum menghapus foto lama di Cloudinary.
+export async function getPublicBeritaById(id: string): Promise<BeritaRow | undefined> {
+  "use cache";
+  cacheTag("berita", `berita-${id}`);
+
+  try {
+    const result = await db.select().from(beritaDusun).where(eq(beritaDusun.id, id));
+    cacheLife("hours");
+    if (result.length === 0) return undefined;
+    return mapBeritaRow(result[0]);
+  } catch (error) {
+    cacheLife("minutes");
+    console.error("Failed to fetch berita by id:", error);
+    return undefined;
+  }
+}
+
 export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
   "use cache";
   cacheTag("berita", "berita-recent");
-  cacheLife("hours");
 
   try {
     const result = await db.select()
@@ -49,8 +74,10 @@ export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
       .where(eq(beritaDusun.status_publikasi, "Publik"))
       .orderBy(desc(beritaDusun.created_at))
       .limit(limit);
+    cacheLife("hours");
     return result.map(mapBeritaRow);
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to fetch recent berita:", error);
     return [];
   }
@@ -59,12 +86,13 @@ export async function getRecentBerita(limit = 3): Promise<BeritaRow[]> {
 export async function getTotalBerita(): Promise<number> {
   "use cache";
   cacheTag("berita", "berita-total");
-  cacheLife("hours");
 
   try {
     const result = await db.select({ value: count() }).from(beritaDusun);
+    cacheLife("hours");
     return result[0].value;
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to get total berita:", error);
     return 0;
   }
@@ -120,14 +148,14 @@ export async function getBeritaListing(args: BeritaListingArgs) {
   const categoriesResult = await db
     .selectDistinct({ kategori: beritaDusun.kategori })
     .from(beritaDusun);
-  
+
   const categories = categoriesResult
     .map((r) => r.kategori)
     .filter(Boolean)
     .sort((a, b) => a!.localeCompare(b!, "id")) as string[];
 
   const conditions = [];
-  
+
   if (args.q) {
     const searchTerm = `%${args.q}%`;
     conditions.push(

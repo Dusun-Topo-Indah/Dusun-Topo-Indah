@@ -6,18 +6,24 @@ import { cacheTag, cacheLife } from "next/cache";
 export type PengaduanRow = typeof pengaduanWarga.$inferSelect;
 export type InsertPengaduan = typeof pengaduanWarga.$inferInsert;
 
+// Pola caching: hasil sukses di-cache "hours"; saat Turso error, fallback di-cache
+// "minutes" (conditional cacheLife) agar tidak ter-poison lama & self-heal cepat.
+// "minutes" bukan "seconds": profil "seconds" dianggap dinamis saat prerender.
+
 export async function getPengaduanList(): Promise<PengaduanRow[]> {
   "use cache";
   cacheTag("pengaduan");
-  cacheLife("hours");
-  
+
   try {
-    return await db
+    const result = await db
       .select()
       .from(pengaduanWarga)
       .orderBy(desc(pengaduanWarga.created_at))
       .all();
+    cacheLife("hours");
+    return result;
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to fetch pengaduan:", error);
     return [];
   }
@@ -26,8 +32,7 @@ export async function getPengaduanList(): Promise<PengaduanRow[]> {
 export async function getPengaduanById(id: string): Promise<PengaduanRow | undefined> {
   "use cache";
   cacheTag("pengaduan", `pengaduan-${id}`);
-  cacheLife("hours");
-  
+
   try {
     const result = await db
       .select()
@@ -35,9 +40,10 @@ export async function getPengaduanById(id: string): Promise<PengaduanRow | undef
       .where(eq(pengaduanWarga.id, id))
       .limit(1)
       .all();
-      
+    cacheLife("hours");
     return result[0];
   } catch (error) {
+    cacheLife("minutes");
     console.error("Failed to fetch pengaduan by id:", error);
     return undefined;
   }

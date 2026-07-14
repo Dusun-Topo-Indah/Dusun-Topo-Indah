@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ const navItems = [
   { label: "Profil", href: "/profil" },
   { label: "Berita", href: "/berita" },
   { label: "Galeri", href: "/galeri" },
-  { label: "Peta", href: "#peta" },
+  { label: "Peta", href: "/peta" },
 ];
 
 export function Navbar() {
@@ -109,11 +109,20 @@ export function Navbar() {
               );
             })}
             <Link href="/pengaduan">
-              <Button 
-                variant={useDarkTheme ? "default" : "secondary"} 
+              <Button
+                variant={useDarkTheme ? "default" : "secondary"}
                 className={`font-semibold rounded-none px-5 ${!useDarkTheme ? "border border-primary bg-transparent text-primary hover:bg-white/90" : "shadow-md shadow-primary/20"}`}
               >
                 Lapor
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button
+                variant="ghost"
+                className={`font-semibold rounded-none px-4 gap-2 ${useDarkTheme ? "text-slate-700 hover:text-primary" : "text-white/90 hover:text-white hover:bg-white/10"}`}
+              >
+                <LogIn className="w-4 h-4" />
+                Masuk
               </Button>
             </Link>
           </div>
@@ -181,11 +190,20 @@ export function Navbar() {
           <Link
             href="/pengaduan"
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`text-4xl py-10 border-b border-slate-200/60 last:border-0 font-bold tracking-tight transition-colors ${
+            className={`text-4xl py-10 border-b border-slate-200/60 font-bold tracking-tight transition-colors ${
               safePathname.startsWith("/pengaduan") ? "text-primary" : "text-slate-900 hover:text-slate-600"
             }`}
           >
             Lapor
+          </Link>
+          <Link
+            href="/login"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={`text-4xl py-10 border-b border-slate-200/60 last:border-0 font-bold tracking-tight transition-colors flex items-center gap-4 ${
+              safePathname.startsWith("/login") ? "text-primary" : "text-slate-900 hover:text-slate-600"
+            }`}
+          >
+            Masuk
           </Link>
         </div>
       </div>

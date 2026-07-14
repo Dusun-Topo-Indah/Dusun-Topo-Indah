@@ -1,12 +1,12 @@
 import { BeritaDetail } from "@/components/public/berita/berita-detail";
 
-import { getBeritaById, getBeritaList } from "@/lib/db/queries";
+import { getPublicBeritaById, getBeritaList } from "@/lib/db/queries";
 import { notFound } from "next/navigation";
 import { stripHtml } from "@/lib/listing";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const berita = await getBeritaById(id);
+  const berita = await getPublicBeritaById(id);
   
   if (!berita || (berita.status_publikasi !== "Publik" && berita.status_publikasi)) {
     return {
@@ -33,7 +33,7 @@ export async function generateStaticParams() {
 
 export default async function BeritaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const beritaData = await getBeritaById(id);
+  const beritaData = await getPublicBeritaById(id);
 
   if (!beritaData || (beritaData.status_publikasi !== "Publik" && beritaData.status_publikasi)) {
     notFound();

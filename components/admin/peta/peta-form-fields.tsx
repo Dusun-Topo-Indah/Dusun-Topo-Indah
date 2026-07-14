@@ -40,6 +40,7 @@ import { getAllCategories as getDefaultCategories } from "@/constants/peta";
 import { cn } from "@/lib/utils";
 
 import { usePetaForm } from "@/hooks/admin/use-peta-form";
+import { PetaLocationPickerDynamic } from "./peta-location-picker-dynamic";
 
 interface PetaFormFieldsProps {
   existingCategories: string[];
@@ -76,6 +77,9 @@ export function PetaFormFields({
 
   const kategori = form.watch("kategori_ikon");
   const isCustomCategory = kategori && !getDefaultCategories().includes(kategori);
+
+  const latitude = form.watch("latitude");
+  const longitude = form.watch("longitude");
 
   return (
     <Form {...form}>
@@ -306,60 +310,81 @@ export function PetaFormFields({
             </div>
           )}
 
-          {/* Latitude */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="latitude"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-semibold">
-                    Latitude <span className="text-red-500 ml-0.5">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Contoh: 0.45612"
-                      {...field}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/,/g, ".");
-                        const sanitizedValue = val.replace(/[^\d.-]/g, "");
-                        field.onChange(sanitizedValue);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          {/* Koordinat */}
+          <div className="space-y-4 md:col-span-2">
+            <div>
+              <Label className="text-sm font-semibold">
+                Koordinat Lokasi <span className="text-red-500 ml-0.5">*</span>
+              </Label>
+              <div className="mt-2 mb-4">
+                <PetaLocationPickerDynamic
+                  latitude={latitude}
+                  longitude={longitude}
+                  onChange={(lat, lng) => {
+                    form.setValue("latitude", lat, { shouldValidate: true });
+                    form.setValue("longitude", lng, { shouldValidate: true });
+                  }}
+                />
+              </div>
+            </div>
 
-          {/* Longitude */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="longitude"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-semibold">
-                    Longitude <span className="text-red-500 ml-0.5">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Contoh: 117.51320"
-                      {...field}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/,/g, ".");
-                        const sanitizedValue = val.replace(/[^\d.-]/g, "");
-                        field.onChange(sanitizedValue);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              {/* Latitude */}
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="latitude"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold">
+                        Latitude <span className="text-red-500 ml-0.5">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Contoh: 0.45612"
+                          {...field}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/,/g, ".");
+                            const sanitizedValue = val.replace(/[^\d.-]/g, "");
+                            field.onChange(sanitizedValue);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Longitude */}
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="longitude"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold">
+                        Longitude <span className="text-red-500 ml-0.5">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Contoh: 117.51320"
+                          {...field}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/,/g, ".");
+                            const sanitizedValue = val.replace(/[^\d.-]/g, "");
+                            field.onChange(sanitizedValue);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Deskripsi */}

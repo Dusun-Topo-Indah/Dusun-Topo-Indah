@@ -1,5 +1,5 @@
 const CLOUDINARY_UPLOAD_ENDPOINT = "https://api.cloudinary.com/v1_1";
-const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
 interface CloudinaryUploadSuccessResponse {
   secure_url?: string;
@@ -30,19 +30,19 @@ export async function uploadToCloudinary(file: File): Promise<string> {
     throw new Error("Konfigurasi Cloudinary belum diset di .env");
   }
 
-  if (!file.type.startsWith("image/")) {
-    throw new Error("File yang diunggah harus berupa gambar.");
+  if (!file.type.startsWith("image/") && !file.name.endsWith(".glb") && !file.name.endsWith(".gltf")) {
+    throw new Error("File yang diunggah harus berupa gambar atau model 3D (.glb/.gltf).");
   }
 
   if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    throw new Error("Ukuran gambar maksimal 4 MB.");
+    throw new Error("Ukuran file maksimal 10 MB.");
   }
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", uploadPreset);
 
-  const response = await fetch(`${CLOUDINARY_UPLOAD_ENDPOINT}/${cloudName}/image/upload`, {
+  const response = await fetch(`${CLOUDINARY_UPLOAD_ENDPOINT}/${cloudName}/auto/upload`, {
     method: "POST",
     body: formData,
   });

@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/public/common/page-header";
 import { FadeIn } from "@/components/ui/fade-in";
 import { getGlobalConfig } from "@/lib/google-sheets";
 import Image from "next/image";
+import Script from "next/script";
 
 import type { Metadata } from "next";
 
@@ -20,7 +21,16 @@ export const metadata: Metadata = {
   },
 };
 
-const profileSections = [
+type PublicProfileSection = {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  imageLeft?: boolean;
+  is3D?: boolean;
+};
+
+const profileSections: PublicProfileSection[] = [
   {
     id: "sejarah",
     title: "Sejarah & Perkembangan",
@@ -50,7 +60,7 @@ const profileSections = [
 export default async function ProfilPage() {
   const globalConfig = await getGlobalConfig();
 
-  let sections = profileSections;
+  let sections: PublicProfileSection[] = profileSections;
   try {
     if (globalConfig["profil_sections"]) {
       const parsed = JSON.parse(globalConfig["profil_sections"]);
@@ -87,6 +97,8 @@ export default async function ProfilPage() {
         title={headerTitle}
         description={headerDesc}
       />
+      
+      <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js" strategy="lazyOnload" />
 
       <div className="py-24 md:py-32 w-full max-w-7xl mx-auto px-6 flex flex-col gap-24 md:gap-32 overflow-hidden">
         {/* Zigzag Sections */}
@@ -105,19 +117,31 @@ export default async function ProfilPage() {
               className="w-full md:w-1/2"
             >
               <div 
-                className={`relative aspect-video md:aspect-4/3 w-full ${
+                className={`relative aspect-video md:aspect-4/3 w-full bg-slate-50 ${
                   isImageLeft 
                     ? "shadow-[16px_16px_0_0_#a5e00a] md:shadow-[24px_24px_0_0_#a5e00a]" 
                     : "shadow-[-16px_16px_0_0_#a5e00a] md:shadow-[-24px_24px_0_0_#a5e00a]"
                 }`}
               >
-                <Image
-                  src={section.image || "/images/hero_bg_desa.png"}
-                  alt={section.title}
-                  fill
-                  className="object-cover rounded-none"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+                {section.is3D ? (
+                  <model-viewer
+                    src={section.image || ""}
+                    alt={section.title}
+                    auto-rotate
+                    camera-controls
+                    ar
+                    shadow-intensity="1"
+                    style={{ width: "100%", height: "100%" }}
+                  ></model-viewer>
+                ) : (
+                  <Image
+                    src={section.image || "/images/hero_bg_desa.png"}
+                    alt={section.title}
+                    fill
+                    className="object-cover rounded-none"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                )}
               </div>
             </FadeIn>
 

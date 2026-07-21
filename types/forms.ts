@@ -21,6 +21,7 @@ export type ProfileSection = {
   description: string;
   foto: File | null;
   currentFotoUrl: string;
+  is3D?: boolean;
 };
 
 import * as z from "zod";

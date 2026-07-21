@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Box, FileText, ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 import { usePengaturanProfilForm } from "@/hooks/admin/use-pengaturan-profil-form";
@@ -166,22 +167,32 @@ export function PengaturanProfilForm({
                     </div>
                     <h4 className="font-semibold text-slate-700">Pengaturan Bagian</h4>
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 w-8"
-                    onClick={() => handleRemoveSection(section.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        id={`is3d-${section.id}`} 
+                        checked={section.is3D}
+                        onCheckedChange={(checked) => updateSection(section.id, "is3D", checked)}
+                      />
+                      <Label htmlFor={`is3d-${section.id}`} className="text-sm font-medium">Gunakan 3D</Label>
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+                      onClick={() => handleRemoveSection(section.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Upload Gambar */}
                   <div className="space-y-2 md:col-span-2">
                     <Label className="text-sm font-semibold">
-                      Gambar Visual <span className="text-red-500 ml-0.5">*</span>
+                      {section.is3D ? "Model 3D (.glb/.gltf)" : "Gambar Visual"} <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <div className="relative group mt-1">
                       <label 
@@ -197,38 +208,48 @@ export function PengaturanProfilForm({
                       >
                         {section.foto ? (
                           <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center z-10 relative">
-                            <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
+                            {section.is3D ? <Box className="w-8 h-8 text-primary mx-auto mb-2" /> : <FileText className="w-8 h-8 text-primary mx-auto mb-2" />}
                             <p className="text-sm font-medium text-foreground truncate max-w-[200px]">{section.foto.name}</p>
                             <p className="text-xs text-muted-foreground mt-1">{(section.foto.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                         ) : section.currentFotoUrl ? (
                           <>
-                            <Image 
-                              src={section.currentFotoUrl} 
-                              alt="Current Image" 
-                              fill 
-                              className="object-cover opacity-40 group-hover:opacity-20 transition-opacity" 
-                              sizes="400px" 
-                              priority
-                            />
-                            <div className="relative z-10 flex flex-col items-center justify-center">
-                              <ImagePlus className="w-8 h-8 text-foreground mb-2" />
-                              <p className="text-sm text-foreground font-semibold">Ganti Gambar</p>
-                            </div>
+                            {section.is3D ? (
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center z-10 relative">
+                                <Box className="w-12 h-12 text-primary mx-auto mb-2 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                <p className="text-sm font-medium text-foreground truncate max-w-[200px] mb-1">Model 3D Terpasang</p>
+                                <p className="text-xs text-primary font-semibold">Ganti Model</p>
+                              </div>
+                            ) : (
+                              <>
+                                <Image 
+                                  src={section.currentFotoUrl} 
+                                  alt="Current Image" 
+                                  fill 
+                                  className="object-cover opacity-40 group-hover:opacity-20 transition-opacity" 
+                                  sizes="400px" 
+                                  priority
+                                />
+                                <div className="relative z-10 flex flex-col items-center justify-center">
+                                  <ImagePlus className="w-8 h-8 text-foreground mb-2" />
+                                  <p className="text-sm text-foreground font-semibold">Ganti Gambar</p>
+                                </div>
+                              </>
+                            )}
                           </>
                         ) : (
                           <div className="flex flex-col items-center justify-center p-4 z-10 relative text-center">
                             <div className="flex gap-4 items-center mb-3 text-slate-500">
-                              <ImagePlus className="w-8 h-8" />
+                              {section.is3D ? <Box className="w-8 h-8" /> : <ImagePlus className="w-8 h-8" />}
                             </div>
-                            <p className="text-sm text-slate-500 mb-1">Geser & Lepas gambar ke sini</p>
-                            <p className="text-xs text-muted-foreground">Disarankan aspek rasio 4:3</p>
+                            <p className="text-sm text-slate-500 mb-1">Geser & Lepas {section.is3D ? "model 3D" : "gambar"} ke sini</p>
+                            <p className="text-xs text-muted-foreground">{section.is3D ? "Maksimal 10 MB, format .glb/.gltf" : "Disarankan aspek rasio 4:3, maksimal 10MB"}</p>
                           </div>
                         )}
                         <Input
                           id={`foto-${section.id}`}
                           type="file"
-                          accept="image/*"
+                          accept={section.is3D ? ".glb,.gltf" : "image/*"}
                           className="hidden"
                           onChange={(e) => updateSection(section.id, "foto", e.target.files?.[0] || null)}
                         />

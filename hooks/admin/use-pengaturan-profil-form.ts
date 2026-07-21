@@ -33,12 +33,13 @@ export function usePengaturanProfilForm({
       if (globalConfig["profil_sections"]) {
         const parsed = JSON.parse(globalConfig["profil_sections"]);
         if (Array.isArray(parsed)) {
-          return parsed.map((s: { id?: string; title?: string; description?: string; image?: string }, index: number) => ({
+          return parsed.map((s: { id?: string; title?: string; description?: string; image?: string; is3D?: boolean }, index: number) => ({
             id: s.id || `section-initial-${index}`,
             title: s.title || "",
             description: s.description || "",
             foto: null,
             currentFotoUrl: s.image || "",
+            is3D: s.is3D || false,
           }));
         }
       }
@@ -69,6 +70,7 @@ export function usePengaturanProfilForm({
         description: "",
         foto: null,
         currentFotoUrl: "",
+        is3D: false,
       },
     ]);
   };
@@ -98,10 +100,10 @@ export function usePengaturanProfilForm({
     setDraggingSectionId(null);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const f = e.dataTransfer.files[0];
-      if (f.type.startsWith("image/")) {
+      if (f.type.startsWith("image/") || f.name.endsWith(".glb") || f.name.endsWith(".gltf")) {
         updateSection(id, "foto", f);
       } else {
-        toast.error("Harap unggah file gambar.");
+        toast.error("Harap unggah file gambar atau model 3D (.glb/.gltf).");
       }
     }
   };
@@ -127,6 +129,7 @@ export function usePengaturanProfilForm({
             title: sec.title,
             description: sec.description,
             image: imageUrl,
+            is3D: sec.is3D,
           };
         })
       );
